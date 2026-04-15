@@ -1,0 +1,123 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: semedia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d semedia"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  media-worker:
+    build:
+      context: .
+      dockerfile: services/media_worker/Dockerfile
+      args:
+        INSTALL_GPU_RUNTIME: "1"
+        PYTORCH_INDEX_URL: https://download.pytorch.org/whl/cu130
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
+      MEDIA_ROOT: /app/storage
+      MEDIA_BASE_URL: /media
+      ML_DEVICE: cuda
+      ML_STRICT_CUDA: "1"
+      CLIP_MODEL_NAME: openai/clip-vit-base-patch32
+      CAPTION_MODEL_NAME: Salesforce/blip-image-captioning-base
+      SCENE_DETECTION_THRESHOLD: "27.0"
+    volumes:
+      - backend_media:/app/storage
+      - hf_cache:/root/.cache/huggingface
+    depends_on:
+      db:
+        condition: service_healthy
+    gpus: all
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  search-api:
+    build:
+      context: .
+      dockerfile: services/search_api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
+      MEDIA_BASE_URL: /media
+      MEDIA_WORKER_URL: http://media-worker:8000
+      SEARCH_VECTOR_WEIGHT: "0.7"
+      SEARCH_KEYWORD_WEIGHT: "0.3"
+      SEARCH_MAX_RESULTS: "20"
+    depends_on:
+      db:
+        condition: service_healthy
+      media-worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  gateway-api:
+    build:
+      context: .
+      dockerfile: services/gateway_api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
+      MEDIA_ROOT: /app/storage
+      MEDIA_BASE_URL: /media
+      MEDIA_WORKER_URL: http://media-worker:8000
+      SEARCH_API_URL: http://search-api:8000
+      CORS_ALLOW_ALL_ORIGINS: "1"
+    volumes:
+      - backend_media:/app/storage
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      media-worker:
+        condition: service_healthy
+      search-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/', timeout=5).read()"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://127.0.0.1:8000
+    ports:
+      - "4173:80"
+    depends_on:
+      gateway-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  service-tests:
+    build:
+      context: .
+      dockerfile: testing/services/Dockerfile
+    profiles: ["test"]
+
+volumes:
+  postgres_data:
+  backend_media:
+  hf_cache:

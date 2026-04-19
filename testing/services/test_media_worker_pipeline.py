@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from semedia_shared.database import build_engine, build_session_factory, init_database
@@ -123,7 +124,7 @@ def test_process_media_video_creates_scene_rows(tmp_path, monkeypatch):
     engine.dispose()
 
 
-def test_process_media_marks_item_failed_when_pipeline_errors(tmp_path, monkeypatch):
+def test_process_media_marks_item_failed_when_pipeline_errors(tmp_path, monkeypatch, caplog):
     settings, engine, session_factory = _prepare_session(tmp_path)
     original_dir = settings.media_root / "originals"
     original_dir.mkdir(parents=True, exist_ok=True)
@@ -153,10 +154,13 @@ def test_process_media_marks_item_failed_when_pipeline_errors(tmp_path, monkeypa
         session.refresh(media)
         media_id = media.id
 
-        assert process_media(settings, session, media_id) is False
+        with caplog.at_level(logging.ERROR):
+            assert process_media(settings, session, media_id) is False
 
         session.refresh(media)
         assert media.status == ProcessingStatus.FAILED
         assert "caption failure" in media.error_message
+
+    assert "Processing failed for media" in caplog.text
 
     engine.dispose()

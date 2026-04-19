@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
+from fastapi.testclient import TestClient
+
 from semedia_shared.models import MediaItem, ProcessingStatus
+
+from .conftest import load_service_module, make_test_settings
 
 
 def test_worker_runtime_endpoint_reports_cpu_configuration(worker_env):
@@ -10,6 +16,7 @@ def test_worker_runtime_endpoint_reports_cpu_configuration(worker_env):
     payload = response.json()
     assert payload["requested_device"] == "cpu"
     assert payload["strict_cuda"] is False
+    assert payload["preload_models"] is False
 
 
 def test_worker_embed_text_requires_text(worker_env):
@@ -59,3 +66,19 @@ def test_worker_process_endpoint_invokes_pipeline(worker_env, monkeypatch):
         media = session.get(MediaItem, media_id)
         assert media is not None
         assert media.status == ProcessingStatus.COMPLETED
+
+
+def test_worker_startup_preloads_models_when_enabled(tmp_path, monkeypatch):
+    module = load_service_module("media_worker_service_main_preload", "services/media_worker/app/main.py")
+    settings = replace(make_test_settings("media-worker", tmp_path), ml_preload_models=True)
+
+    monkeypatch.setattr(module, "settings", settings)
+    monkeypatch.setattr(module, "init_database", lambda _engine: None)
+    calls: list[str] = []
+    monkeypatch.setattr(module, "warm_models", lambda incoming_settings: calls.append(incoming_settings.service_name))
+
+    with TestClient(module.app) as client:
+        response = client.get("/health")
+
+    assert response.status_code == 200
+    assert calls == ["media-worker"]

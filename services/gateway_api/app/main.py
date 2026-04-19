@@ -12,21 +12,27 @@ from sqlalchemy.orm import Session, selectinload
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
+from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.media_types import infer_media_type, validate_media_type
 from semedia_shared.models import MediaItem, ProcessingStatus
 from semedia_shared.serialization import media_detail, media_summary
 from semedia_shared.storage import delete_media_files, ensure_media_root, save_upload
 
 settings = get_settings("gateway-api")
+configure_logging(settings)
+logger = get_logger(__name__)
 engine = build_engine(settings.database_url)
 SessionLocal = build_session_factory(engine)
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    configure_logging(settings)
     ensure_media_root(settings)
     init_database(engine)
+    logger.info("Service startup complete.")
     yield
+    logger.info("Service shutdown complete.")
 
 
 app = FastAPI(title="Semedia Gateway API", version="0.1.0", lifespan=lifespan)
@@ -55,6 +61,7 @@ def _trigger_worker_processing(media_id: int) -> None:
         )
         response.raise_for_status()
     except Exception as exc:
+        logger.exception("Worker dispatch failed for media %s.", media_id)
         media = session.get(MediaItem, media_id)
         if media is not None and media.status in {ProcessingStatus.PENDING, ProcessingStatus.PROCESSING}:
             media.status = ProcessingStatus.FAILED
@@ -71,6 +78,7 @@ def _proxy_worker_runtime() -> dict:
         response.raise_for_status()
         return response.json()
     except Exception as exc:
+        logger.exception("Runtime status proxy failed.")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
 
 
@@ -173,7 +181,9 @@ def search(payload: dict) -> dict:
         response.raise_for_status()
         return response.json()
     except requests.HTTPError as exc:
+        logger.warning("Search API returned an error response: %s", exc)
         detail = exc.response.text if exc.response is not None else str(exc)
         raise HTTPException(status_code=exc.response.status_code if exc.response is not None else 502, detail=detail) from exc
     except Exception as exc:
+        logger.exception("Search API request failed.")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Search API unavailable: {exc}") from exc

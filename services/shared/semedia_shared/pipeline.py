@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import logging
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -8,17 +6,19 @@ from sqlalchemy.orm import Session, selectinload
 
 from .caption_service import generate_captions
 from .clip_service import encode_images
+from .log import get_logger
 from .models import MediaItem, ProcessingStatus, VideoScene
 from .storage import relative_to_media_root
 from .video_service import detect_scenes, extract_scene_keyframe, get_video_duration
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def process_media(settings, session: Session, media_id: int) -> bool:
     media = session.execute(
         select(MediaItem).options(selectinload(MediaItem.scenes)).where(MediaItem.id == media_id)
     ).scalar_one()
+    logger.info("Processing started for media %s (%s).", media_id, media.media_type)
     media.status = ProcessingStatus.PROCESSING
     media.error_message = ""
     media.updated_at = datetime.now(timezone.utc)
@@ -41,6 +41,7 @@ def process_media(settings, session: Session, media_id: int) -> bool:
     media.processed_at = datetime.now(timezone.utc)
     media.updated_at = datetime.now(timezone.utc)
     session.commit()
+    logger.info("Processing completed for media %s.", media_id)
     return True
 
 

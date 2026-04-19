@@ -9,17 +9,23 @@ from sqlalchemy.orm import Session
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
+from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.search_service import search_text
 
 settings = get_settings("search-api")
+configure_logging(settings)
+logger = get_logger(__name__)
 engine = build_engine(settings.database_url)
 SessionLocal = build_session_factory(engine)
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    configure_logging(settings)
     init_database(engine)
+    logger.info("Service startup complete.")
     yield
+    logger.info("Service shutdown complete.")
 
 
 app = FastAPI(title="Semedia Search API", version="0.1.0", lifespan=lifespan)
@@ -49,6 +55,7 @@ def _embed_text(query_text: str) -> list[float]:
         payload = response.json()
         return payload["embedding"]
     except Exception as exc:
+        logger.exception("Text embedding request failed.")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
 
 

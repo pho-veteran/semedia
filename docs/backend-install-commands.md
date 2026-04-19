@@ -12,7 +12,7 @@ docker compose --profile test run --rm --build service-tests
 python testing/smoke_stack.py
 ```
 
-This starts PostgreSQL, the GPU-backed `media-worker`, `search-api`, `gateway-api`, and the frontend. The default worker requests `gpus: all`, installs CUDA-enabled PyTorch `2.10.0`, runs with `ML_DEVICE=cuda` and `ML_STRICT_CUDA=1`, and exposes runtime diagnostics through `gateway-api`.
+This starts PostgreSQL, the CUDA-capable `media-worker`, `search-api`, `gateway-api`, and the frontend. The default worker requests `gpus: all`, installs CUDA-enabled PyTorch `2.10.0` plus `torchvision`, runs with `ML_DEVICE=auto`, and exposes runtime diagnostics through `gateway-api`.
 
 ## Windows PowerShell
 
@@ -69,5 +69,8 @@ pip install pytest httpx
 - The current Compose GPU image uses the official CUDA `13.0` PyTorch wheel index: `https://download.pytorch.org/whl/cu130`.
 - If `cu130` does not match your installed NVIDIA stack, replace it with the CUDA build recommended by the current PyTorch selector.
 - The current MVP caption default is `Salesforce/blip-image-captioning-base` because it is much more realistic on a 6 GB RTX 3060 than BLIP-2.
-- Strict CUDA mode is enabled in the default worker container. If GPU inference cannot run, processing fails loudly instead of falling back to CPU.
+- The default worker now prefers GPU automatically and falls back to CPU if CUDA is not visible in the runtime.
+- The worker keeps the Hugging Face caption and CLIP models cached in-process after first use, so repeated uploads avoid the full model reload cost.
+- Set `ML_DEVICE=cuda` and `ML_STRICT_CUDA=1` only when you want the worker to fail loudly instead of falling back to CPU.
+- Automatic GPU selection still depends on the host NVIDIA drivers and Docker runtime exposing the GPU to the container.
 - Shared Python imports resolve through `Semedia/services/shared/`, so keep `PYTHONPATH` aligned if you run the services directly outside Docker.

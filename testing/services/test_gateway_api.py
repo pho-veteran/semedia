@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
@@ -160,3 +161,39 @@ def test_gateway_search_proxies_search_api(gateway_env, monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["results"][0]["media_id"] == 9
+
+
+def test_worker_dispatch_failure_is_logged_and_marks_media_failed(gateway_env, monkeypatch, caplog):
+    module = gateway_env["module"]
+    session_factory = gateway_env["session_factory"]
+
+    with session_factory() as session:
+        media = MediaItem(
+            file_path="originals/2026/04/14/sample.jpg",
+            original_filename="sample.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.PENDING,
+        )
+        session.add(media)
+        session.commit()
+        session.refresh(media)
+        media_id = media.id
+
+    monkeypatch.setattr(
+        module.requests,
+        "post",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("worker is down")),
+    )
+
+    with caplog.at_level(logging.ERROR):
+        module._trigger_worker_processing(media_id)
+
+    with session_factory() as session:
+        media = session.get(MediaItem, media_id)
+        assert media is not None
+        assert media.status == ProcessingStatus.FAILED
+        assert "worker is down" in media.error_message
+
+    assert "Worker dispatch failed for media" in caplog.text

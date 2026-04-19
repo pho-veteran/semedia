@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 
+_VALID_DEVICE_REQUESTS = {"auto", "cpu", "cuda"}
+
+
 def release_torch_memory() -> None:
     try:
         import torch
@@ -12,7 +15,8 @@ def release_torch_memory() -> None:
 
 
 def get_requested_device(settings) -> str:
-    return settings.ml_device
+    requested = (settings.ml_device or "auto").strip().lower()
+    return requested if requested in _VALID_DEVICE_REQUESTS else "auto"
 
 
 def is_strict_cuda_mode(settings) -> bool:
@@ -26,7 +30,7 @@ def get_inference_device(settings) -> str:
         return "cpu"
 
     requested = get_requested_device(settings)
-    if requested == "cuda":
+    if requested in {"auto", "cuda"}:
         return "cuda" if torch.cuda.is_available() else "cpu"
     return "cpu"
 
@@ -48,6 +52,7 @@ def get_runtime_diagnostics(settings) -> dict:
     diagnostics = {
         "requested_device": get_requested_device(settings),
         "strict_cuda": is_strict_cuda_mode(settings),
+        "preload_models": settings.ml_preload_models,
         "selected_device": "cpu",
         "torch_installed": False,
         "cuda_available": False,
@@ -61,8 +66,8 @@ def get_runtime_diagnostics(settings) -> dict:
         return diagnostics
 
     diagnostics["torch_installed"] = True
-    diagnostics["selected_device"] = get_inference_device(settings)
     diagnostics["cuda_available"] = torch.cuda.is_available()
+    diagnostics["selected_device"] = get_inference_device(settings)
 
     if torch.cuda.is_available():
         diagnostics["cuda_device_count"] = torch.cuda.device_count()

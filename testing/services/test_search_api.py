@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 
 
@@ -95,3 +97,21 @@ def test_search_returns_service_unavailable_when_worker_embedding_fails(search_e
 
     assert response.status_code == 503
     assert "Media worker unavailable" in response.json()["detail"]
+
+
+def test_search_logs_when_worker_embedding_request_fails(search_env, monkeypatch, caplog):
+    module = search_env["module"]
+    client = search_env["client"]
+
+    monkeypatch.setattr(
+        module.requests,
+        "post",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("worker boom")),
+    )
+
+    with caplog.at_level(logging.ERROR):
+        response = client.post("/api/v1/search/", json={"query_text": "cat"})
+
+    assert response.status_code == 503
+    assert "Media worker unavailable" in response.json()["detail"]
+    assert "Text embedding request failed." in caplog.text

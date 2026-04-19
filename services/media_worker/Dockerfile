@@ -21,10 +21,10 @@ COPY services/media_worker/requirements.gpu.txt /tmp/requirements.gpu.txt
 RUN python -m pip install --upgrade pip setuptools wheel && \
     pip install -r /tmp/requirements.txt && \
     if [ "$INSTALL_GPU_RUNTIME" = "1" ]; then \
-      pip install torch==2.10.0 --index-url "$PYTORCH_INDEX_URL" && \
+      pip install torch==2.10.0 torchvision==0.25.0 --index-url "$PYTORCH_INDEX_URL" && \
       pip install -r /tmp/requirements.gpu.txt; \
     else \
-      pip install torch; \
+      pip install torch torchvision; \
     fi
 
 COPY services/shared /app/services/shared

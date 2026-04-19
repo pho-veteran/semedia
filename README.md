@@ -33,7 +33,19 @@ Default services:
 - `gateway-api`
 - `frontend`
 
-The default worker is GPU-backed and runs with `ML_DEVICE=cuda` plus `ML_STRICT_CUDA=1`.
+The default worker installs CUDA-capable PyTorch, preloads its caption and CLIP models during startup, prefers GPU automatically with `ML_DEVICE=auto`, and runs in strict CUDA mode in Docker Compose.
+The worker image also installs `torchvision`, enabling the faster Hugging Face image processors used by the caption and CLIP pipelines.
+
+## Configuration
+
+Selected backend environment variables:
+
+- `LOG_LEVEL` controls the Python service log level and defaults to `INFO`.
+- `LOG_FORMAT` reserves the log output mode and defaults to `text`, which writes readable logs to stdout.
+- `ML_DEVICE` defaults to `auto`, which selects CUDA when `torch.cuda.is_available()` is true and otherwise uses CPU.
+- `ML_STRICT_CUDA=1` makes startup fail fast when the worker cannot access CUDA as expected.
+- `ML_PRELOAD_MODELS=1` preloads and probes the caption and CLIP pipelines during worker startup so the first live request does not pay cold-start latency.
+- Automatic GPU selection still requires the host drivers and Docker runtime to expose the GPU inside the `media-worker` container.
 
 ## Service Notes
 

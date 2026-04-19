@@ -26,8 +26,9 @@ services:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
       MEDIA_ROOT: /app/storage
       MEDIA_BASE_URL: /media
-      ML_DEVICE: cuda
+      ML_DEVICE: auto
       ML_STRICT_CUDA: "1"
+      ML_PRELOAD_MODELS: "1"
       CLIP_MODEL_NAME: openai/clip-vit-base-patch32
       CAPTION_MODEL_NAME: Salesforce/blip-image-captioning-base
       SCENE_DETECTION_THRESHOLD: "27.0"
@@ -41,6 +42,7 @@ services:
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
       interval: 15s
+      start_period: 180s
       timeout: 10s
       retries: 10
 

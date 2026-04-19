@@ -52,6 +52,21 @@ def get_db():
     yield from session_dependency(SessionLocal)
 
 
+def _response_detail(response) -> str:
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
+
+    if isinstance(payload, dict):
+        detail = payload.get("detail")
+        if isinstance(detail, str):
+            return detail
+
+    text = getattr(response, "text", "")
+    return text or "Request failed."
+
+
 def _trigger_worker_processing(media_id: int) -> None:
     session = SessionLocal()
     try:
@@ -182,8 +197,35 @@ def search(payload: dict) -> dict:
         return response.json()
     except requests.HTTPError as exc:
         logger.warning("Search API returned an error response: %s", exc)
-        detail = exc.response.text if exc.response is not None else str(exc)
+        detail = _response_detail(exc.response) if exc.response is not None else str(exc)
         raise HTTPException(status_code=exc.response.status_code if exc.response is not None else 502, detail=detail) from exc
     except Exception as exc:
         logger.exception("Search API request failed.")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Search API unavailable: {exc}") from exc
+
+
+@app.post("/api/v1/search/by-image/")
+def search_by_image(file: UploadFile = File(...), top_k: int | None = Form(default=None)) -> dict:
+    try:
+        file.file.seek(0)
+        response = requests.post(
+            f"{settings.search_api_url}/api/v1/search/by-image/",
+            files={
+                "file": (
+                    file.filename or "query-image.bin",
+                    file.file,
+                    file.content_type or "application/octet-stream",
+                )
+            },
+            data={"top_k": str(top_k)} if top_k is not None else None,
+            timeout=180,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.HTTPError as exc:
+        logger.warning("Search API returned an error response for image query: %s", exc)
+        detail = _response_detail(exc.response) if exc.response is not None else str(exc)
+        raise HTTPException(status_code=exc.response.status_code if exc.response is not None else 502, detail=detail) from exc
+    except Exception as exc:
+        logger.exception("Image search API request failed.")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Search API unavailable: {exc}") from exc

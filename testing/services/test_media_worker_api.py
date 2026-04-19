@@ -8,6 +8,12 @@ from semedia_shared.models import MediaItem, ProcessingStatus
 
 from .conftest import load_service_module, make_test_settings
 
+VALID_PNG_BYTES = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x04\x00\x00\x00\xb5\x1c\x0c\x02\x00\x00\x00\x0bIDATx\xdac\xfc\xff"
+    b"\x1f\x00\x03\x03\x02\x00\xef\xb2^*\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
 
 def test_worker_runtime_endpoint_reports_cpu_configuration(worker_env):
     response = worker_env["client"].get("/internal/runtime")
@@ -24,6 +30,30 @@ def test_worker_embed_text_requires_text(worker_env):
 
     assert response.status_code == 422
     assert "text is required" in response.json()["detail"]
+
+
+def test_worker_embed_image_returns_embedding(worker_env, monkeypatch):
+    module = worker_env["module"]
+
+    monkeypatch.setattr(module, "encode_images", lambda settings, paths: [[0.1, 0.2, 0.3]])
+
+    response = worker_env["client"].post(
+        "/internal/embeddings/image",
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"embedding": [0.1, 0.2, 0.3]}
+
+
+def test_worker_embed_image_rejects_non_images(worker_env):
+    response = worker_env["client"].post(
+        "/internal/embeddings/image",
+        files={"file": ("query.txt", b"not-an-image", "text/plain")},
+    )
+
+    assert response.status_code == 422
+    assert "Unsupported media type" in response.json()["detail"]
 
 
 def test_worker_process_endpoint_invokes_pipeline(worker_env, monkeypatch):

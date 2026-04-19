@@ -187,3 +187,28 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
 
     output.sort(key=lambda item: item["score"], reverse=True)
     return output[:limit]
+
+
+def search_image(settings, session: Session, query_embedding: list[float], top_k: int | None = None) -> list[dict]:
+    limit = top_k or settings.search_max_results
+    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, limit))
+
+    output: list[dict] = []
+    for item in vector_results:
+        output.append(
+            {
+                "media_id": item["media_id"],
+                "media_type": item["media_type"],
+                "result_type": item["result_type"],
+                "original_filename": item["original_filename"],
+                "score": round(item["score"] * 100, 2),
+                "caption": item.get("caption", ""),
+                "file_url": item.get("file_url", ""),
+                "thumbnail_url": item.get("thumbnail_url", ""),
+                "start_time": item.get("start_time"),
+                "end_time": item.get("end_time"),
+            }
+        )
+
+    output.sort(key=lambda item: item["score"], reverse=True)
+    return output[:limit]

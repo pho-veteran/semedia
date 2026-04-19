@@ -64,7 +64,15 @@ export interface SearchResult {
 }
 
 export interface SearchResponse {
+  query_mode: 'text'
   query_text: string
+  count: number
+  results: SearchResult[]
+}
+
+export interface ImageSearchResponse {
+  query_mode: 'image'
+  query_image_name: string
   count: number
   results: SearchResult[]
 }
@@ -72,6 +80,7 @@ export interface SearchResponse {
 export interface RuntimeStatus {
   requested_device: string
   strict_cuda: boolean
+  preload_models?: boolean
   selected_device: string
   torch_installed: boolean
   cuda_available: boolean

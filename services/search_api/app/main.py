@@ -3,14 +3,15 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 import requests
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
 from semedia_shared.log import configure_logging, get_logger
-from semedia_shared.search_service import search_text
+from semedia_shared.media_types import infer_media_type
+from semedia_shared.search_service import search_image, search_text
 
 settings = get_settings("search-api")
 configure_logging(settings)
@@ -44,6 +45,21 @@ def get_db():
     yield from session_dependency(SessionLocal)
 
 
+def _response_detail(response) -> str:
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
+
+    if isinstance(payload, dict):
+        detail = payload.get("detail")
+        if isinstance(detail, str):
+            return detail
+
+    text = getattr(response, "text", "")
+    return text or "Request failed."
+
+
 def _embed_text(query_text: str) -> list[float]:
     try:
         response = requests.post(
@@ -56,6 +72,34 @@ def _embed_text(query_text: str) -> list[float]:
         return payload["embedding"]
     except Exception as exc:
         logger.exception("Text embedding request failed.")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
+
+
+def _embed_image(file: UploadFile) -> list[float]:
+    try:
+        file.file.seek(0)
+        response = requests.post(
+            f"{settings.media_worker_url}/internal/embeddings/image",
+            files={
+                "file": (
+                    file.filename or "query-image.bin",
+                    file.file,
+                    file.content_type or "application/octet-stream",
+                )
+            },
+            timeout=180,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        return payload["embedding"]
+    except requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT:
+            detail = _response_detail(exc.response)
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=detail) from exc
+        logger.exception("Image embedding request failed.")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
+    except Exception as exc:
+        logger.exception("Image embedding request failed.")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
 
 
@@ -79,4 +123,28 @@ def search(payload: dict, session: Session = Depends(get_db)) -> dict:
 
     query_embedding = _embed_text(query_text)
     results = search_text(settings, session, query_text, query_embedding, top_k=top_k)
-    return {"query_text": query_text, "count": len(results), "results": results}
+    return {"query_mode": "text", "query_text": query_text, "count": len(results), "results": results}
+
+
+@app.post("/api/v1/search/by-image/")
+def search_by_image(
+    file: UploadFile = File(...),
+    top_k: int | None = Form(default=None),
+    session: Session = Depends(get_db),
+) -> dict:
+    try:
+        inferred_type = infer_media_type(file.filename or "query-image.bin", file.content_type or "")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+
+    if inferred_type != "image":
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="image query file is required.")
+
+    query_embedding = _embed_image(file)
+    results = search_image(settings, session, query_embedding, top_k=top_k)
+    return {
+        "query_mode": "image",
+        "query_image_name": file.filename or "query-image.bin",
+        "count": len(results),
+        "results": results,
+    }

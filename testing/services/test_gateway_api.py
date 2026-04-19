@@ -5,6 +5,12 @@ from pathlib import Path
 
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 
+VALID_PNG_BYTES = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x04\x00\x00\x00\xb5\x1c\x0c\x02\x00\x00\x00\x0bIDATx\xdac\xfc\xff"
+    b"\x1f\x00\x03\x03\x02\x00\xef\xb2^*\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
 
 class _FakeResponse:
     def __init__(self, payload: dict):
@@ -161,6 +167,36 @@ def test_gateway_search_proxies_search_api(gateway_env, monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["results"][0]["media_id"] == 9
+
+
+def test_gateway_image_search_proxies_search_api(gateway_env, monkeypatch):
+    module = gateway_env["module"]
+    client = gateway_env["client"]
+
+    def fake_post(url, files, data, timeout):
+        assert url.endswith("/api/v1/search/by-image/")
+        assert files["file"][0] == "query.png"
+        assert data == {"top_k": "4"}
+        return _FakeResponse(
+            {
+                "query_mode": "image",
+                "query_image_name": "query.png",
+                "count": 1,
+                "results": [{"media_id": 12, "result_type": "image", "score": 100.0}],
+            }
+        )
+
+    monkeypatch.setattr(module.requests, "post", fake_post)
+
+    response = client.post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "4"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["query_mode"] == "image"
+    assert response.json()["results"][0]["media_id"] == 12
 
 
 def test_worker_dispatch_failure_is_logged_and_marks_media_failed(gateway_env, monkeypatch, caplog):

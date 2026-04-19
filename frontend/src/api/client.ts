@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config'
 import type {
+  ImageSearchResponse,
   MediaDetail,
   MediaSummary,
   PaginatedResponse,
@@ -80,5 +81,16 @@ export function searchMedia(queryText: string, topK = 20) {
       query_text: queryText,
       top_k: topK,
     }),
+  })
+}
+
+export function searchMediaByImage(file: File, topK = 20) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('top_k', String(topK))
+
+  return request<ImageSearchResponse>('/api/v1/search/by-image/', {
+    method: 'POST',
+    body: formData,
   })
 }

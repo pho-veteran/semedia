@@ -31,21 +31,37 @@ def _request(
         return response.status, json.loads(payload.decode("utf-8")), dict(response.headers)
 
 
-def _build_multipart(file_path: Path) -> tuple[bytes, str]:
+def _build_multipart(
+    file_path: Path,
+    *,
+    field_name: str = "file",
+    extra_fields: dict[str, str] | None = None,
+) -> tuple[bytes, str]:
     boundary = f"----SemediaBoundary{uuid4().hex}"
     content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
     file_bytes = file_path.read_bytes()
 
-    parts = [
-        f"--{boundary}\r\n".encode("utf-8"),
-        (
-            f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
-            f"Content-Type: {content_type}\r\n\r\n"
-        ).encode("utf-8"),
-        file_bytes,
-        b"\r\n",
-        f"--{boundary}--\r\n".encode("utf-8"),
-    ]
+    parts: list[bytes] = []
+    for key, value in (extra_fields or {}).items():
+        parts.extend(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                f'Content-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode("utf-8"),
+            ]
+        )
+
+    parts.extend(
+        [
+            f"--{boundary}\r\n".encode("utf-8"),
+            (
+                f'Content-Disposition: form-data; name="{field_name}"; filename="{file_path.name}"\r\n'
+                f"Content-Type: {content_type}\r\n\r\n"
+            ).encode("utf-8"),
+            file_bytes,
+            b"\r\n",
+            f"--{boundary}--\r\n".encode("utf-8"),
+        ]
+    )
     return b"".join(parts), f"multipart/form-data; boundary={boundary}"
 
 
@@ -59,6 +75,19 @@ def _upload_file(base_url: str, file_path: Path) -> dict:
     )
     if status != 201:
         raise RuntimeError(f"Upload failed for {file_path.name}: {status} {payload}")
+    return payload
+
+
+def _search_by_image(base_url: str, file_path: Path, top_k: int = 5) -> dict:
+    body, content_type = _build_multipart(file_path, extra_fields={"top_k": str(top_k)})
+    status, payload, _headers = _request(
+        "POST",
+        f"{base_url}/api/v1/search/by-image/",
+        body=body,
+        headers={"Content-Type": content_type},
+    )
+    if status != 200:
+        raise RuntimeError(f"Image search failed for {file_path.name}: {status} {payload}")
     return payload
 
 
@@ -140,6 +169,14 @@ def main() -> int:
     _assert(
         any(result["media_id"] == video_id for result in search_payload["results"]),
         "Search results did not include the uploaded smoke-test video.",
+    )
+
+    print("[search] image query")
+    image_search_payload = _search_by_image(args.base_url, image_path, top_k=5)
+    _assert(image_search_payload["count"] >= 1, "Image-query search returned no results.")
+    _assert(
+        any(result["media_id"] == image_id for result in image_search_payload["results"]),
+        "Image-query results did not include the uploaded smoke-test image.",
     )
 
     print("[delete] uploaded media")

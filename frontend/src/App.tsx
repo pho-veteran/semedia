@@ -90,6 +90,7 @@ function routeToHash(route: AppRoute): string {
 
 function App() {
   const [route, setRoute] = useState<AppRoute>(() => parseHashRoute(window.location.hash))
+  const [previousPage, setPreviousPage] = useState<'dashboard' | 'search' | 'library'>('dashboard')
   const [runtime, setRuntime] = useState<RuntimeStatus | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [mediaPage, setMediaPage] = useState<PaginatedResponse<MediaSummary>>(EMPTY_MEDIA_PAGE)
@@ -167,6 +168,12 @@ function App() {
 
   const navigate = (nextRoute: AppRoute) => {
     const nextHash = routeToHash(nextRoute)
+    
+    // Save previous page before navigating to media detail
+    if (nextRoute.page === 'media' && route.page !== 'media') {
+      setPreviousPage(route.page)
+    }
+    
     startTransition(() => {
       setRoute(nextRoute)
       window.location.hash = nextHash
@@ -413,7 +420,7 @@ function App() {
 
   const handleDeletedFromDetail = async (mediaId: number) => {
     await handleDeleteMedia(mediaId)
-    navigate({ page: 'dashboard' })
+    navigate({ page: previousPage })
   }
 
   const handleCancelUpload = (uploadId: string) => {
@@ -503,7 +510,7 @@ function App() {
       <MediaDetailPage
         initialStartTime={route.startTime}
         mediaId={route.mediaId}
-        onBack={() => navigate({ page: 'dashboard' })}
+        onBack={() => navigate({ page: previousPage })}
         onDeleted={handleDeletedFromDetail}
         onNavigateToMedia={openMedia}
       />

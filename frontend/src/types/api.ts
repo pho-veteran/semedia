@@ -95,4 +95,6 @@ export interface UploadQueueItem {
   status: UploadQueueStatus
   updatedAt: string
   message: string
+  previewUrl?: string
+  mediaType?: 'image' | 'video'
 }

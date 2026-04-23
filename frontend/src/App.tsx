@@ -1,4 +1,5 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
+import { toast, Toaster } from 'sonner'
 import './App.css'
 import {
   deleteMediaById,
@@ -7,10 +8,13 @@ import {
   getRuntimeStatus,
   uploadMediaFile,
 } from './api/client'
-import { Sidebar } from './components/Sidebar'
+import { AppLayout } from './components/layout/AppLayout'
 import { DashboardPage } from './pages/DashboardPage'
+import { LibraryPage } from './pages/LibraryPage'
 import { MediaDetailPage } from './pages/MediaDetailPage'
 import { SearchPage } from './pages/SearchPage'
+import { ShortcutsHelpDialog } from './components/ShortcutsHelpDialog'
+import { useKeyboardShortcuts, KEYBOARD_SHORTCUTS } from './hooks/useKeyboardShortcuts'
 import type {
   MediaSummary,
   PaginatedResponse,
@@ -22,6 +26,7 @@ import { getErrorMessage, isTerminalStatus } from './utils/format'
 type AppRoute =
   | { page: 'dashboard' }
   | { page: 'search' }
+  | { page: 'library' }
   | { page: 'media'; mediaId: number; startTime: number | null }
 
 const EMPTY_MEDIA_PAGE: PaginatedResponse<MediaSummary> = {
@@ -41,6 +46,10 @@ function parseHashRoute(hash: string): AppRoute {
 
   if (segments[0] === 'search') {
     return { page: 'search' }
+  }
+
+  if (segments[0] === 'library') {
+    return { page: 'library' }
   }
 
   if (segments[0] === 'media' && segments[1]) {
@@ -63,6 +72,10 @@ function routeToHash(route: AppRoute): string {
     return '#/search'
   }
 
+  if (route.page === 'library') {
+    return '#/library'
+  }
+
   if (route.page === 'media') {
     const params = new URLSearchParams()
     if (route.startTime !== null && Number.isFinite(route.startTime)) {
@@ -75,31 +88,19 @@ function routeToHash(route: AppRoute): string {
   return '#/dashboard'
 }
 
-function getInitialTheme(): 'light' | 'dark' {
-  const storedTheme = window.localStorage.getItem('semedia-theme')
-  if (storedTheme === 'light' || storedTheme === 'dark') {
-    return storedTheme
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
 function App() {
   const [route, setRoute] = useState<AppRoute>(() => parseHashRoute(window.location.hash))
-  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme)
+  const [previousPage, setPreviousPage] = useState<'dashboard' | 'search' | 'library'>('dashboard')
   const [runtime, setRuntime] = useState<RuntimeStatus | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [mediaPage, setMediaPage] = useState<PaginatedResponse<MediaSummary>>(EMPTY_MEDIA_PAGE)
   const [mediaLoading, setMediaLoading] = useState(true)
   const [mediaError, setMediaError] = useState<string | null>(null)
   const [uploads, setUploads] = useState<UploadQueueItem[]>([])
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
   const pollRef = useRef<Set<number>>(new Set())
   const mountedRef = useRef(true)
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    window.localStorage.setItem('semedia-theme', theme)
-  }, [theme])
+  const searchInputRef = useRef<HTMLInputElement>(null!)
 
   useEffect(() => {
     if (!window.location.hash) {
@@ -124,8 +125,55 @@ function App() {
     }
   }, [])
 
+  // Register global keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: KEYBOARD_SHORTCUTS.FOCUS_SEARCH,
+        description: 'Focus search input',
+        handler: () => {
+          // Navigate to search page if not already there
+          if (route.page !== 'search') {
+            navigate({ page: 'search' })
+          }
+          // Focus will be handled by SearchPage component
+          searchInputRef.current?.focus()
+        },
+      },
+      {
+        key: KEYBOARD_SHORTCUTS.OPEN_UPLOAD,
+        description: 'Open upload dialog',
+        handler: () => {
+          // Navigate to dashboard
+          if (route.page !== 'dashboard') {
+            navigate({ page: 'dashboard' })
+          }
+          // Focus on upload dropzone
+          const dropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement
+          if (dropzone) {
+            dropzone.focus()
+          }
+        },
+      },
+      {
+        key: KEYBOARD_SHORTCUTS.SHOW_HELP,
+        description: 'Show keyboard shortcuts',
+        handler: () => {
+          setShowShortcutsHelp(true)
+        },
+      },
+    ],
+    enabled: true,
+  })
+
   const navigate = (nextRoute: AppRoute) => {
     const nextHash = routeToHash(nextRoute)
+    
+    // Save previous page before navigating to media detail
+    if (nextRoute.page === 'media' && route.page !== 'media') {
+      setPreviousPage(route.page)
+    }
+    
     startTransition(() => {
       setRoute(nextRoute)
       window.location.hash = nextHash
@@ -240,6 +288,16 @@ function App() {
 
         await refreshMediaList()
         if (isTerminalStatus(detail.status)) {
+          if (detail.status === 'completed') {
+            toast.success(`Processing completed: ${detail.original_filename}`, {
+              duration: 5000,
+            })
+          } else if (detail.status === 'failed') {
+            toast.error(`Processing failed: ${detail.original_filename}`, {
+              description: detail.error_message || 'Unknown error',
+              duration: 10000,
+            })
+          }
           return
         }
 
@@ -271,6 +329,11 @@ function App() {
   const handleFilesSelected = async (files: File[]) => {
     for (const file of files) {
       const uploadId = crypto.randomUUID()
+      
+      // Create preview URL for images and videos
+      const previewUrl = URL.createObjectURL(file)
+      const mediaType = file.type.startsWith('image/') ? 'image' : 'video'
+      
       setUploads((currentUploads) => [
         {
           id: uploadId,
@@ -279,6 +342,8 @@ function App() {
           status: 'uploading',
           updatedAt: new Date().toISOString(),
           message: 'Uploading to the backend.',
+          previewUrl,
+          mediaType,
         },
         ...currentUploads,
       ])
@@ -308,11 +373,25 @@ function App() {
 
         if (!isTerminalStatus(summary.status)) {
           void pollMediaUntilSettled(summary.id, uploadId)
+        } else if (summary.status === 'completed') {
+          toast.success(`Upload completed: ${file.name}`, {
+            duration: 5000,
+          })
         }
       } catch (error) {
         if (!mountedRef.current) {
           return
         }
+
+        const errorMessage = getErrorMessage(error)
+        toast.error(`Upload failed: ${file.name}`, {
+          description: errorMessage,
+          duration: 10000,
+          action: {
+            label: 'Retry',
+            onClick: () => handleFilesSelected([file]),
+          },
+        })
 
         setUploads((currentUploads) =>
           currentUploads.map((item) =>
@@ -320,7 +399,7 @@ function App() {
               ? {
                   ...item,
                   status: 'failed',
-                  message: getErrorMessage(error),
+                  message: errorMessage,
                 }
               : item,
           ),
@@ -341,7 +420,62 @@ function App() {
 
   const handleDeletedFromDetail = async (mediaId: number) => {
     await handleDeleteMedia(mediaId)
-    navigate({ page: 'dashboard' })
+    navigate({ page: previousPage })
+  }
+
+  const handleCancelUpload = (uploadId: string) => {
+    setUploads((currentUploads) =>
+      currentUploads.map((item) =>
+        item.id === uploadId
+          ? {
+              ...item,
+              status: 'failed',
+              message: 'Upload cancelled by user',
+            }
+          : item,
+      ),
+    )
+    toast.info('Upload cancelled')
+  }
+
+  const handleRetryUpload = async (uploadId: string) => {
+    const uploadItem = uploads.find((item) => item.id === uploadId)
+    if (!uploadItem) {
+      return
+    }
+
+    // Reset the upload status to uploading
+    setUploads((currentUploads) =>
+      currentUploads.map((item) =>
+        item.id === uploadId
+          ? {
+              ...item,
+              status: 'uploading',
+              message: 'Retrying upload...',
+              updatedAt: new Date().toISOString(),
+            }
+          : item,
+      ),
+    )
+
+    // Note: In a real implementation, we would need to store the original file
+    // and re-upload it. For now, we'll just show a message that retry is not fully implemented.
+    toast.error('Retry functionality requires storing original files - not fully implemented yet')
+    
+    // Reset back to failed after a short delay
+    setTimeout(() => {
+      setUploads((currentUploads) =>
+        currentUploads.map((item) =>
+          item.id === uploadId
+            ? {
+                ...item,
+                status: 'failed',
+                message: 'Retry not available - original file not stored',
+              }
+            : item,
+        ),
+      )
+    }, 2000)
   }
 
   const activeUploadCount = uploads.filter((item) => !isTerminalStatus(item.status)).length
@@ -358,11 +492,17 @@ function App() {
       runtime={runtime}
       runtimeError={runtimeError}
       uploads={uploads}
+      onCancelUpload={handleCancelUpload}
+      onRetryUpload={handleRetryUpload}
     />
   )
 
   if (route.page === 'search') {
-    content = <SearchPage onOpenMedia={openMedia} />
+    content = <SearchPage onOpenMedia={openMedia} searchInputRef={searchInputRef} />
+  }
+
+  if (route.page === 'library') {
+    content = <LibraryPage onOpenMedia={openMedia} onDeleteMedia={handleDeleteMedia} />
   }
 
   if (route.page === 'media') {
@@ -370,7 +510,7 @@ function App() {
       <MediaDetailPage
         initialStartTime={route.startTime}
         mediaId={route.mediaId}
-        onBack={() => navigate({ page: 'dashboard' })}
+        onBack={() => navigate({ page: previousPage })}
         onDeleted={handleDeletedFromDetail}
         onNavigateToMedia={openMedia}
       />
@@ -378,18 +518,21 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar
-        activeUploadCount={activeUploadCount}
-        currentPage={route.page}
-        onNavigate={navigate}
-        onToggleTheme={() => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
-        runtime={runtime}
-        runtimeError={runtimeError}
-        theme={theme}
+    <AppLayout
+      activeUploadCount={activeUploadCount}
+      currentPage={route.page}
+      onNavigate={navigate}
+      runtime={runtime}
+      runtimeError={runtimeError}
+    >
+      {content}
+      <ShortcutsHelpDialog open={showShortcutsHelp} onOpenChange={setShowShortcutsHelp} />
+      <Toaster 
+        position="bottom-right" 
+        closeButton 
+        richColors
       />
-      <main className="main-content">{content}</main>
-    </div>
+    </AppLayout>
   )
 }
 

@@ -1,23 +1,202 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  font-family: 'Outfit', system-ui, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #102033;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  :root {
+    /* Elegant Black & White System - Light Mode */
+    --background:             0 0% 100%;
+    --foreground:             0 0% 9%;
+    --card:                   0 0% 100%;
+    --card-foreground:        0 0% 9%;
+    --popover:                0 0% 100%;
+    --popover-foreground:     0 0% 9%;
+    
+    /* Sophisticated black primary */
+    --primary:                0 0% 9%;
+    --primary-foreground:     0 0% 98%;
+    
+    /* Subtle gray secondary */
+    --secondary:              0 0% 96%;
+    --secondary-foreground:   0 0% 9%;
+    
+    /* Soft muted backgrounds */
+    --muted:                  0 0% 96%;
+    --muted-foreground:       0 0% 45%;
+    
+    /* Elegant accent - Charcoal */
+    --accent:                 0 0% 96%;
+    --accent-foreground:      0 0% 9%;
+    
+    /* Modern destructive - Pure red */
+    --destructive:            0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success color - Deep green */
+    --success:                142 71% 45%;
+    --success-foreground:     0 0% 100%;
+    
+    /* Warning color - Amber */
+    --warning:                38 92% 50%;
+    --warning-foreground:     0 0% 100%;
+    
+    /* Info color - Steel blue */
+    --info:                   210 14% 53%;
+    --info-foreground:        0 0% 100%;
+    
+    /* Borders and inputs */
+    --border:                 0 0% 90%;
+    --input:                  0 0% 90%;
+    --ring:                   0 0% 9%;
+    --radius:                 0.75rem;
+
+    /* Elegant shadows with depth */
+    --shadow-sm:  0 2px 4px 0 rgb(0 0 0 / 0.04);
+    --shadow-md:  0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+    --shadow-lg:  0 12px 24px -4px rgb(0 0 0 / 0.1), 0 8px 16px -4px rgb(0 0 0 / 0.06);
+    --shadow-xl:  0 24px 48px -8px rgb(0 0 0 / 0.12), 0 12px 24px -8px rgb(0 0 0 / 0.08);
+
+    --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow:   350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-theme:  300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-theme='dark'] {
+    /* Elegant Black & White System - Dark Mode */
+    --background:             0 0% 7%;
+    --foreground:             0 0% 98%;
+    --card:                   0 0% 10%;
+    --card-foreground:        0 0% 98%;
+    --popover:                0 0% 10%;
+    --popover-foreground:     0 0% 98%;
+    
+    /* Pure white primary for dark mode */
+    --primary:                0 0% 98%;
+    --primary-foreground:     0 0% 9%;
+    
+    /* Dark gray secondary */
+    --secondary:              0 0% 15%;
+    --secondary-foreground:   0 0% 98%;
+    
+    /* Dark muted backgrounds */
+    --muted:                  0 0% 15%;
+    --muted-foreground:       0 0% 65%;
+    
+    /* Elegant accent - Light gray */
+    --accent:                 0 0% 15%;
+    --accent-foreground:      0 0% 98%;
+    
+    /* Bright destructive for dark mode */
+    --destructive:            0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success color - Bright green */
+    --success:                142 70% 50%;
+    --success-foreground:     0 0% 100%;
+    
+    /* Warning color - Bright amber */
+    --warning:                38 92% 55%;
+    --warning-foreground:     0 0% 9%;
+    
+    /* Info color - Light steel */
+    --info:                   210 14% 60%;
+    --info-foreground:        0 0% 9%;
+    
+    /* Dark borders */
+    --border:                 0 0% 18%;
+    --input:                  0 0% 18%;
+    --ring:                   0 0% 98%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: light;
+    transition: color var(--transition-theme),
+                background-color var(--transition-theme);
+  }
+
+  [data-theme='dark'] html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Elegant subtle gradient background */
+    background-image: 
+      radial-gradient(at 0% 0%, hsl(0 0% 0% / 0.02) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(0 0% 0% / 0.03) 0px, transparent 50%);
+  }
+  
+  [data-theme='dark'] body {
+    /* Sophisticated dark mode with subtle depth */
+    background-image: 
+      radial-gradient(at 0% 0%, hsl(0 0% 100% / 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(0 0% 100% / 0.02) 0px, transparent 50%);
+  }
+
+  /* Smooth theme color transition */
+  *, *::before, *::after {
+    transition: background-color var(--transition-theme),
+                border-color var(--transition-theme),
+                color var(--transition-theme);
+  }
+
+  /* Skip navigation link */
+  .skip-nav {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4
+           focus:z-[100] focus:px-4 focus:py-2 focus:bg-background
+           focus:border focus:border-border focus:rounded-md focus:text-foreground;
+  }
 }
 
-a {
-  color: inherit;
-}
+@layer utilities {
+  /* Reduced motion: disable all animations */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
+  /* Micro-animations - only active when motion is not reduced */
+  @media (prefers-reduced-motion: no-preference) {
+    /* Content appear animation (fade-in 150ms) */
+    .animate-fadeIn {
+      animation: fadeIn 150ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    /* Upload item slide-in animation (250ms from top) */
+    .animate-slideIn {
+      animation: slideInFromTop 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Sidebar collapse animation (width transition 250ms) */
+    .sidebar-collapse-transition {
+      transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes slideInFromTop {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
 }

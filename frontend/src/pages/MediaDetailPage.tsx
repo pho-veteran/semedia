@@ -1,13 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
-import { getMediaDetail } from '../api/client'
-import type { MediaDetail } from '../types/api'
+import { ArrowLeft, Download, Link as LinkIcon, Trash2, Film } from 'lucide-react'
+import { toast } from 'sonner'
+import { deleteMediaById, getMediaDetail } from '../api/client'
+import type { MediaDetail, ProcessingStatus } from '../types/api'
 import {
-  formatDateTime,
   formatFileSize,
-  formatStatusLabel,
-  formatTimeRange,
+  formatRelativeTime,
+  formatSeconds,
   toAbsoluteUrl,
 } from '../utils/format'
+import { Button } from '../components/ui/Button'
+import { Badge } from '../components/ui/Badge'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/Dialog'
+import { EmptyState } from '../components/ui/EmptyState'
+import { Skeleton } from '../components/ui/Skeleton'
+import { cn } from '../lib/utils'
 
 interface MediaDetailPageProps {
   initialStartTime: number | null
@@ -28,7 +43,9 @@ export function MediaDetailPage({
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [seekTarget, setSeekTarget] = useState<number | null>(initialStartTime)
+  const [copySuccess, setCopySuccess] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
@@ -107,159 +124,309 @@ export function MediaDetailPage({
     setDeleting(true)
     setError(null)
     try {
+      await deleteMediaById(mediaId)
+      toast.success('Media deleted', {
+        duration: 5000,
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            toast.info('Undo functionality requires backend support - not yet implemented')
+          },
+        },
+      })
       await onDeleted(mediaId)
+      setDeleteDialogOpen(false)
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Delete failed.')
+      const errorMessage = requestError instanceof Error ? requestError.message : 'Delete failed.'
+      setError(errorMessage)
+      toast.error('Failed to delete media', {
+        description: errorMessage,
+        duration: 10000,
+      })
+      setDeleteDialogOpen(false)
     } finally {
       setDeleting(false)
     }
   }
 
+  const handleDownload = () => {
+    if (!detail) return
+    const link = document.createElement('a')
+    link.href = toAbsoluteUrl(detail.file)
+    link.download = detail.original_filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleShare = async () => {
+    if (!detail) return
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 3000)
+    } catch (err) {
+      console.error('Failed to copy URL:', err)
+    }
+  }
+
+  const handleSceneClick = (startTime: number) => {
+    setSeekTarget(startTime)
+    onNavigateToMedia(mediaId, startTime)
+  }
+
+  const getStatusVariant = (status: ProcessingStatus): 'uploading' | 'processing' | 'completed' | 'failed' => {
+    switch (status) {
+      case 'pending':
+        return 'uploading'
+      case 'processing':
+        return 'processing'
+      case 'completed':
+        return 'completed'
+      case 'failed':
+        return 'failed'
+      default:
+        return 'completed'
+    }
+  }
+
   if (loading) {
-    return <div className="panel empty-state">Loading media detail…</div>
+    return (
+      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
+        <Skeleton className="h-8 w-32 mb-6" />
+        <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6">
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-[400px] w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+          <Skeleton className="h-[600px] w-full" />
+        </div>
+      </div>
+    )
   }
 
   if (error) {
     return (
-      <div className="page-stack">
-        <button className="button button-secondary" onClick={onBack} type="button">
-          Back
-        </button>
-        <div className="error-banner">{error}</div>
+      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
+        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+          <ArrowLeft size={16} className="mr-1" />
+          Back to Library
+        </Button>
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <p className="text-destructive">{error}</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (!detail) {
     return (
-      <div className="page-stack">
-        <button className="button button-secondary" onClick={onBack} type="button">
-          Back
-        </button>
-        <div className="empty-state">The requested media item does not exist.</div>
+      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
+        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+          <ArrowLeft size={16} className="mr-1" />
+          Back to Library
+        </Button>
+        <EmptyState
+          icon={Film}
+          title="Media not found"
+          description="The requested media item does not exist."
+        />
       </div>
     )
   }
 
+  const isVideo = detail.media_type === 'video'
+
   return (
-    <div className="page-stack">
-      <div className="page-toolbar">
-        <button className="button button-secondary" onClick={onBack} type="button">
-          Back
-        </button>
-        <div className="toolbar-actions">
-          <a
-            className="button button-secondary"
-            href={toAbsoluteUrl(detail.file)}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Open asset
-          </a>
-          <button className="button button-danger" disabled={deleting} onClick={handleDelete} type="button">
-            {deleting ? 'Deleting…' : 'Delete'}
-          </button>
+    <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
+      {/* Breadcrumb and Back Button */}
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft size={16} className="mr-1" />
+          Back to Library
+        </Button>
+        <div className="text-sm text-muted-foreground mt-2">
+          Dashboard &gt; Library &gt; Media Detail
         </div>
       </div>
 
-      <section className="detail-layout">
-        <div className="panel detail-preview-panel">
-          <header className="panel-header">
-            <div>
-              <p className="eyebrow">Detail</p>
-              <h1>{detail.original_filename}</h1>
+      {/* 2-column layout for videos, single column for images */}
+      <div className={cn(
+        "grid gap-6",
+        isVideo && detail.scenes.length > 0 ? "lg:grid-cols-[1.5fr_1fr]" : "grid-cols-1"
+      )}>
+        {/* Left column: Media + Caption */}
+        <div className="space-y-6">
+          {/* Metadata header */}
+          <div className="space-y-3">
+            <h1 className="text-2xl font-bold text-foreground truncate">
+              {detail.original_filename}
+            </h1>
+            
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant={getStatusVariant(detail.status)}>
+                {detail.status}
+              </Badge>
+              <span>·</span>
+              <span className="capitalize">{detail.media_type}</span>
+              <span>·</span>
+              <span>{formatFileSize(detail.file_size)}</span>
+              {isVideo && detail.duration !== null && (
+                <>
+                  <span>·</span>
+                  <span>{formatSeconds(detail.duration)}</span>
+                </>
+              )}
+              <span>·</span>
+              <span>{formatRelativeTime(detail.uploaded_at)}</span>
             </div>
-            <span className={`status-pill status-${detail.status}`}>{formatStatusLabel(detail.status)}</span>
-          </header>
-
-          {detail.media_type === 'image' ? (
-            <img
-              alt={detail.original_filename}
-              className="detail-preview"
-              src={toAbsoluteUrl(detail.file)}
-            />
-          ) : (
-            <video
-              className="detail-video"
-              controls
-              preload="metadata"
-              ref={videoRef}
-              src={toAbsoluteUrl(detail.file)}
-            />
-          )}
-
-          <p className="detail-caption">{detail.caption || detail.error_message || 'No caption available.'}</p>
-
-          <dl className="detail-grid">
-            <div>
-              <dt>Type</dt>
-              <dd>{detail.media_type}</dd>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download size={16} />
+                Download
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleShare}>
+                <LinkIcon size={16} />
+                {copySuccess ? 'Copied!' : 'Share'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 size={16} />
+                Delete
+              </Button>
             </div>
-            <div>
-              <dt>Size</dt>
-              <dd>{formatFileSize(detail.file_size)}</dd>
-            </div>
-            <div>
-              <dt>Uploaded</dt>
-              <dd>{formatDateTime(detail.uploaded_at)}</dd>
-            </div>
-            <div>
-              <dt>Processed</dt>
-              <dd>{detail.processed_at ? formatDateTime(detail.processed_at) : 'Not finished'}</dd>
-            </div>
-            <div>
-              <dt>Duration</dt>
-              <dd>{detail.duration !== null ? `${detail.duration.toFixed(2)}s` : 'N/A'}</dd>
-            </div>
-            <div>
-              <dt>Index key</dt>
-              <dd>{detail.index_key || 'Pending'}</dd>
-            </div>
-          </dl>
-        </div>
-
-        <aside className="panel detail-scenes-panel">
-          <header className="panel-header">
-            <div>
-              <p className="eyebrow">Scenes</p>
-              <h2>Video breakdown</h2>
-            </div>
-          </header>
-
-          {detail.media_type !== 'video' ? (
-            <div className="empty-state">Images do not have scene segments.</div>
-          ) : detail.scenes.length === 0 ? (
-            <div className="empty-state">No scenes were generated for this video.</div>
-          ) : (
-            <div className="scene-list">
-              {detail.scenes.map((scene) => (
-                <button
-                  className="scene-item"
-                  key={scene.id}
-                  onClick={() => {
-                    setSeekTarget(scene.start_time)
-                    onNavigateToMedia(detail.id, scene.start_time)
-                  }}
-                  type="button"
-                >
-                  <img
-                    alt={`Scene ${scene.scene_index}`}
-                    className="scene-thumb"
-                    src={toAbsoluteUrl(scene.thumbnail_image || scene.keyframe_image)}
+          </div>
+          
+          {/* Media preview */}
+          <Card>
+            <CardContent className="p-0">
+              {isVideo ? (
+                <div className="relative w-full aspect-video">
+                  <video
+                    ref={videoRef}
+                    src={toAbsoluteUrl(detail.file)}
+                    controls
+                    className="w-full h-full object-contain bg-black rounded-lg"
                   />
-                  <div className="scene-copy">
-                    <div className="scene-row">
-                      <strong>Scene {scene.scene_index + 1}</strong>
-                      <span className="tag">{formatTimeRange(scene.start_time, scene.end_time)}</span>
-                    </div>
-                    <p>{scene.caption || 'No scene caption available.'}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </aside>
-      </section>
+                </div>
+              ) : (
+                <div className="relative w-full">
+                  <img
+                    src={toAbsoluteUrl(detail.file)}
+                    alt={detail.original_filename}
+                    className="w-full h-auto object-contain rounded-lg"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* Caption */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Caption</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground leading-relaxed">
+                {detail.caption || detail.error_message || 'No caption available'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Right column: Video Scenes (only for videos with scenes) */}
+        {isVideo && detail.scenes.length > 0 && (
+          <div>
+            <Card className="lg:sticky lg:top-6">
+              <CardHeader>
+                <CardTitle>Video Scenes ({detail.scenes.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
+                  {detail.scenes.map((scene) => (
+                    <button
+                      key={scene.id}
+                      onClick={() => handleSceneClick(scene.start_time)}
+                      className="w-full rounded-lg overflow-hidden border border-border hover:border-primary hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring text-left"
+                    >
+                      <div className="relative aspect-video">
+                        <img
+                          src={toAbsoluteUrl(scene.thumbnail_image || scene.keyframe_image)}
+                          alt={`Scene ${scene.scene_index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md font-medium">
+                          Scene {scene.scene_index + 1}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-card">
+                        <div className="text-xs text-muted-foreground font-medium mb-1">
+                          {formatSeconds(scene.start_time)} – {formatSeconds(scene.end_time)}
+                        </div>
+                        <p className="text-sm text-foreground line-clamp-2">
+                          {scene.caption || 'No caption available'}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Empty state for videos without scenes */}
+        {isVideo && detail.scenes.length === 0 && (
+          <div>
+            <Card>
+              <CardContent className="pt-6">
+                <EmptyState
+                  icon={Film}
+                  title="No scenes detected"
+                  description="This video has not been processed for scene detection yet."
+                />
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Media</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{detail.original_filename}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              loading={deleting}
+              disabled={deleting}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

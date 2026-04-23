@@ -1,29 +1,27 @@
 import type { RuntimeStatus } from '../types/api'
 import { RuntimeBadge } from './RuntimeBadge'
+import { ThemeToggle } from './ThemeToggle'
 
 type SidebarRoute =
   | { page: 'dashboard' }
   | { page: 'search' }
   | { page: 'media'; mediaId: number; startTime: number | null }
+  | { page: 'demo' }
 
 interface SidebarProps {
   activeUploadCount: number
   currentPage: SidebarRoute['page']
   onNavigate: (route: SidebarRoute) => void
-  onToggleTheme: () => void
   runtime: RuntimeStatus | null
   runtimeError: string | null
-  theme: 'light' | 'dark'
 }
 
 export function Sidebar({
   activeUploadCount,
   currentPage,
   onNavigate,
-  onToggleTheme,
   runtime,
   runtimeError,
-  theme,
 }: SidebarProps) {
   return (
     <aside className="sidebar">
@@ -55,15 +53,21 @@ export function Sidebar({
             <span className="nav-icon">⌕</span>
             <span>Search</span>
           </button>
+
+          <button
+            className={`nav-item ${currentPage === 'demo' ? 'active' : ''}`}
+            onClick={() => onNavigate({ page: 'demo' })}
+            type="button"
+          >
+            <span className="nav-icon">🎨</span>
+            <span>Component Demo</span>
+          </button>
         </nav>
       </div>
 
       <div className="sidebar-bottom">
         <RuntimeBadge error={runtimeError} runtime={runtime} />
-        <button className="theme-toggle" onClick={onToggleTheme} type="button">
-          <span className="nav-icon">{theme === 'dark' ? '☼' : '☾'}</span>
-          <span>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
-        </button>
+        <ThemeToggle />
       </div>
     </aside>
   )

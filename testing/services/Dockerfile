@@ -18,6 +18,6 @@ COPY services/shared /app/services/shared
 COPY services/gateway_api /app/services/gateway_api
 COPY services/media_worker /app/services/media_worker
 COPY services/search_api /app/services/search_api
-COPY testing/services /app/testing/services
+COPY testing /app/testing
 
 CMD ["pytest", "/app/testing/services", "-q"]

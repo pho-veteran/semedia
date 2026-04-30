@@ -50,12 +50,21 @@ def delete_path_if_exists(path: Path) -> None:
         path.unlink()
 
 
+def _delete_scene_paths(settings, paths: list[str] | None, fallback_path: str) -> None:
+    if paths:
+        for path in paths:
+            if path:
+                delete_path_if_exists(resolve_media_path(settings, path))
+        return
+
+    if fallback_path:
+        delete_path_if_exists(resolve_media_path(settings, fallback_path))
+
+
 def delete_media_files(settings, media: MediaItem) -> None:
     for scene in list(media.scenes):
-        if scene.keyframe_path:
-            delete_path_if_exists(resolve_media_path(settings, scene.keyframe_path))
-        if scene.thumbnail_path:
-            delete_path_if_exists(resolve_media_path(settings, scene.thumbnail_path))
+        _delete_scene_paths(settings, scene.keyframe_paths, scene.keyframe_path)
+        _delete_scene_paths(settings, scene.thumbnail_paths, scene.thumbnail_path)
 
     if media.file_path:
         delete_path_if_exists(resolve_media_path(settings, media.file_path))

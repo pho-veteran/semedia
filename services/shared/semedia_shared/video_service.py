@@ -25,18 +25,40 @@ def get_video_duration(video_path: str) -> float:
     return round(float(frame_count / fps), 2)
 
 
+def _get_adaptive_threshold(duration: float, base_threshold: float) -> float:
+    """Calculate adaptive scene detection threshold based on video duration.
+
+    Args:
+        duration: Video duration in seconds
+        base_threshold: Base threshold from settings
+
+    Returns:
+        Adaptive threshold: 20.0 for short videos (<30s),
+                           35.0 for long videos (>10min),
+                           base_threshold otherwise
+    """
+    if duration < 30.0:
+        return 20.0
+    elif duration > 600.0:
+        return 35.0
+    else:
+        return base_threshold
+
+
 def detect_scenes(settings, video_path: str) -> list[SceneSpan]:
     from scenedetect import SceneManager, open_video
     from scenedetect.detectors import ContentDetector
 
+    duration = get_video_duration(video_path)
+    adaptive_threshold = _get_adaptive_threshold(duration, settings.scene_detection_threshold)
+
     video = open_video(video_path)
     scene_manager = SceneManager()
-    scene_manager.add_detector(ContentDetector(threshold=settings.scene_detection_threshold))
+    scene_manager.add_detector(ContentDetector(threshold=adaptive_threshold))
     scene_manager.detect_scenes(video)
     scenes = scene_manager.get_scene_list()
 
     if not scenes:
-        duration = get_video_duration(video_path)
         if duration <= 0:
             return []
         return [SceneSpan(scene_index=0, start_time=0.0, end_time=duration)]
@@ -49,6 +71,67 @@ def detect_scenes(settings, video_path: str) -> list[SceneSpan]:
         )
         for index, (start, end) in enumerate(scenes)
     ]
+
+
+def extract_scene_keyframes(settings, video_path: str, media_id: int, scene: SceneSpan) -> tuple[list[str], list[str]]:
+    """Extract 3 keyframes from a scene at 10%, 50%, and 90% of scene duration.
+
+    Args:
+        settings: Application settings
+        video_path: Path to video file
+        media_id: Media item ID
+        scene: Scene span to extract frames from
+
+    Returns:
+        Tuple of (keyframe_paths, thumbnail_paths), each containing 3 paths
+        for frames at 10%, 50%, and 90% of the scene duration.
+
+    Note:
+        The midpoint frame (index 1, 50%) should be considered the default/best frame.
+    """
+    import cv2
+
+    capture = cv2.VideoCapture(video_path)
+    fps = capture.get(cv2.CAP_PROP_FPS) or 0
+
+    keyframe_dir = settings.media_root / "keyframes" / str(media_id)
+    thumbnail_dir = settings.media_root / "thumbnails" / str(media_id)
+    keyframe_dir.mkdir(parents=True, exist_ok=True)
+    thumbnail_dir.mkdir(parents=True, exist_ok=True)
+
+    keyframe_paths = []
+    thumbnail_paths = []
+
+    # Sample at 10%, 50%, and 90% of scene duration
+    scene_duration = scene.end_time - scene.start_time if scene.end_time > scene.start_time else 0
+    sample_points = [0.1, 0.5, 0.9]
+
+    for frame_idx, sample_pct in enumerate(sample_points):
+        if scene_duration > 0:
+            sample_time = scene.start_time + (scene_duration * sample_pct)
+        else:
+            sample_time = scene.start_time
+
+        frame_number = int(math.floor(sample_time * fps)) if fps > 0 else 0
+        capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+        ok, frame = capture.read()
+
+        if not ok:
+            capture.release()
+            raise ValueError(f"Could not extract keyframe for scene {scene.scene_index} from {video_path}")
+
+        filename = f"scene_{scene.scene_index:04d}_frame_{frame_idx:02d}.jpg"
+        keyframe_path = keyframe_dir / filename
+        thumbnail_path = thumbnail_dir / filename
+
+        cv2.imwrite(str(keyframe_path), frame)
+        cv2.imwrite(str(thumbnail_path), frame)
+
+        keyframe_paths.append(str(keyframe_path))
+        thumbnail_paths.append(str(thumbnail_path))
+
+    capture.release()
+    return keyframe_paths, thumbnail_paths
 
 
 def extract_scene_keyframe(settings, video_path: str, media_id: int, scene: SceneSpan) -> tuple[str, str]:

@@ -23,6 +23,19 @@ def init_database(engine) -> None:
 
     Base.metadata.create_all(bind=engine)
 
+    from .migrations import run_pending_migrations
+
+    session_factory = build_session_factory(engine)
+    session = session_factory()
+    try:
+        run_pending_migrations(session, engine)
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
 
 def session_dependency(session_factory) -> Generator[Session, None, None]:
     session = session_factory()

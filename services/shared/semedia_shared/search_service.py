@@ -96,8 +96,9 @@ def _keyword_results(settings, session: Session, query_text: str, top_k: int) ->
     payloads: list[dict] = []
 
     for media in _completed_media(session):
-        if media.media_type == "image" and media.caption:
-            corpus.append(media.caption)
+        media_keyword_text = media.retrieval_text or media.caption
+        if media.media_type == "image" and media_keyword_text:
+            corpus.append(media_keyword_text)
             payloads.append(
                 {
                     "key": ("image", media.id),
@@ -114,8 +115,9 @@ def _keyword_results(settings, session: Session, query_text: str, top_k: int) ->
             )
 
         for scene in media.scenes:
-            if scene.caption:
-                corpus.append(scene.caption)
+            scene_keyword_text = scene.retrieval_text or scene.caption
+            if scene_keyword_text:
+                corpus.append(scene_keyword_text)
                 payloads.append(
                     {
                         "key": ("scene", scene.id),

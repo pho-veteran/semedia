@@ -92,15 +92,17 @@ def generate_captions(settings, image_paths: Iterable[str]) -> list[str]:
         logger.info("Running caption inference with %s on %s.", model_name, device)
 
         captions: list[str] = []
+        batch_size = 8
         with torch.inference_mode():
-            for image_path in image_paths:
-                image = Image.open(image_path).convert("RGB")
-                inputs = build_image_inputs(processor, image)
+            for i in range(0, len(image_paths), batch_size):
+                batch_paths = image_paths[i : i + batch_size]
+                images = [Image.open(path).convert("RGB") for path in batch_paths]
+                inputs = build_image_inputs(processor, images)
                 if device != "cuda" or not use_device_map:
                     inputs = move_batch_to_device(inputs, device)
                 output_ids = model.generate(**inputs, max_new_tokens=40)
-                caption = processor.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
-                captions.append(caption)
+                batch_captions = processor.batch_decode(output_ids, skip_special_tokens=True)
+                captions.extend([caption.strip() for caption in batch_captions])
         return captions
     except Exception as exc:
         if strict_cuda and device == "cuda":

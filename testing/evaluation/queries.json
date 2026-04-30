@@ -1,0 +1,162 @@
+[
+  {
+    "query_id": "q001",
+    "query_text": "cat",
+    "query_type": "object",
+    "relevant_media_ids": [4],
+    "relevant_scene_ids": [],
+    "notes": "Object-focused query: simple animal search"
+  },
+  {
+    "query_id": "q002",
+    "query_text": "person walking",
+    "query_type": "action",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: human motion"
+  },
+  {
+    "query_id": "q003",
+    "query_text": "sunset beach",
+    "query_type": "scene",
+    "relevant_media_ids": [6],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: outdoor setting with time of day"
+  },
+  {
+    "query_id": "q004",
+    "query_text": "red car",
+    "query_type": "object",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Object-focused query with color attribute"
+  },
+  {
+    "query_id": "q005",
+    "query_text": "cooking",
+    "query_type": "action",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: kitchen activity"
+  },
+  {
+    "query_id": "q006",
+    "query_text": "office desk",
+    "query_type": "scene",
+    "relevant_media_ids": [7],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: indoor workspace"
+  },
+  {
+    "query_id": "q007",
+    "query_text": "dog playing",
+    "query_type": "action",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: animal behavior"
+  },
+  {
+    "query_id": "q008",
+    "query_text": "mountain landscape",
+    "query_type": "scene",
+    "relevant_media_ids": [8],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: outdoor terrain"
+  },
+  {
+    "query_id": "q009",
+    "query_text": "person sitting",
+    "query_type": "action",
+    "relevant_media_ids": [7],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: static human pose"
+  },
+  {
+    "query_id": "q010",
+    "query_text": "city street",
+    "query_type": "scene",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: urban environment"
+  },
+  {
+    "query_id": "q011",
+    "query_text": "blue sky",
+    "query_type": "scene",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: weather/sky condition"
+  },
+  {
+    "query_id": "q012",
+    "query_text": "running",
+    "query_type": "action",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: fast motion"
+  },
+  {
+    "query_id": "q013",
+    "query_text": "tree",
+    "query_type": "object",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Object-focused query: natural element"
+  },
+  {
+    "query_id": "q014",
+    "query_text": "indoor room",
+    "query_type": "scene",
+    "relevant_media_ids": [7],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: generic interior"
+  },
+  {
+    "query_id": "q015",
+    "query_text": "person talking",
+    "query_type": "action",
+    "relevant_media_ids": [7],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: communication"
+  },
+  {
+    "query_id": "q016",
+    "query_text": "water",
+    "query_type": "object",
+    "relevant_media_ids": [6],
+    "relevant_scene_ids": [],
+    "notes": "Object-focused query: natural element"
+  },
+  {
+    "query_id": "q017",
+    "query_text": "night scene",
+    "query_type": "scene",
+    "relevant_media_ids": [6],
+    "relevant_scene_ids": [2],
+    "notes": "Scene/context query: low light condition"
+  },
+  {
+    "query_id": "q018",
+    "query_text": "eating",
+    "query_type": "action",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Action-focused query: consumption activity"
+  },
+  {
+    "query_id": "q019",
+    "query_text": "building",
+    "query_type": "object",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Object-focused query: architecture"
+  },
+  {
+    "query_id": "q020",
+    "query_text": "forest",
+    "query_type": "scene",
+    "relevant_media_ids": [],
+    "relevant_scene_ids": [],
+    "notes": "Scene/context query: dense natural environment"
+  }
+]

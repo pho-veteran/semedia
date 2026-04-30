@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
+from semedia_shared.index_service import ensure_keyword_index_current
 from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.media_types import infer_media_type
 from semedia_shared.search_service import search_image, search_text
@@ -24,6 +25,12 @@ SessionLocal = build_session_factory(engine)
 async def lifespan(_app: FastAPI):
     configure_logging(settings)
     init_database(engine)
+    with SessionLocal() as session:
+        index_data = ensure_keyword_index_current(settings, session)
+        if index_data is None:
+            logger.info("Keyword index empty.")
+        else:
+            logger.info("Keyword index loaded: %s documents.", index_data.document_count)
     logger.info("Service startup complete.")
     yield
     logger.info("Service shutdown complete.")

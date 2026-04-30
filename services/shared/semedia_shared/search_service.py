@@ -3,11 +3,11 @@ from __future__ import annotations
 from collections import defaultdict
 
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from .index_service import ensure_keyword_index_current, search_keyword
 from .models import MediaItem, ProcessingStatus
 from .storage import media_url
 
@@ -92,61 +92,10 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
 
 
 def _keyword_results(settings, session: Session, query_text: str, top_k: int) -> list[dict]:
-    corpus: list[str] = []
-    payloads: list[dict] = []
-
-    for media in _completed_media(session):
-        if media.media_type == "image" and media.caption:
-            corpus.append(media.caption)
-            payloads.append(
-                {
-                    "key": ("image", media.id),
-                    "media_id": media.id,
-                    "media_type": media.media_type,
-                    "result_type": "image",
-                    "original_filename": media.original_filename,
-                    "caption": media.caption or "",
-                    "file_url": media_url(settings, media.file_path),
-                    "thumbnail_url": media_url(settings, media.file_path),
-                    "start_time": None,
-                    "end_time": None,
-                }
-            )
-
-        for scene in media.scenes:
-            if scene.caption:
-                corpus.append(scene.caption)
-                payloads.append(
-                    {
-                        "key": ("scene", scene.id),
-                        "media_id": media.id,
-                        "media_type": media.media_type,
-                        "result_type": "video_scene",
-                        "original_filename": media.original_filename,
-                        "caption": scene.caption or "",
-                        "file_url": media_url(settings, media.file_path),
-                        "thumbnail_url": media_url(settings, scene.thumbnail_path),
-                        "start_time": scene.start_time,
-                        "end_time": scene.end_time,
-                    }
-                )
-
-    if not corpus:
+    index_data = ensure_keyword_index_current(settings, session)
+    if index_data is None:
         return []
-
-    vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), max_features=10000)
-    tfidf_matrix = vectorizer.fit_transform(corpus)
-    query_vec = vectorizer.transform([query_text])
-    similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
-
-    results: list[dict] = []
-    for index, similarity in enumerate(similarities):
-        if similarity <= 0:
-            continue
-        results.append({**payloads[index], "score": float(similarity)})
-
-    results.sort(key=lambda item: item["score"], reverse=True)
-    return results[: max(top_k * 2, top_k)]
+    return search_keyword(query_text, index_data, top_k)
 
 
 def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None) -> list[dict]:

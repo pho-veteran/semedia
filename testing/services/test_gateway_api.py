@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from sqlalchemy import inspect, text
+
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 
 VALID_PNG_BYTES = (
@@ -144,6 +146,67 @@ def test_delete_media_removes_database_rows_and_files(gateway_env):
     with session_factory() as session:
         assert session.query(MediaItem).count() == 0
         assert session.query(VideoScene).count() == 0
+
+
+def test_delete_media_rebuilds_keyword_index_artifact(gateway_env):
+    client = gateway_env["client"]
+    settings = gateway_env["settings"]
+    session_factory = gateway_env["session_factory"]
+
+    media_path = settings.media_root / "originals" / "2026" / "04" / "14"
+    scene_path = settings.media_root / "keyframes" / "7"
+    thumb_path = settings.media_root / "thumbnails" / "7"
+    media_path.mkdir(parents=True, exist_ok=True)
+    scene_path.mkdir(parents=True, exist_ok=True)
+    thumb_path.mkdir(parents=True, exist_ok=True)
+
+    media_file = media_path / "sample.mp4"
+    keyframe_file = scene_path / "scene_0000.jpg"
+    thumbnail_file = thumb_path / "scene_0000.jpg"
+    media_file.write_bytes(b"video")
+    keyframe_file.write_bytes(b"frame")
+    thumbnail_file.write_bytes(b"thumb")
+
+    with session_factory() as session:
+        media = MediaItem(
+            file_path="originals/2026/04/14/sample.mp4",
+            original_filename="sample.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=5,
+            status=ProcessingStatus.COMPLETED,
+            caption="sample caption",
+            index_key="media:7",
+        )
+        session.add(media)
+        session.commit()
+        session.refresh(media)
+
+        session.add(
+            VideoScene(
+                media_id=media.id,
+                scene_index=0,
+                start_time=0.0,
+                end_time=1.0,
+                keyframe_path="keyframes/7/scene_0000.jpg",
+                thumbnail_path="thumbnails/7/scene_0000.jpg",
+                caption="frame",
+                index_key="scene:7:0",
+            )
+        )
+        session.commit()
+        session.execute(text("CREATE TABLE IF NOT EXISTS keyword_index_artifacts (id INTEGER PRIMARY KEY, artifact_key VARCHAR(64), format_version VARCHAR(16), document_count INTEGER, payload BLOB, built_at DATETIME, updated_at DATETIME)"))
+        session.execute(text("INSERT INTO keyword_index_artifacts (artifact_key, format_version, document_count, payload) VALUES ('default', 'v1', 2, x'00')"))
+        session.commit()
+        media_id = media.id
+
+    response = client.delete(f"/api/v1/media/{media_id}/")
+
+    assert response.status_code == 204
+
+    with session_factory() as session:
+        assert session.execute(text("SELECT COUNT(*) FROM keyword_index_artifacts")).scalar_one() == 1
+        assert session.execute(text("SELECT document_count FROM keyword_index_artifacts WHERE artifact_key = 'default'")) .scalar_one() == 0
 
 
 def test_gateway_search_proxies_search_api(gateway_env, monkeypatch):

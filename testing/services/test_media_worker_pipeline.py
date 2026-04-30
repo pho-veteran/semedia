@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from sqlalchemy import inspect, text
+
 from semedia_shared.database import build_engine, build_session_factory, init_database
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 from semedia_shared.pipeline import process_media
@@ -185,5 +187,44 @@ def test_process_media_marks_item_failed_when_pipeline_errors(tmp_path, monkeypa
         assert "caption failure" in media.error_message
 
     assert "Processing failed for media" in caplog.text
+
+    engine.dispose()
+
+
+def test_process_media_creates_keyword_index_artifact_table(tmp_path):
+    settings, engine, session_factory = _prepare_session(tmp_path)
+
+    assert inspect(engine).has_table("keyword_index_artifacts")
+
+    engine.dispose()
+
+
+def test_process_media_rebuilds_keyword_index_artifact(tmp_path, monkeypatch):
+    settings, engine, session_factory = _prepare_session(tmp_path)
+    original_dir = settings.media_root / "originals"
+    original_dir.mkdir(parents=True, exist_ok=True)
+    image_path = original_dir / "sample.jpg"
+    image_path.write_bytes(b"image-bytes")
+
+    from semedia_shared import pipeline as pipeline_module
+
+    monkeypatch.setattr(pipeline_module, "generate_captions", lambda settings, paths: ["test caption"])
+    monkeypatch.setattr(pipeline_module, "encode_images", lambda settings, paths: [[0.1, 0.2, 0.3]])
+
+    with session_factory() as session:
+        media = MediaItem(
+            file_path="originals/sample.jpg",
+            original_filename="sample.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=11,
+            status=ProcessingStatus.PENDING,
+        )
+        session.add(media)
+        session.commit()
+        session.refresh(media)
+
+        assert process_media(settings, session, media.id) is True
+        assert session.execute(text("SELECT COUNT(*) FROM keyword_index_artifacts")).scalar_one() == 1
 
     engine.dispose()

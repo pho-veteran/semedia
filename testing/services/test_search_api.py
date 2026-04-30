@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from sqlalchemy import inspect, text
+
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 
 VALID_PNG_BYTES = (
@@ -322,3 +324,129 @@ def test_keyword_search_uses_caption_when_available(search_env, monkeypatch):
     assert payload["count"] == 1
     assert payload["results"][0]["media_id"] == image.id
     assert payload["results"][0]["caption"] == "a cat on a sofa"
+
+
+def test_search_database_creates_keyword_index_artifact_table(search_env):
+    engine = search_env["module"].engine
+
+    assert inspect(engine).has_table("keyword_index_artifacts")
+
+
+def test_keyword_search_builds_index_artifact_when_missing(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/cat.jpg",
+            original_filename="cat.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="red sofa living room sunlight",
+            index_key="media:1",
+        )
+        session.add(image)
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [0.5, 0.5])
+
+    response = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+
+    assert response.status_code == 200
+
+    with session_factory() as session:
+        assert session.execute(text("SELECT COUNT(*) FROM keyword_index_artifacts")).scalar_one() == 1
+
+
+def test_keyword_search_is_stable_across_repeated_queries(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/cat.jpg",
+            original_filename="cat.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="red sofa living room sunlight",
+            index_key="media:1",
+        )
+        session.add(image)
+        session.commit()
+        session.refresh(image)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [0.5, 0.5])
+
+    first = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+    second = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["results"] == second.json()["results"]
+
+
+def test_keyword_search_returns_empty_when_no_captions_exist(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/blank.jpg",
+            original_filename="blank.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:1",
+        )
+        session.add(image)
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [0.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+
+    assert response.status_code == 200
+    assert response.json()["count"] == 0
+
+
+def test_keyword_search_refreshes_when_artifact_timestamp_changes(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/cat.jpg",
+            original_filename="cat.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="red sofa living room sunlight",
+            index_key="media:1",
+        )
+        session.add(image)
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [0.5, 0.5])
+
+    first = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+    assert first.status_code == 200
+
+    with session_factory() as session:
+        session.execute(text("UPDATE keyword_index_artifacts SET updated_at = CURRENT_TIMESTAMP"))
+        session.commit()
+
+    second = client.post("/api/v1/search/", json={"query_text": "sunlight sofa", "top_k": 5})
+
+    assert second.status_code == 200
+    assert second.json()["results"] == first.json()["results"]

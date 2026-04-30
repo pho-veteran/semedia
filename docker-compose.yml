@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_DB: semedia
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-semedia}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d semedia"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-semedia}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -20,20 +20,20 @@ services:
       context: .
       dockerfile: services/media_worker/Dockerfile
       args:
-        INSTALL_GPU_RUNTIME: "1"
-        PYTORCH_INDEX_URL: https://download.pytorch.org/whl/cu130
+        INSTALL_GPU_RUNTIME: ${INSTALL_GPU_RUNTIME:-1}
+        PYTORCH_INDEX_URL: ${PYTORCH_INDEX_URL:-https://download.pytorch.org/whl/cu130}
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
-      MEDIA_ROOT: /app/storage
-      MEDIA_BASE_URL: /media
-      ML_DEVICE: auto
-      ML_STRICT_CUDA: "1"
-      ML_PRELOAD_MODELS: "1"
-      CLIP_MODEL_NAME: openai/clip-vit-base-patch32
-      CAPTION_MODEL_NAME: Salesforce/blip-image-captioning-base
-      SCENE_DETECTION_THRESHOLD: "27.0"
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://postgres:postgres@db:5432/semedia}
+      MEDIA_ROOT: ${MEDIA_ROOT:-/app/storage}
+      MEDIA_BASE_URL: ${MEDIA_BASE_URL:-/media}
+      ML_DEVICE: ${ML_DEVICE:-auto}
+      ML_STRICT_CUDA: ${ML_STRICT_CUDA:-1}
+      ML_PRELOAD_MODELS: ${ML_PRELOAD_MODELS:-1}
+      CLIP_MODEL_NAME: ${CLIP_MODEL_NAME:-openai/clip-vit-base-patch32}
+      CAPTION_MODEL_NAME: ${CAPTION_MODEL_NAME:-Salesforce/blip-image-captioning-base}
+      SCENE_DETECTION_THRESHOLD: ${SCENE_DETECTION_THRESHOLD:-27.0}
     volumes:
-      - backend_media:/app/storage
+      - backend_media:${MEDIA_ROOT:-/app/storage}
       - hf_cache:/root/.cache/huggingface
     depends_on:
       db:
@@ -51,12 +51,12 @@ services:
       context: .
       dockerfile: services/search_api/Dockerfile
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
-      MEDIA_BASE_URL: /media
-      MEDIA_WORKER_URL: http://media-worker:8000
-      SEARCH_VECTOR_WEIGHT: "0.7"
-      SEARCH_KEYWORD_WEIGHT: "0.3"
-      SEARCH_MAX_RESULTS: "20"
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://postgres:postgres@db:5432/semedia}
+      MEDIA_BASE_URL: ${MEDIA_BASE_URL:-/media}
+      MEDIA_WORKER_URL: ${MEDIA_WORKER_URL:-http://media-worker:8000}
+      SEARCH_VECTOR_WEIGHT: ${SEARCH_VECTOR_WEIGHT:-0.7}
+      SEARCH_KEYWORD_WEIGHT: ${SEARCH_KEYWORD_WEIGHT:-0.3}
+      SEARCH_MAX_RESULTS: ${SEARCH_MAX_RESULTS:-20}
     depends_on:
       db:
         condition: service_healthy
@@ -73,16 +73,16 @@ services:
       context: .
       dockerfile: services/gateway_api/Dockerfile
     environment:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/semedia
-      MEDIA_ROOT: /app/storage
-      MEDIA_BASE_URL: /media
-      MEDIA_WORKER_URL: http://media-worker:8000
-      SEARCH_API_URL: http://search-api:8000
-      CORS_ALLOW_ALL_ORIGINS: "1"
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://postgres:postgres@db:5432/semedia}
+      MEDIA_ROOT: ${MEDIA_ROOT:-/app/storage}
+      MEDIA_BASE_URL: ${MEDIA_BASE_URL:-/media}
+      MEDIA_WORKER_URL: ${MEDIA_WORKER_URL:-http://media-worker:8000}
+      SEARCH_API_URL: ${SEARCH_API_URL:-http://search-api:8000}
+      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-1}
     volumes:
-      - backend_media:/app/storage
+      - backend_media:${MEDIA_ROOT:-/app/storage}
     ports:
-      - "8000:8000"
+      - "${GATEWAY_API_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -101,9 +101,9 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        VITE_API_BASE_URL: http://127.0.0.1:8000
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
     ports:
-      - "4173:80"
+      - "${FRONTEND_PORT:-4173}:80"
     depends_on:
       gateway-api:
         condition: service_healthy

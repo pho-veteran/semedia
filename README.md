@@ -45,7 +45,38 @@ Selected backend environment variables:
 - `ML_DEVICE` defaults to `auto`, which selects CUDA when `torch.cuda.is_available()` is true and otherwise uses CPU.
 - `ML_STRICT_CUDA=1` makes startup fail fast when the worker cannot access CUDA as expected.
 - `ML_PRELOAD_MODELS=1` preloads and probes the caption and CLIP pipelines during worker startup so the first live request does not pay cold-start latency.
+- `CLIP_MODEL_NAME` accepts Hugging Face `CLIPModel` checkpoints such as `openai/clip-vit-base-patch32` (default), `openai/clip-vit-base-patch16`, `openai/clip-vit-large-patch14`, `openai/clip-vit-large-patch14-336`, `laion/CLIP-ViT-B-32-laion2B-s34B-b79K`, and `laion/CLIP-ViT-L-14-laion2B-s32B-b82K`.
+- `CAPTION_MODEL_NAME` accepts Hugging Face BLIP and BLIP-2 checkpoints. Verified options include `Salesforce/blip-image-captioning-base` (default), `Salesforce/blip-image-captioning-large`, `Salesforce/blip2-opt-2.7b`, `Salesforce/blip2-opt-6.7b`, and `Salesforce/blip2-flan-t5-xl`.
 - Automatic GPU selection still requires the host drivers and Docker runtime to expose the GPU inside the `media-worker` container.
+
+### ML Model Options
+
+The worker currently loads caption and embedding models through Hugging Face Transformers:
+
+- CLIP embeddings use `transformers.CLIPModel` and `transformers.CLIPProcessor`, so `CLIP_MODEL_NAME` should point to a CLIP-compatible checkpoint.
+- Caption generation uses `transformers.BlipForConditionalGeneration` or `transformers.Blip2ForConditionalGeneration`, selected by whether the model name contains `blip2`.
+- BLIP-2 models are substantially heavier than BLIP models and are best used on CUDA; this worker attempts 8-bit quantized loading for BLIP-2 on GPU before falling back to fp16.
+
+Recommended CLIP model choices:
+
+- `openai/clip-vit-base-patch32`: fastest default, good general-purpose baseline, about `~600MB` VRAM for fp16 inference.
+- `openai/clip-vit-base-patch16`: same family with smaller patches and slightly higher cost, about `~600MB` VRAM.
+- `openai/clip-vit-large-patch14`: stronger retrieval quality with higher VRAM use, about `~1.7GB` VRAM.
+- `openai/clip-vit-large-patch14-336`: largest verified option here, best if you can afford the extra memory, about `~1.7GB` VRAM.
+- `laion/CLIP-ViT-B-32-laion2B-s34B-b79K`: OpenCLIP base alternative trained on LAION-2B, about `~600MB` VRAM.
+- `laion/CLIP-ViT-L-14-laion2B-s32B-b82K`: OpenCLIP large alternative with higher quality and memory cost, about `~1.7GB` VRAM.
+
+Recommended caption model choices:
+
+- `Salesforce/blip-image-captioning-base`: fastest default, about `~900MB` VRAM for fp16 inference.
+- `Salesforce/blip-image-captioning-large`: better captions with higher memory and latency, about `~1.9GB` VRAM.
+- `Salesforce/blip2-opt-2.7b`: stronger captions, about `~3.5GB` VRAM with 8-bit quantization or `~5.5GB` in fp16.
+- `Salesforce/blip2-opt-6.7b`: highest cost option in this list, about `~7GB` VRAM with 8-bit quantization or `~13GB` in fp16.
+- `Salesforce/blip2-flan-t5-xl`: BLIP-2 option based on Flan-T5 instead of OPT, about `~4GB` VRAM with 8-bit quantization or `~6GB` in fp16.
+
+These numbers are practical estimates for inference only and can vary with batch size, image resolution, CUDA allocator overhead, and whether the worker falls back from 8-bit to fp16 for BLIP-2.
+
+See `Semedia/.env.example` for the same model list inline next to the configurable variables.
 
 ## Service Notes
 

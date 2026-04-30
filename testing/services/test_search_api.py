@@ -216,7 +216,7 @@ def test_image_search_rejects_non_images(search_env):
     assert "Unsupported media type" in response.json()["detail"]
 
 
-def test_keyword_search_uses_media_retrieval_text_for_ranking(search_env, monkeypatch):
+def test_keyword_search_uses_media_caption_for_ranking(search_env, monkeypatch):
     module = search_env["module"]
     client = search_env["client"]
     session_factory = search_env["session_factory"]
@@ -229,8 +229,7 @@ def test_keyword_search_uses_media_retrieval_text_for_ranking(search_env, monkey
             mime_type="image/jpeg",
             file_size=3,
             status=ProcessingStatus.COMPLETED,
-            caption="a cat",
-            retrieval_text="red sofa living room sunlight",
+            caption="red sofa living room sunlight",
             index_key="media:1",
         )
         session.add(image)
@@ -245,11 +244,11 @@ def test_keyword_search_uses_media_retrieval_text_for_ranking(search_env, monkey
     payload = response.json()
     assert payload["count"] == 1
     assert payload["results"][0]["media_id"] == image.id
-    assert payload["results"][0]["caption"] == "a cat"
+    assert payload["results"][0]["caption"] == "red sofa living room sunlight"
 
 
 
-def test_keyword_search_uses_scene_retrieval_text_for_ranking(search_env, monkeypatch):
+def test_keyword_search_uses_scene_caption_for_ranking(search_env, monkeypatch):
     module = search_env["module"]
     client = search_env["client"]
     session_factory = search_env["session_factory"]
@@ -274,8 +273,7 @@ def test_keyword_search_uses_scene_retrieval_text_for_ranking(search_env, monkey
             scene_index=0,
             start_time=1.0,
             end_time=3.0,
-            caption="a dog",
-            retrieval_text="sunny day park trees grass",
+            caption="sunny day park trees grass",
             keyframe_path="keyframes/2/scene_0000.jpg",
             thumbnail_path="thumbnails/2/scene_0000.jpg",
             index_key="scene:2:0",
@@ -291,11 +289,11 @@ def test_keyword_search_uses_scene_retrieval_text_for_ranking(search_env, monkey
     payload = response.json()
     assert payload["count"] == 1
     assert payload["results"][0]["result_type"] == "video_scene"
-    assert payload["results"][0]["caption"] == "a dog"
+    assert payload["results"][0]["caption"] == "sunny day park trees grass"
 
 
 
-def test_keyword_search_falls_back_to_caption_when_retrieval_text_empty(search_env, monkeypatch):
+def test_keyword_search_uses_caption_when_available(search_env, monkeypatch):
     module = search_env["module"]
     client = search_env["client"]
     session_factory = search_env["session_factory"]
@@ -309,7 +307,6 @@ def test_keyword_search_falls_back_to_caption_when_retrieval_text_empty(search_e
             file_size=3,
             status=ProcessingStatus.COMPLETED,
             caption="a cat on a sofa",
-            retrieval_text="",
             index_key="media:1",
         )
         session.add(image)

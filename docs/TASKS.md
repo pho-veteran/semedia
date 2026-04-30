@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** Phase 1 complete / Phase 2 ready
+**Status:** Phase 2 complete / Phase 3 ready
 
 ## Phase 1 — Audit and Baseline
 
@@ -40,43 +40,29 @@
 
 ---
 
-## Phase 2 — Improve Processing and Indexing
+## Phase 2 — Improve Processing Performance
 
-**Goal:** Make indexed media representations more descriptive and stable.
+**Goal:** Improve processing throughput and scene detection quality without adding schema complexity.
 
 ### Tasks
-- [ ] 2.1 Separate retrieval text from display caption
-  - [ ] Add `retrieval_text` field to `MediaItem` model
-  - [ ] Add `retrieval_text` field to `VideoScene` model
-  - [ ] Create database migration
-  - [ ] Update `pipeline.py` to populate `retrieval_text`
-- [ ] 2.2 Improve video-level aggregation
-  - [ ] Update `pipeline.py` to aggregate scene captions into video caption
-  - [ ] Update `pipeline.py` to build video `retrieval_text` from multiple scenes
-- [ ] 2.3 Improve scene representation (multi-frame sampling)
-  - [ ] Update `VideoScene` model for multi-frame storage
-    - [ ] Change `keyframe_path` to `keyframe_paths: list[str]`
-    - [ ] Change `thumbnail_path` to `thumbnail_paths: list[str]`
-    - [ ] Add `captions: list[str]`
-    - [ ] Add `embeddings: list[list[float]]`
-    - [ ] Add `best_frame_index: int | None`
-  - [ ] Create database migration
-  - [ ] Update `video_service.py:extract_scene_keyframe()` to extract 3 frames (10%, 50%, 90%)
-  - [ ] Update `pipeline.py:_process_video()` to batch-process all 3 frames
-  - [ ] Update caption service to handle batch processing
-  - [ ] Update CLIP service to handle batch processing
-- [ ] 2.4 Tune scene segmentation
-  - [ ] Update `video_service.py:detect_scenes()` with adaptive threshold logic
-  - [ ] Add duration-based threshold adjustment (<30s: 20.0, >10min: 35.0)
-- [ ] 2.5 Reprocess media
-  - [ ] Run migrations
-  - [ ] Create reprocessing script
-  - [ ] Reprocess existing media library
+- [x] 2.1 Add adaptive scene detection thresholds
+  - [x] Update `video_service.py:detect_scenes()` with adaptive threshold logic
+  - [x] Add duration-based threshold adjustment (<30s: 20.0, >10min: 35.0)
+- [x] 2.2 Add batched caption generation
+  - [x] Update `caption_service.py:generate_captions()` to batch process images
+  - [x] Add chunking (8 images per batch) to prevent memory spikes
+  - [x] Preserve fallback behavior
+- [x] 2.3 Add batched CLIP embedding inference
+  - [x] Update `clip_service.py:encode_images()` to batch process images
+  - [x] Add chunking (8 images per batch) to prevent memory spikes
+  - [x] Preserve fallback behavior
 
 **Success Criteria:**
-- `retrieval_text` exists for all completed images and scenes
-- Video-level text is derived from more than one scene
-- Scene representations use 3 frames per scene
+- Adaptive scene detection thresholds based on video duration
+- Batched caption generation (8 images per batch)
+- Batched CLIP embedding inference (8 images per batch)
+- Processing throughput improved
+- All tests pass
 
 ---
 
@@ -236,15 +222,15 @@
 
 ## Notes
 
-- **Current Phase:** Phase 1 (Audit and Baseline)
-- **Next Phase:** Phase 2 (Processing and Indexing)
+- **Current Phase:** Phase 2 (Improve Processing Performance)
+- **Next Phase:** Phase 3 (Build Durable Keyword Retrieval)
 - **Blocked Tasks:** None yet
 - **Risks:** See `Semedia/docs/plan.md` section 7
 
 ## Progress Summary
 
 - **Phase 1:** Complete (2026-04-30) — baseline metrics: all 0.0 due to poor caption quality
-- **Phase 2:** Not started
+- **Phase 2:** Complete (2026-04-30) — adaptive thresholds and batched inference implemented
 - **Phase 3:** Not started
 - **Phase 4:** Not started
 - **Phase 5:** Not started

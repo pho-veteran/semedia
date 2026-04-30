@@ -324,19 +324,19 @@ The zero baseline is a valid Phase 1 finding: current caption generation is unre
 
 ## Next Steps
 
-### Phase 2 (Processing and Indexing)
-- Add `retrieval_text` field to models
-- Implement multi-frame scene sampling (3 frames per scene)
-- Aggregate video-level captions from multiple scenes
+### Phase 2 (Processing Performance)
 - Add adaptive scene detection thresholds
+- Batch caption generation to improve throughput
+- Batch CLIP embedding inference to improve throughput
+- Keep the existing single-frame scene model
 
 ### Phase 3 (Durable Keyword Retrieval)
 - Build persistent TF-IDF index
 - Remove per-query TF-IDF fitting
-- Stabilize keyword scores
+- Stabilize keyword scores using caption fields
 
 ### Phase 4-7
-- See `Semedia/docs/TASKS.md` for full roadmap
+- See `Semedia/docs/TASKS.md` for full roadmap and updated sequencing after the single-frame rollback.
 
 ## Success Criteria (Phase 1)
 

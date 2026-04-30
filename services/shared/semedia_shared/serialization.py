@@ -4,26 +4,15 @@ from .models import MediaItem, VideoScene
 from .storage import media_url
 
 
-def _best_frame_value(values: list[str] | None, best_frame_index: int | None, fallback: str | None) -> str:
-    if values is not None and best_frame_index is not None and 0 <= best_frame_index < len(values):
-        selected = values[best_frame_index]
-        if selected:
-            return selected
-    return fallback or ""
-
-
 def scene_payload(settings, scene: VideoScene) -> dict:
-    thumbnail_path = _best_frame_value(scene.thumbnail_paths, scene.best_frame_index, scene.thumbnail_path)
-    caption = _best_frame_value(scene.captions, scene.best_frame_index, scene.caption)
-
     return {
         "id": scene.id,
         "scene_index": scene.scene_index,
         "start_time": scene.start_time,
         "end_time": scene.end_time,
         "keyframe_image": media_url(settings, scene.keyframe_path),
-        "thumbnail_image": media_url(settings, thumbnail_path),
-        "caption": caption,
+        "thumbnail_image": media_url(settings, scene.thumbnail_path),
+        "caption": scene.caption or "",
         "index_key": scene.index_key or "",
     }
 

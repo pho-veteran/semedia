@@ -23,14 +23,15 @@ Non-goals for this cycle:
 
 ### 2.1 Processing and indexing issues
 - Video scenes are represented by a single midpoint keyframe
-- Scene captions are generated once and used as both display text and retrieval text
-- Video-level captioning is weak: the media caption is effectively derived from a single scene path
+- Scene captions are generated once and used as both display text and search text
+- Video-level captioning aggregates from multiple scenes but could be richer
 - Scene detection uses one fixed threshold for all video types
-- No explicit retrieval text field exists for richer matching
+- Caption and embedding generation processes images one at a time instead of batching
 
 ### 2.2 Retrieval issues
 - TF-IDF is rebuilt on every text query
 - Keyword scoring changes with corpus shape at query time
+- Keyword search uses only generated captions, not filenames or metadata
 - Candidate pools are too small before fusion
 - No query preprocessing layer exists
 
@@ -56,8 +57,8 @@ Non-goals for this cycle:
 The improved system will use a **multi-stage retrieval pipeline**:
 
 1. **Processing and indexing**
-   - Extract stronger scene and media representations
-   - Store display text separately from retrieval text
+   - Improve scene detection and processing throughput
+   - Strengthen scene and media captions within the single-frame model
    - Build durable keyword index artifacts
 
 2. **Candidate generation**
@@ -118,55 +119,29 @@ n   - scene captions
 
 ---
 
-## Phase 2 — Improve Processing and Indexing
+## Phase 2 — Improve Processing Performance
 
 ### Goals
-- Make indexed media representations more descriptive and stable
-- Fix the upstream data weaknesses that reduce search quality
+- Improve processing throughput without adding schema complexity
+- Make scene detection adaptive to video characteristics
+- Keep the single-frame scene model
 
 ### Work
-
-#### 2.1 Separate retrieval text from display caption
-Add a new retrieval-oriented text field for both `MediaItem` and `VideoScene`.
-
-Use cases:
-- display caption remains concise
-- retrieval text can include:
-  - generated caption
-  - sanitized filename tokens
-  - parent media context
-  - future OCR/object text
-
-#### 2.2 Improve video-level aggregation
-Replace the current weak video-level representation with a summary built from scene-level content.
-
-MVP approach:
-- aggregate scene captions into one video retrieval text field
-- derive media caption from multiple scene summaries, not only one scene
-
-#### 2.3 Improve scene representation
-Replace one-keyframe-per-scene with multi-sample scene representation.
-
-MVP approach:
-- sample 3 frames per scene: early, middle, late
-- generate captions/embeddings for all sampled frames
-- choose the best-matching frame at retrieval time or aggregate them at indexing time
-
-#### 2.4 Tune scene segmentation
-Replace one fixed threshold with configurable logic based on video duration and scene density.
-
-#### 2.5 Reprocess media
-After indexing changes, reprocess the current library to rebuild captions, scene artifacts, and embeddings.
+1. Add adaptive scene detection thresholds based on video duration
+2. Implement batched caption generation (8 images per batch)
+3. Implement batched CLIP embedding inference (8 images per batch)
 
 ### Deliverables
-- Updated schema for retrieval text and richer scene representation
-- Updated processing pipeline
-- Reprocessed corpus
+- Adaptive scene detection in `video_service.py`
+- Batched caption generation in `caption_service.py`
+- Batched CLIP inference in `clip_service.py`
 
 ### Success criteria
-- Retrieval text exists for all completed images and scenes
-- Video-level text is derived from more than one scene
-- Scene representations are visibly more representative than midpoint-only snapshots
+- Short videos (<30s) use threshold 20.0
+- Long videos (>10min) use threshold 35.0
+- Caption and embedding generation process images in batches
+- Processing throughput improved
+- All tests pass
 
 ---
 
@@ -178,7 +153,7 @@ After indexing changes, reprocess the current library to rebuild captions, scene
 
 ### Work
 1. Introduce a persistent keyword index service
-2. Build TF-IDF index artifacts from retrieval text
+2. Build TF-IDF index artifacts from caption text
 3. Load keyword index at service startup
 4. Rebuild keyword index when media changes
 5. Associate stored documents with media/scene identifiers
@@ -191,7 +166,7 @@ After indexing changes, reprocess the current library to rebuild captions, scene
 ### Deliverables
 - Persistent TF-IDF index
 - Startup loading logic
-- Rebuild flow after ingestion/reprocessing/deletion
+- Rebuild flow after ingestion/deletion/library updates
 
 ### Success criteria
 - No per-query full TF-IDF fit
@@ -244,7 +219,7 @@ Combine normalized signals:
 Apply explicit rules after fusion:
 - exact phrase boost
 - filename token boost where useful
-- stronger confidence for richer retrieval text matches
+- stronger confidence for richer caption matches
 - optional penalties for weak/noisy captions
 
 #### 5.3 Diversity layer
@@ -390,32 +365,32 @@ Add/update:
 
 ## 6. Recommended Execution Order
 
-1. Build evaluation baseline first
-2. Improve indexing and retrieval text
+1. Improve processing throughput and scene detection (Phase 2 complete)
+2. Build evaluation baseline (Phase 1 complete)
 3. Add durable keyword index
 4. Expand candidate generation
 5. Add reranking and diversity
 6. Fix API score semantics and frontend handling
 7. Tune weights with evaluation loop
-8. Reprocess corpus and run final regression pass
+8. Run final regression pass
 
 ## 7. Risks and Mitigations
 
-### Risk: reprocessing the media library is expensive
+### Risk: processing throughput is still too slow on large libraries
 Mitigation:
-- run as a staged background workflow
-- support partial reprocessing
-- measure processing time before full rollout
+- keep batched caption and embedding inference
+- measure processing time after each change
+- tune batch size before larger architectural changes
 
-### Risk: richer scene representation increases storage
+### Risk: adaptive scene thresholds still miss some scene boundaries
 Mitigation:
-- start with 3 frames per scene
-- store thumbnails efficiently
-- monitor storage growth before increasing sampling
+- compare scene splits across short and long videos
+- tune duration-based thresholds using real samples
+- keep threshold logic simple until evaluation data suggests otherwise
 
 ### Risk: keyword index becomes stale
 Mitigation:
-- rebuild after ingestion, deletion, and reprocessing
+- rebuild after ingestion, deletion, and library updates
 - track index version
 - add manual rebuild command
 
@@ -433,7 +408,8 @@ Mitigation:
 ## 8. Definition of Done
 
 This improvement cycle is done when:
-- indexing uses richer retrieval text and better scene representation
+- scene detection uses adaptive thresholds based on video duration
+- caption and embedding generation use batched inference
 - keyword search uses a durable prebuilt index
 - ranking includes fusion, reranking, and diversity
 - backend score semantics are clean and frontend filters match them
@@ -444,4 +420,4 @@ This improvement cycle is done when:
 
 ## 9. Recommended Next Step
 
-Start with **Phase 1: Audit and Baseline** and do not change ranking logic before the baseline dataset and metrics exist. This project is large enough that tuning without evaluation will create noise and make it difficult to know which changes actually help.
+Phase 1 (baseline) and Phase 2 (processing performance) are complete. Start with **Phase 3: Build Durable Keyword Retrieval** to eliminate per-query TF-IDF rebuilding and stabilize keyword search scores before adding ranking complexity.

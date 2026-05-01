@@ -220,7 +220,7 @@ def test_gateway_search_proxies_search_api(gateway_env, monkeypatch):
             {
                 "query_text": "cat",
                 "count": 1,
-                "results": [{"media_id": 9, "result_type": "image", "score": 88.0}],
+                "results": [{"media_id": 9, "result_type": "image", "score": 0.88}],
             }
         )
 
@@ -245,7 +245,7 @@ def test_gateway_image_search_proxies_search_api(gateway_env, monkeypatch):
                 "query_mode": "image",
                 "query_image_name": "query.png",
                 "count": 1,
-                "results": [{"media_id": 12, "result_type": "image", "score": 100.0}],
+                "results": [{"media_id": 12, "result_type": "image", "score": 1.0}],
             }
         )
 

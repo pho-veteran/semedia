@@ -81,7 +81,7 @@ def test_search_text_prefers_strong_keyword_match_over_weak_vector_match(search_
 
 
 
-def test_search_text_demotes_duplicate_captions(search_env, monkeypatch):
+def test_search_text_deduplicates_duplicate_captions(search_env, monkeypatch):
     module = search_env["module"]
     client = search_env["client"]
     session_factory = search_env["session_factory"]
@@ -133,6 +133,481 @@ def test_search_text_demotes_duplicate_captions(search_env, monkeypatch):
     captions = [item["caption"] for item in payload["results"]]
     assert captions[0] == "moonlit lake water by a pier"
     assert captions.count("there is a man that is standing in the dark with a bat") == 1
+    assert all(0.0 <= item["score"] <= 1.0 for item in payload["results"])
+
+
+def test_search_text_limits_scenes_per_video(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        video = MediaItem(
+            file_path="originals/film.mp4",
+            original_filename="film.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:10",
+        )
+        other = MediaItem(
+            file_path="originals/other.jpg",
+            original_filename="other.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="different result",
+            embedding=[0.5, 0.0],
+            index_key="media:11",
+        )
+        session.add_all([video, other])
+        session.commit()
+        session.refresh(video)
+
+        session.add_all(
+            [
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=0,
+                    start_time=0.0,
+                    end_time=1.0,
+                    caption="office desk workspace laptop meeting room",
+                    embedding=[0.99, 0.0],
+                    keyframe_path="keyframes/10/scene_0000.jpg",
+                    thumbnail_path="thumbnails/10/scene_0000.jpg",
+                    index_key="scene:10:0",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=1,
+                    start_time=1.0,
+                    end_time=2.0,
+                    caption="office desk workspace laptop meeting room two",
+                    embedding=[0.98, 0.0],
+                    keyframe_path="keyframes/10/scene_0001.jpg",
+                    thumbnail_path="thumbnails/10/scene_0001.jpg",
+                    index_key="scene:10:1",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=2,
+                    start_time=2.0,
+                    end_time=3.0,
+                    caption="office desk workspace laptop meeting room three",
+                    embedding=[0.97, 0.0],
+                    keyframe_path="keyframes/10/scene_0002.jpg",
+                    thumbnail_path="thumbnails/10/scene_0002.jpg",
+                    index_key="scene:10:2",
+                ),
+            ]
+        )
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 10})
+
+    assert response.status_code == 200
+    payload = response.json()
+    scene_results = [item for item in payload["results"] if item["media_id"] == video.id]
+    assert len(scene_results) == 2
+    assert scene_results[0]["scene_id"] != scene_results[1]["scene_id"]
+
+
+def test_search_image_limits_scenes_per_video(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        video = MediaItem(
+            file_path="originals/city.mp4",
+            original_filename="city.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:20",
+        )
+        session.add(video)
+        session.commit()
+        session.refresh(video)
+
+        session.add_all(
+            [
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=0,
+                    start_time=0.0,
+                    end_time=1.0,
+                    caption="blue city scene one",
+                    embedding=[0.99, 0.0],
+                    keyframe_path="keyframes/20/scene_0000.jpg",
+                    thumbnail_path="thumbnails/20/scene_0000.jpg",
+                    index_key="scene:20:0",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=1,
+                    start_time=1.0,
+                    end_time=2.0,
+                    caption="blue city scene two",
+                    embedding=[0.98, 0.0],
+                    keyframe_path="keyframes/20/scene_0001.jpg",
+                    thumbnail_path="thumbnails/20/scene_0001.jpg",
+                    index_key="scene:20:1",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=2,
+                    start_time=2.0,
+                    end_time=3.0,
+                    caption="blue city scene three",
+                    embedding=[0.97, 0.0],
+                    keyframe_path="keyframes/20/scene_0002.jpg",
+                    thumbnail_path="thumbnails/20/scene_0002.jpg",
+                    index_key="scene:20:2",
+                ),
+            ]
+        )
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_image", lambda file: [1.0, 0.0])
+
+    response = client.post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "10"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    scene_results = [item for item in payload["results"] if item["media_id"] == video.id]
+    assert len(scene_results) == 2
+    assert all(0.0 <= item["score"] <= 1.0 for item in payload["results"])
+
+
+def test_search_returns_normalized_scores(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/cat.jpg",
+            original_filename="cat.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="a cat on a sofa",
+            embedding=[1.0, 0.0],
+            index_key="media:30",
+        )
+        session.add(image)
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+    monkeypatch.setattr(module, "_embed_image", lambda file: [1.0, 0.0])
+
+    text_response = client.post("/api/v1/search/", json={"query_text": "cat", "top_k": 5})
+    image_response = client.post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "5"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert text_response.status_code == 200
+    assert image_response.status_code == 200
+    assert all(0.0 <= item["score"] <= 1.0 for item in text_response.json()["results"])
+    assert all(0.0 <= item["score"] <= 1.0 for item in image_response.json()["results"])
+    assert all(item["score"] <= 1.0 for item in text_response.json()["results"])
+    assert all(item["score"] <= 1.0 for item in image_response.json()["results"])
+
+
+def test_search_text_preserves_top_scene_for_video(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        video = MediaItem(
+            file_path="originals/office.mp4",
+            original_filename="office.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:40",
+        )
+        session.add(video)
+        session.commit()
+        session.refresh(video)
+
+        top_scene = VideoScene(
+            media_id=video.id,
+            scene_index=0,
+            start_time=0.0,
+            end_time=1.0,
+            caption="office desk workspace laptop meeting room",
+            embedding=[0.99, 0.0],
+            keyframe_path="keyframes/40/scene_0000.jpg",
+            thumbnail_path="thumbnails/40/scene_0000.jpg",
+            index_key="scene:40:0",
+        )
+        lower_scene = VideoScene(
+            media_id=video.id,
+            scene_index=1,
+            start_time=1.0,
+            end_time=2.0,
+            caption="office room with chair",
+            embedding=[0.8, 0.0],
+            keyframe_path="keyframes/40/scene_0001.jpg",
+            thumbnail_path="thumbnails/40/scene_0001.jpg",
+            index_key="scene:40:1",
+        )
+        session.add_all([top_scene, lower_scene])
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 10})
+
+    assert response.status_code == 200
+    payload = response.json()
+    video_results = [item for item in payload["results"] if item["media_id"] == video.id]
+    assert video_results[0]["scene_id"] == top_scene.id
+    assert video_results[0]["score"] >= video_results[1]["score"]
+
+
+def test_search_text_exact_match_result_has_higher_score(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        exact_match = MediaItem(
+            file_path="originals/exact.jpg",
+            original_filename="exact.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="office desk workspace laptop",
+            embedding=[0.6, 0.0],
+            index_key="media:50",
+        )
+        loose_match = MediaItem(
+            file_path="originals/loose.jpg",
+            original_filename="loose.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="workspace with laptop and chair",
+            embedding=[0.6, 0.0],
+            index_key="media:51",
+        )
+        session.add_all([exact_match, loose_match])
+        session.commit()
+        session.refresh(exact_match)
+        session.refresh(loose_match)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 5})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["results"][0]["media_id"] == exact_match.id
+    assert payload["results"][0]["score"] > payload["results"][1]["score"]
+
+
+
+def test_search_text_ignores_filename_only_match(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        filename_match = MediaItem(
+            file_path="originals/irrelevant.jpg",
+            original_filename="office-keyword.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="workspace scene alpha",
+            embedding=[0.4, 0.0],
+            index_key="media:80",
+        )
+        neutral = MediaItem(
+            file_path="originals/neutral.jpg",
+            original_filename="neutral.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="workspace scene beta",
+            embedding=[0.4, 0.0],
+            index_key="media:81",
+        )
+        session.add_all([filename_match, neutral])
+        session.commit()
+        session.refresh(filename_match)
+        session.refresh(neutral)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office", "top_k": 5})
+
+    assert response.status_code == 200
+    payload = response.json()
+    scores_by_id = {item["media_id"]: item["score"] for item in payload["results"]}
+    assert scores_by_id[filename_match.id] == scores_by_id[neutral.id]
+
+
+
+def test_search_results_are_sorted_by_descending_score(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        session.add_all(
+            [
+                MediaItem(
+                    file_path="originals/high.jpg",
+                    original_filename="high.jpg",
+                    media_type="image",
+                    mime_type="image/jpeg",
+                    file_size=3,
+                    status=ProcessingStatus.COMPLETED,
+                    caption="cat on sofa",
+                    embedding=[1.0, 0.0],
+                    index_key="media:60",
+                ),
+                MediaItem(
+                    file_path="originals/mid.jpg",
+                    original_filename="mid.jpg",
+                    media_type="image",
+                    mime_type="image/jpeg",
+                    file_size=3,
+                    status=ProcessingStatus.COMPLETED,
+                    caption="cat nearby",
+                    embedding=[0.7, 0.0],
+                    index_key="media:61",
+                ),
+                MediaItem(
+                    file_path="originals/low.jpg",
+                    original_filename="low.jpg",
+                    media_type="image",
+                    mime_type="image/jpeg",
+                    file_size=3,
+                    status=ProcessingStatus.COMPLETED,
+                    caption="dog outside",
+                    embedding=[0.3, 0.0],
+                    index_key="media:62",
+                ),
+            ]
+        )
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "cat", "top_k": 5})
+
+    assert response.status_code == 200
+    scores = [item["score"] for item in response.json()["results"]]
+    assert scores == sorted(scores, reverse=True)
+
+
+
+def test_search_respects_top_k_after_diversity(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        video = MediaItem(
+            file_path="originals/series.mp4",
+            original_filename="series.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:70",
+        )
+        other = MediaItem(
+            file_path="originals/other.jpg",
+            original_filename="other.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="office room",
+            embedding=[0.8, 0.0],
+            index_key="media:71",
+        )
+        session.add_all([video, other])
+        session.commit()
+        session.refresh(video)
+
+        session.add_all(
+            [
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=0,
+                    start_time=0.0,
+                    end_time=1.0,
+                    caption="office desk one",
+                    embedding=[0.99, 0.0],
+                    keyframe_path="keyframes/70/scene_0000.jpg",
+                    thumbnail_path="thumbnails/70/scene_0000.jpg",
+                    index_key="scene:70:0",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=1,
+                    start_time=1.0,
+                    end_time=2.0,
+                    caption="office desk two",
+                    embedding=[0.98, 0.0],
+                    keyframe_path="keyframes/70/scene_0001.jpg",
+                    thumbnail_path="thumbnails/70/scene_0001.jpg",
+                    index_key="scene:70:1",
+                ),
+                VideoScene(
+                    media_id=video.id,
+                    scene_index=2,
+                    start_time=2.0,
+                    end_time=3.0,
+                    caption="office desk three",
+                    embedding=[0.97, 0.0],
+                    keyframe_path="keyframes/70/scene_0002.jpg",
+                    thumbnail_path="thumbnails/70/scene_0002.jpg",
+                    index_key="scene:70:2",
+                ),
+            ]
+        )
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 2})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["results"]) == 2
+    assert all(0.0 <= item["score"] <= 1.0 for item in payload["results"])
+
+
 
 
 def test_search_requires_query_text(search_env):

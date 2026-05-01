@@ -35,7 +35,40 @@ def main() -> int:
     parser.add_argument("--base-url", default="http://127.0.0.1:8000", help="Base URL of gateway API")
     parser.add_argument("--queries", default=None, help="Path to queries.json (default: testing/evaluation/queries.json)")
     parser.add_argument("--top-k", type=int, default=10, help="Number of results to retrieve per query")
+    parser.add_argument("--per-query", action="store_true", help="Print per-query metrics and retrieved IDs")
+    parser.add_argument("--by-type", action="store_true", help="Print aggregate metrics grouped by query type")
     args = parser.parse_args()
+
+    include_details = args.per_query or args.by_type
+
+    def print_metric_block(title: str, metrics: dict) -> None:
+        print(f"\n{title}")
+        print("=" * 80)
+        print(f"Queries evaluated: {metrics['num_queries']}")
+        print(f"Precision@{args.top_k}: {metrics[f'mean_precision@{args.top_k}']:.4f}")
+        print(f"Recall@{args.top_k}: {metrics[f'mean_recall@{args.top_k}']:.4f}")
+        print(f"MRR: {metrics['mean_mrr']:.4f}")
+        print(f"NDCG@{args.top_k}: {metrics[f'mean_ndcg@{args.top_k}']:.4f}")
+        print("=" * 80)
+
+    def print_per_query(results: list[dict]) -> None:
+        print("\nPer-query Results:")
+        print("=" * 80)
+        for result in results:
+            print(f"[{result['query_id']}] {result['query_text']} ({result['query_type']})")
+            print(
+                f"  P@{args.top_k}={result['precision@k']:.4f} "
+                f"R@{args.top_k}={result['recall@k']:.4f} "
+                f"MRR={result['mrr']:.4f} "
+                f"NDCG@{args.top_k}={result['ndcg@k']:.4f}"
+            )
+            print(f"  Retrieved: {', '.join(result['retrieved_ids']) if result['retrieved_ids'] else 'none'}")
+
+    def print_by_type(by_type: dict[str, dict]) -> None:
+        print("\nMetrics by Query Type:")
+        print("=" * 80)
+        for query_type, metrics in sorted(by_type.items()):
+            print_metric_block(f"{query_type.title()} queries", metrics)
 
     if args.queries:
         queries_file = Path(args.queries)
@@ -48,7 +81,11 @@ def main() -> int:
 
     print(f"Loading queries from {queries_file}")
     queries = load_queries(queries_file)
-    judged_queries = [q for q in queries if q.get("relevant_media_ids") or q.get("relevant_scene_ids")]
+    judged_queries = [
+        q
+        for q in queries
+        if q.get("judged") or q.get("relevant_media_ids") or q.get("relevant_scene_ids")
+    ]
 
     print(f"Total queries: {len(queries)}")
     print(f"Judged queries: {len(judged_queries)}")
@@ -64,19 +101,24 @@ def main() -> int:
         return search_text_via_api(args.base_url, query_text, top_k)
 
     try:
-        results = run_evaluation(queries_file, search_fn, k=args.top_k)
+        results = run_evaluation(
+            queries_file,
+            search_fn,
+            k=args.top_k,
+            include_per_query=include_details,
+            include_by_type=args.by_type,
+        )
     except Exception as exc:
         print(f"Error during evaluation: {exc}", file=sys.stderr)
         return 1
 
-    print("\nEvaluation Results:")
-    print("=" * 80)
-    print(f"Queries evaluated: {results['num_queries']}")
-    print(f"Precision@{args.top_k}: {results[f'mean_precision@{args.top_k}']:.4f}")
-    print(f"Recall@{args.top_k}: {results[f'mean_recall@{args.top_k}']:.4f}")
-    print(f"MRR: {results['mean_mrr']:.4f}")
-    print(f"NDCG@{args.top_k}: {results[f'mean_ndcg@{args.top_k}']:.4f}")
-    print("=" * 80)
+    print_metric_block("Evaluation Results:", results)
+
+    if args.per_query:
+        print_per_query(results.get("per_query", []))
+
+    if args.by_type:
+        print_by_type(results.get("by_type", {}))
 
     return 0
 

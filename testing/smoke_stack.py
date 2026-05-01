@@ -119,13 +119,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run an end-to-end smoke test against the Semedia stack.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--frontend-url", default="http://127.0.0.1:4173")
-    parser.add_argument("--image-path", default="Semedia/testing/smoke-assets/red-pixel.png")
-    parser.add_argument("--video-path", default="Semedia/testing/smoke-assets/sample-video.mp4")
+    parser.add_argument("--image-path", default=None)
+    parser.add_argument("--video-path", default=None)
     parser.add_argument("--timeout-seconds", type=int, default=240)
     args = parser.parse_args()
 
-    image_path = Path(args.image_path).resolve()
-    video_path = Path(args.video_path).resolve()
+    script_dir = Path(__file__).parent
+    image_path = Path(args.image_path).resolve() if args.image_path else (script_dir / "smoke-assets" / "red-pixel.png").resolve()
+    video_path = Path(args.video_path).resolve() if args.video_path else (script_dir / "smoke-assets" / "sample-video.mp4").resolve()
     _assert(image_path.exists(), f"Image asset not found: {image_path}")
     _assert(video_path.exists(), f"Video asset not found: {video_path}")
 

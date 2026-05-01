@@ -55,7 +55,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [typeFilter, setTypeFilter] = useState('all')
-  const [scoreFilter, setScoreFilter] = useState('0.5')
+  const [scoreFilter, setScoreFilter] = useState('0.0')
   const [sortBy, setSortBy] = useState('relevance')
   const debounceTimerRef = useRef<number | null>(null)
 
@@ -274,11 +274,11 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       remove: () => setTypeFilter('all')
     })
   }
-  if (scoreFilter !== '0.5') {
+  if (scoreFilter !== '0.0') {
     activeFilters.push({
       key: 'score',
       label: `Score: ≥${scoreFilter}`,
-      remove: () => setScoreFilter('0.5')
+      remove: () => setScoreFilter('0.0')
     })
   }
   if (sortBy !== 'relevance') {
@@ -444,6 +444,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
             </Select>
             
             <Select value={scoreFilter} onValueChange={setScoreFilter}>
+              <SimpleSelectItem value="0.0">≥ 0.0</SimpleSelectItem>
               <SimpleSelectItem value="0.5">≥ 0.5</SimpleSelectItem>
               <SimpleSelectItem value="0.7">≥ 0.7</SimpleSelectItem>
               <SimpleSelectItem value="0.9">≥ 0.9</SimpleSelectItem>

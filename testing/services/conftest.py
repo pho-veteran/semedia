@@ -45,6 +45,7 @@ def make_test_settings(service_name: str, tmp_path: Path) -> Settings:
         search_vector_weight=0.7,
         search_keyword_weight=0.3,
         search_max_results=20,
+        search_max_per_media=2,
         ml_device="cpu",
         ml_strict_cuda=False,
         ml_preload_models=False,

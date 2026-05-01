@@ -19,12 +19,13 @@ class Settings:
     search_vector_weight: float
     search_keyword_weight: float
     search_max_results: int
-    ml_device: str
     ml_strict_cuda: bool
     ml_preload_models: bool
     media_worker_url: str
     search_api_url: str
     allow_all_origins: bool
+    search_max_per_media: int = 2
+    ml_device: str = "auto"
     caption_max_length: int = 50
     caption_min_length: int = 10
     caption_num_beams: int = 5
@@ -54,12 +55,13 @@ def get_settings(service_name: str) -> Settings:
         media_base_url=os.getenv("MEDIA_BASE_URL", "/media").rstrip("/") or "/media",
         log_level=os.getenv("LOG_LEVEL", "INFO"),
         log_format=os.getenv("LOG_FORMAT", "text").strip().lower() or "text",
-        clip_model_name=os.getenv("CLIP_MODEL_NAME", "openai/clip-vit-base-patch32"),
-        caption_model_name=os.getenv("CAPTION_MODEL_NAME", "Salesforce/blip-image-captioning-base"),
+        clip_model_name=os.getenv("CLIP_MODEL_NAME", "openai/clip-vit-base-patch16"),
+        caption_model_name=os.getenv("CAPTION_MODEL_NAME", "Salesforce/blip-image-captioning-large"),
         scene_detection_threshold=float(os.getenv("SCENE_DETECTION_THRESHOLD", "27.0")),
         search_vector_weight=float(os.getenv("SEARCH_VECTOR_WEIGHT", "0.7")),
         search_keyword_weight=float(os.getenv("SEARCH_KEYWORD_WEIGHT", "0.3")),
         search_max_results=int(os.getenv("SEARCH_MAX_RESULTS", "20")),
+        search_max_per_media=int(os.getenv("SEARCH_MAX_PER_MEDIA", "2")),
         ml_device=os.getenv("ML_DEVICE", "auto").strip().lower() or "auto",
         ml_strict_cuda=_truthy("ML_STRICT_CUDA"),
         ml_preload_models=_truthy("ML_PRELOAD_MODELS", "1"),

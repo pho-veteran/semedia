@@ -44,14 +44,20 @@ def run_evaluation(
     queries_file: Path,
     search_fn: Callable[[str, int], list[dict]],
     k: int = 10,
-) -> dict[str, float]:
+    *,
+    include_per_query: bool = False,
+    include_by_type: bool = False,
+) -> dict:
     queries = load_queries(queries_file)
     judged_queries = [
         query
         for query in queries
-        if query.get("relevant_media_ids") or query.get("relevant_scene_ids")
+        if query.get("judged")
+        or query.get("relevant_media_ids")
+        or query.get("relevant_scene_ids")
     ]
     all_metrics: list[dict[str, float]] = []
+    per_query_results: list[dict] = []
 
     for query in judged_queries:
         relevant_media_ids = set(query.get("relevant_media_ids", []))
@@ -68,21 +74,58 @@ def run_evaluation(
             else f"media:{result['media_id']}"
             for result in results
         ]
-        all_metrics.append(compute_metrics(relevant_ids, retrieved_ids, k=k))
+        metrics = compute_metrics(relevant_ids, retrieved_ids, k=k)
+        all_metrics.append(metrics)
+
+        if include_per_query:
+            per_query_results.append({
+                "query_id": query["query_id"],
+                "query_text": query["query_text"],
+                "query_type": query.get("query_type", "unknown"),
+                "precision@k": metrics[f"precision@{k}"],
+                "recall@k": metrics[f"recall@{k}"],
+                "mrr": metrics["mrr"],
+                "ndcg@k": metrics[f"ndcg@{k}"],
+                "retrieved_ids": retrieved_ids[:k],
+            })
 
     if not all_metrics:
-        return {
+        result = {
             f"mean_precision@{k}": 0.0,
             f"mean_recall@{k}": 0.0,
             "mean_mrr": 0.0,
             f"mean_ndcg@{k}": 0.0,
             "num_queries": 0,
         }
+        if include_per_query:
+            result["per_query"] = []
+        if include_by_type:
+            result["by_type"] = {}
+        return result
 
-    return {
+    result = {
         f"mean_precision@{k}": sum(metric[f"precision@{k}"] for metric in all_metrics) / len(all_metrics),
         f"mean_recall@{k}": sum(metric[f"recall@{k}"] for metric in all_metrics) / len(all_metrics),
         "mean_mrr": sum(metric["mrr"] for metric in all_metrics) / len(all_metrics),
         f"mean_ndcg@{k}": sum(metric[f"ndcg@{k}"] for metric in all_metrics) / len(all_metrics),
         "num_queries": len(all_metrics),
     }
+
+    if include_per_query:
+        result["per_query"] = per_query_results
+
+    if include_by_type:
+        by_type = {}
+        for query_type in {"object", "action", "scene"}:
+            type_results = [r for r in per_query_results if r["query_type"] == query_type]
+            if type_results:
+                by_type[query_type] = {
+                    f"mean_precision@{k}": sum(r["precision@k"] for r in type_results) / len(type_results),
+                    f"mean_recall@{k}": sum(r["recall@k"] for r in type_results) / len(type_results),
+                    "mean_mrr": sum(r["mrr"] for r in type_results) / len(type_results),
+                    f"mean_ndcg@{k}": sum(r["ndcg@k"] for r in type_results) / len(type_results),
+                    "num_queries": len(type_results),
+                }
+        result["by_type"] = by_type
+
+    return result

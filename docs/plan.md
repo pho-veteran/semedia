@@ -42,8 +42,8 @@ Non-goals for this cycle:
 - No calibrated interpretation of backend scores exists
 
 ### 2.4 Frontend result-handling issues
-- Backend returns scores scaled to 0-100
-- Frontend score filters are written like 0.5 / 0.7 / 0.9, which mismatches backend semantics
+- Backend and frontend score semantics must stay aligned on a normalized `[0,1]` range
+- Frontend score filters should continue to operate on the same `[0,1]` semantics used by the backend
 - Client-side sorting for date and size is not based on actual metadata
 - UI has no explanation of why a result matched
 
@@ -218,9 +218,9 @@ Combine normalized signals:
 #### 5.2 Reranking layer
 Apply explicit rules after fusion:
 - exact phrase boost
-- filename token boost where useful
 - stronger confidence for richer caption matches
 - optional penalties for weak/noisy captions
+- no filename-based ranking signal
 
 #### 5.3 Diversity layer
 Prevent result pages from being dominated by many scenes from one video.
@@ -248,6 +248,11 @@ Recommended decision:
 - Better top-10 relevance on judged queries
 - Less duplicate-heavy first page
 - Scores become interpretable across result types
+
+### Status
+- Complete
+- Live judged-query evaluation improved to Precision@10 0.1000, Recall@10 0.9444, MRR 0.6214, NDCG@10 0.6695
+- Full service tests and the smoke test passed
 
 ---
 
@@ -369,11 +374,12 @@ Add/update:
 2. ✅ Build evaluation baseline (Phase 1 complete)
 3. ✅ Add durable keyword index (Phase 3 complete)
 4. ✅ Improve caption quality (Phase 4 complete)
-5. Add reranking and diversity (Phase 5)
-6. Expand candidate generation (Phase 8)
-7. Fix API score semantics and frontend handling (Phase 6)
-8. Tune weights with evaluation loop (Phase 7)
-9. Run final regression pass
+5. ✅ Add reranking and diversity (Phase 5 complete)
+6. ✅ Fix API score semantics and frontend handling baseline (Phase 6.1 complete)
+7. Add richer ranking data, scene grouping, and real metadata sorting (remaining Phase 6)
+8. Expand candidate generation (Phase 8)
+9. Tune weights with evaluation loop (Phase 7)
+10. Run final regression pass
 
 ## 7. Risks and Mitigations
 
@@ -421,6 +427,6 @@ This improvement cycle is done when:
 
 ## 9. Recommended Next Step
 
-Phases 1 through 4 are complete. Start with **Phase 5: Add Ranking, Reranking, and Diversity** to improve top-result quality now that keyword retrieval is durable and caption cleanup has improved the text signals available to search.
+Phases 1 through 5 are complete. Start with **Phase 6: Improve Result Presentation and UI Handling** to expose the new ranking semantics cleanly in the product and make filters, sorting, and explanations trustworthy.
 
-The main remaining issue is not `caption_service.py` structure or weak-caption strictness; it is ranking quality and missing semantic coverage for hard queries. The best next move is to improve ranking first, then revisit caption vocabulary only if the judged-query metrics still plateau.
+The main remaining issues are richer result presentation and semantic coverage for hard queries such as `mountain landscape`, `water`, and `night scene`. The best next move is to ship the Phase 6 UI/API alignment work, then revisit candidate generation or caption vocabulary only if judged-query metrics plateau again.

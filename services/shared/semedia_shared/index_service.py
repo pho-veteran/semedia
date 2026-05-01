@@ -56,6 +56,7 @@ def build_keyword_index(settings, session: Session) -> KeywordIndexData | None:
                 {
                     "key": ("image", media.id),
                     "media_id": media.id,
+                    "scene_id": None,
                     "media_type": media.media_type,
                     "result_type": "image",
                     "original_filename": media.original_filename,
@@ -74,6 +75,7 @@ def build_keyword_index(settings, session: Session) -> KeywordIndexData | None:
                     {
                         "key": ("scene", scene.id),
                         "media_id": media.id,
+                        "scene_id": scene.id,
                         "media_type": media.media_type,
                         "result_type": "video_scene",
                         "original_filename": media.original_filename,

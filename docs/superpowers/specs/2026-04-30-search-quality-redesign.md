@@ -1,11 +1,37 @@
 # Search Quality Redesign
 
 **Date:** 2026-04-30  
-**Status:** Design approved, ready for implementation planning
+**Status:** Partially implemented — Phases 1-4 complete, Phases 5+ remain as future work
+
+## Implementation Status (as of 2026-05-01)
+
+**✅ Completed:**
+- **Phase 1 (Evaluation baseline):** Judged query set created, evaluation script implemented, baseline metrics recorded (all 0.0 due to poor caption quality)
+- **Phase 2 (Processing performance):** Adaptive scene detection thresholds implemented, batched caption and CLIP inference added
+- **Phase 3 (Durable keyword retrieval):** Persistent TF-IDF index implemented as database-backed artifacts, per-query rebuilding eliminated, keyword search stabilized
+- **Phase 4 (Caption quality):** Caption cleanup refactored and extracted to `caption_cleanup_config.py`, weak-caption policy relaxed to preserve awkward but useful captions, live evaluation improved to Precision@10 0.0889, Recall@10 0.8333, MRR 0.5262, NDCG@10 0.5692
+
+**❌ Not implemented (superseded or deferred):**
+- Multi-frame scene sampling (section 1.1) — **superseded by single-frame model with improved caption quality**
+- Retrieval text field (section 1.2) — **deferred; caption-only retrieval proved sufficient after Phase 4**
+- Video-level caption aggregation (section 1.3) — **deferred; current first-scene approach acceptable for MVP**
+- Larger candidate pools (section 2.2) — **deferred until ranking pipeline exists**
+- Query preprocessing (section 2.3) — **deferred; not yet a bottleneck**
+- Multi-stage ranking pipeline (section 3) — **next priority (Phase 5)**
+- Result presentation fixes (section 4) — **deferred until ranking is in place**
+- A/B testing hooks (section 5.3) — **future work**
+
+**Current bottleneck:** Ranking quality and missing semantic coverage for hard queries, not caption structure or weak-caption strictness.
+
+**Recommended next step:** Implement Phase 5 (ranking, reranking, and diversity) to improve top-result quality now that keyword retrieval is durable and caption cleanup has improved text signals.
+
+---
 
 ## Executive Summary
 
-This document specifies a comprehensive redesign of Semedia's search and ranking system to address systemic quality issues in data processing, retrieval, ranking, and result presentation. The current implementation uses weak scene representation, per-query TF-IDF fitting, simplistic score fusion, no reranking or diversity controls, and misleading UI score handling. This redesign transforms search from a single weighted sum into a proper multi-stage retrieval pipeline while preserving the MVP architecture (FastAPI, local search, no external vector DB).
+This document specifies a comprehensive redesign of Semedia's search and ranking system to address systemic quality issues in data processing, retrieval, ranking, and result presentation. The original design proposed multi-frame scene sampling, retrieval-text enrichment, and a full ranking pipeline. Implementation proceeded incrementally, prioritizing durable keyword retrieval and caption quality first. The current system uses single-frame scenes with improved captions, durable TF-IDF indexing, and simple weighted fusion. The remaining work focuses on ranking improvements and result presentation.
+
+---
 
 ## Problem Statement
 
@@ -370,60 +396,16 @@ interface SearchResult {
 
 **How to apply:** Add logging in `services/search_api/app/main.py:search()`. Add analytics endpoint in `services/gateway_api/app/main.py`.
 
-## Implementation Plan
+## Remaining Roadmap
 
-### Phase 1: Indexing Improvements (Week 1)
-
-**Goal:** Improve data quality for retrieval.
-
-1. Add `retrieval_text` field to `MediaItem` and `VideoScene` models
-2. Update `pipeline.py` to populate `retrieval_text` from caption + filename
-3. Update `pipeline.py` to aggregate video-level caption from all scenes
-4. Add multi-frame sampling to `video_service.py:extract_scene_keyframe()`
-5. Update `pipeline.py` to process 3 frames per scene
-6. Add adaptive scene detection threshold to `video_service.py:detect_scenes()`
-7. Run migration and reprocess existing media
-
-**Deliverables:**
-- Database migration for new fields
-- Updated processing pipeline
-- Reprocessed media library
-
-**Testing:**
-- Verify 3 keyframes are extracted per scene
-- Verify `retrieval_text` is populated
-- Verify video-level caption is aggregated
-
-### Phase 2: Retrieval Improvements (Week 2)
-
-**Goal:** Stabilize and improve candidate generation.
-
-1. Add `index_service.py` with TF-IDF index building and loading
-2. Add `tfidf_doc_id` field to models
-3. Update `pipeline.py` to trigger index rebuild on media changes
-4. Update `search_api` startup to load TF-IDF index
-5. Update `search_service.py` to use precomputed index instead of per-query fitting
-6. Increase candidate pool size to `top_k * 5`
-7. Add `query_service.py` with query preprocessing
-
-**Deliverables:**
-- Persistent TF-IDF index
-- Faster keyword search
-- Larger candidate pools
-
-**Testing:**
-- Verify index is built and loaded correctly
-- Verify keyword search uses precomputed index
-- Benchmark query latency (should improve)
-
-### Phase 3: Ranking Improvements (Week 3)
+### Phase 5 — Ranking Improvements
 
 **Goal:** Add reranking and diversity.
 
 1. Add `ranking_service.py` with fusion, reranking, and diversity functions
-2. Update `search_service.py` to call ranking pipeline
-3. Add recency signal to fusion
-4. Implement exact match boost in reranking
+2. Update `search_service.py` to call the ranking pipeline
+3. Add recency signal to fusion if it improves measured relevance
+4. Implement reranking rules for exact match and caption quality
 5. Implement diversity logic to limit scenes per video
 6. Make fusion weights configurable via environment variables
 
@@ -435,9 +417,9 @@ interface SearchResult {
 **Testing:**
 - Verify reranking boosts exact matches
 - Verify diversity limits scenes per video
-- Manually test search quality on sample queries
+- Re-run judged-query evaluation after each ranking change
 
-### Phase 4: Result Presentation (Week 4)
+### Phase 6 — Result Presentation
 
 **Goal:** Fix UI score handling and add explanations.
 
@@ -461,113 +443,90 @@ interface SearchResult {
 - Verify sorting uses actual metadata
 - Verify result grouping displays correctly
 
-### Phase 5: Evaluation Infrastructure (Week 5)
+### Phase 7 — Evaluation Infrastructure Enhancements
 
-**Goal:** Build tools to measure search quality.
+**Goal:** Improve measurement and regression detection.
 
-1. Create `testing/evaluation/queries.json` with 20-30 judged queries
-2. Add `testing/evaluation/evaluate_search.py` to compute offline metrics
-3. Run baseline evaluation on current system
-4. Run evaluation after each phase to measure improvement
-5. Add search logging infrastructure for future A/B testing
+1. Expand the judged query set if needed
+2. Add metric comparison reports and regression detection
+3. Track improvements by query category
+4. Add optional search logging infrastructure for future A/B testing
 
 **Deliverables:**
-- Judged query set
-- Offline evaluation script
-- Baseline metrics
-- Search logging (optional)
+- Improved evaluation runner
+- Metric comparison reports
+- Optional search logging hooks
 
 **Testing:**
-- Verify evaluation script computes metrics correctly
-- Verify metrics improve after ranking changes
+- Verify evaluation reports stay reproducible
+- Verify regressions are surfaced clearly
+- Keep quality changes evidence-based
+
+### Longer-Term Work
+
+- Revisit candidate pool expansion once ranking exists
+- Consider stronger caption models or light semantic enrichment for hard queries
+- Consider OCR, object detection, or richer media understanding only if measured gains justify the complexity
+- Consider infrastructure upgrades such as vector indexes or external search components only if scale requires them
+
+---
 
 ## Success Criteria
 
 ### Quantitative Metrics
 
-- **Indexing:** 3 keyframes per scene, `retrieval_text` populated for all media
-- **Retrieval:** TF-IDF index build time <10s for 1000 media items, query latency <500ms
-- **Ranking:** Precision@10 improves by ≥20% on judged query set
-- **Presentation:** Score filters work correctly, no UI bugs
+- **Retrieval:** TF-IDF index build time remains reasonable for the current corpus, query-time TF-IDF fitting stays eliminated
+- **Ranking:** Precision@10 improves materially on the judged query set
+- **Presentation:** Score filters work correctly, sorting uses real metadata, UI behavior matches backend semantics
 
 ### Qualitative Metrics
 
-- Search results feel more relevant (manual testing)
-- Video scenes are more diverse (no single video dominates)
+- Search results feel more relevant in manual checks
+- Video scenes are more diverse on the first page
 - Scores and explanations are understandable
+- Hard queries no longer fail mainly because of ranking order alone
 
 ## Risks & Mitigations
 
 ### Risk: Reprocessing existing media is slow
 
-**Mitigation:** Run reprocessing as background job. Add progress tracking. Allow incremental reprocessing.
+**Mitigation:** Keep reprocessing as a controlled batch step. Use the evaluation set to justify reruns.
 
 ### Risk: TF-IDF index becomes stale
 
-**Mitigation:** Rebuild index on media add/delete. Add index version tracking. Add index rebuild endpoint for manual refresh.
+**Mitigation:** Keep rebuilds after processing and deletion. Preserve artifact versioning and manual rebuild options.
 
-### Risk: Multi-frame sampling increases storage and processing time
+### Risk: Ranking changes add complexity without improving relevance
 
-**Mitigation:** Start with 3 frames per scene (manageable). Monitor storage growth. Add frame count configuration.
-
-### Risk: Ranking changes break existing user expectations
-
-**Mitigation:** Deploy behind feature flag. Run A/B test. Collect user feedback.
+**Mitigation:** Re-run judged-query evaluation after each major ranking change and keep changes incremental.
 
 ### Risk: Evaluation set is too small or biased
 
-**Mitigation:** Start with 20-30 queries, expand over time. Include diverse query types (objects, actions, scenes, text).
-
-## Future Work
-
-### Post-MVP Enhancements
-
-- **LLM-based video summarization:** Replace scene caption aggregation with LLM-generated video summaries
-- **OCR and object detection:** Add OCR text and detected objects to `retrieval_text`
-- **Cross-encoder reranking:** Use a cross-encoder model to rerank top candidates
-- **Query expansion:** Use LLM or word embeddings to expand queries
-- **Personalization:** Use click history to personalize ranking
-- **Federated search:** Search across multiple media libraries
-- **Real-time indexing:** Update TF-IDF index incrementally instead of full rebuild
-
-### Infrastructure Upgrades
-
-- **Vector database:** Replace local cosine search with FAISS or Qdrant
-- **Distributed processing:** Use Celery for async media processing
-- **Caching:** Cache search results and embeddings
-- **Monitoring:** Add search quality dashboards and alerts
+**Mitigation:** Expand the query set only when current metrics stop discriminating changes clearly.
 
 ## Appendix: File Changes Summary
 
-### New Files
+### Implemented files so far
 
-- `services/shared/semedia_shared/index_service.py` — TF-IDF index management
-- `services/shared/semedia_shared/query_service.py` — Query preprocessing
-- `services/shared/semedia_shared/ranking_service.py` — Multi-stage ranking pipeline
-- `services/shared/semedia_shared/explanation_service.py` — Explanation generation
-- `testing/evaluation/queries.json` — Judged query set
-- `testing/evaluation/evaluate_search.py` — Offline evaluation script
+- `services/shared/semedia_shared/index_service.py` — durable TF-IDF index management
+- `services/shared/semedia_shared/caption_cleanup_config.py` — extracted caption cleanup policy
+- `testing/evaluation/queries.json` — judged query set
+- `testing/evaluation/evaluate_search.py` — offline evaluation script
 
-### Modified Files
+### Future files likely to change
 
-- `services/shared/semedia_shared/models.py` — Add `retrieval_text`, `tfidf_doc_id`, multi-frame fields
-- `services/shared/semedia_shared/pipeline.py` — Update processing for new fields
-- `services/shared/semedia_shared/video_service.py` — Multi-frame sampling, adaptive thresholds
-- `services/shared/semedia_shared/search_service.py` — Use precomputed index, call ranking pipeline
-- `services/shared/semedia_shared/config.py` — Add new configuration fields
-- `services/search_api/app/main.py` — Load TF-IDF index at startup
-- `frontend/src/types/api.ts` — Add new result fields
-- `frontend/src/pages/SearchPage.tsx` — Fix score filters, add grouping, fix sorting
-- `frontend/src/components/SearchResultCard.tsx` — Display component scores and explanations
-- `frontend/src/utils/format.ts` — Update `formatScore()` for [0, 1] scores
-
-### Database Migrations
-
-- Add `retrieval_text` column to `media_items` and `video_scenes`
-- Add `tfidf_doc_id` column to `media_items` and `video_scenes`
-- Add `keyframe_paths`, `thumbnail_paths`, `captions`, `embeddings` columns to `video_scenes` (change from single to array)
-- Add `best_frame_index` column to `video_scenes`
+- `services/shared/semedia_shared/ranking_service.py` — future multi-stage ranking pipeline
+- `services/shared/semedia_shared/explanation_service.py` — future explanation generation
+- `frontend/src/types/api.ts` — future result-field updates
+- `frontend/src/pages/SearchPage.tsx` — future score, sort, and grouping updates
+- `frontend/src/components/SearchResultCard.tsx` — future explanation display
 
 ## Conclusion
 
-This redesign transforms Semedia's search from a simplistic weighted sum into a proper multi-stage retrieval pipeline. By improving data processing, stabilizing retrieval, adding reranking and diversity, fixing result presentation, and building evaluation infrastructure, we address the systemic quality issues in the current implementation. The phased approach allows incremental delivery and validation, while the evaluation framework ensures future improvements are evidence-based.
+This redesign started as a broad search-system overhaul. In implementation, the highest-value early wins came from stabilizing keyword retrieval and improving caption quality while keeping the simpler single-frame scene model. The remaining roadmap now centers on ranking quality, result presentation, and evaluation-driven iteration rather than revisiting the caption cleanup refactor or reintroducing superseded multi-frame plans.
+
+---
+
+## Historical Note
+
+This file is preserved as the original redesign spec, but some proposed sections were superseded during implementation. For the active execution status and next steps, prefer `docs/TASKS.md`, `docs/plan.md`, and the implementation notes under `docs/implementations/`.

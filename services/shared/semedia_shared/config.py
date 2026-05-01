@@ -25,6 +25,17 @@ class Settings:
     media_worker_url: str
     search_api_url: str
     allow_all_origins: bool
+    caption_max_length: int = 50
+    caption_min_length: int = 10
+    caption_num_beams: int = 5
+    caption_retry_weak: bool = True
+    caption_retry_num_beams: int = 8
+    caption_batch_size: int = 8
+    caption_retry_fallback: str = "Image content unclear."
+    caption_weak_min_words: int = 3
+    caption_weak_min_chars: int = 10
+    caption_retry_max_length: int = 60
+    caption_retry_min_length: int = 15
 
 
 def _truthy(name: str, default: str = "0") -> bool:
@@ -55,4 +66,15 @@ def get_settings(service_name: str) -> Settings:
         media_worker_url=os.getenv("MEDIA_WORKER_URL", "http://media-worker:8000").rstrip("/"),
         search_api_url=os.getenv("SEARCH_API_URL", "http://search-api:8000").rstrip("/"),
         allow_all_origins=_truthy("CORS_ALLOW_ALL_ORIGINS", "1"),
+        caption_max_length=int(os.getenv("CAPTION_MAX_LENGTH", "50")),
+        caption_min_length=int(os.getenv("CAPTION_MIN_LENGTH", "10")),
+        caption_num_beams=int(os.getenv("CAPTION_NUM_BEAMS", "5")),
+        caption_retry_weak=_truthy("CAPTION_RETRY_WEAK", "1"),
+        caption_retry_num_beams=int(os.getenv("CAPTION_RETRY_NUM_BEAMS", "8")),
+        caption_batch_size=int(os.getenv("CAPTION_BATCH_SIZE", "8")),
+        caption_retry_fallback=os.getenv("CAPTION_RETRY_FALLBACK", "Image content unclear."),
+        caption_weak_min_words=int(os.getenv("CAPTION_WEAK_MIN_WORDS", "3")),
+        caption_weak_min_chars=int(os.getenv("CAPTION_WEAK_MIN_CHARS", "10")),
+        caption_retry_max_length=int(os.getenv("CAPTION_RETRY_MAX_LENGTH", "60")),
+        caption_retry_min_length=int(os.getenv("CAPTION_RETRY_MIN_LENGTH", "15")),
     )

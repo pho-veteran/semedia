@@ -365,14 +365,15 @@ Add/update:
 
 ## 6. Recommended Execution Order
 
-1. Improve processing throughput and scene detection (Phase 2 complete)
-2. Build evaluation baseline (Phase 1 complete)
-3. Add durable keyword index
-4. Expand candidate generation
-5. Add reranking and diversity
-6. Fix API score semantics and frontend handling
-7. Tune weights with evaluation loop
-8. Run final regression pass
+1. ✅ Improve processing throughput and scene detection (Phase 2 complete)
+2. ✅ Build evaluation baseline (Phase 1 complete)
+3. ✅ Add durable keyword index (Phase 3 complete)
+4. ✅ Improve caption quality (Phase 4 complete)
+5. Add reranking and diversity (Phase 5)
+6. Expand candidate generation (Phase 8)
+7. Fix API score semantics and frontend handling (Phase 6)
+8. Tune weights with evaluation loop (Phase 7)
+9. Run final regression pass
 
 ## 7. Risks and Mitigations
 
@@ -420,4 +421,6 @@ This improvement cycle is done when:
 
 ## 9. Recommended Next Step
 
-Phase 1 (baseline) and Phase 2 (processing performance) are complete. Start with **Phase 3: Build Durable Keyword Retrieval** to eliminate per-query TF-IDF rebuilding and stabilize keyword search scores before adding ranking complexity.
+Phases 1 through 4 are complete. Start with **Phase 5: Add Ranking, Reranking, and Diversity** to improve top-result quality now that keyword retrieval is durable and caption cleanup has improved the text signals available to search.
+
+The main remaining issue is not `caption_service.py` structure or weak-caption strictness; it is ranking quality and missing semantic coverage for hard queries. The best next move is to improve ranking first, then revisit caption vocabulary only if the judged-query metrics still plateau.

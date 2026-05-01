@@ -46,15 +46,28 @@ def run_evaluation(
     k: int = 10,
 ) -> dict[str, float]:
     queries = load_queries(queries_file)
+    judged_queries = [
+        query
+        for query in queries
+        if query.get("relevant_media_ids") or query.get("relevant_scene_ids")
+    ]
     all_metrics: list[dict[str, float]] = []
 
-    for query in queries:
+    for query in judged_queries:
         relevant_media_ids = set(query.get("relevant_media_ids", []))
         relevant_scene_ids = set(query.get("relevant_scene_ids", []))
-        relevant_ids = relevant_media_ids | relevant_scene_ids
+        relevant_ids = {
+            *(f"media:{item_id}" for item_id in relevant_media_ids),
+            *(f"scene:{item_id}" for item_id in relevant_scene_ids),
+        }
 
         results = search_fn(query["query_text"], k)
-        retrieved_ids = [result["media_id"] for result in results]
+        retrieved_ids = [
+            f"scene:{result['scene_id']}"
+            if result.get("scene_id") is not None
+            else f"media:{result['media_id']}"
+            for result in results
+        ]
         all_metrics.append(compute_metrics(relevant_ids, retrieved_ids, k=k))
 
     if not all_metrics:

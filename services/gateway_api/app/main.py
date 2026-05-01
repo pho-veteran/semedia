@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session, selectinload
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
-from semedia_shared.index_service import rebuild_keyword_index
 from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.media_types import infer_media_type, validate_media_type
 from semedia_shared.models import MediaItem, ProcessingStatus
@@ -189,6 +188,8 @@ def delete_media(media_id: int, session: Session = Depends(get_db)) -> None:
     session.delete(media)
     session.commit()
     try:
+        from semedia_shared.index_service import rebuild_keyword_index
+
         rebuild_keyword_index(settings, session)
     except Exception:
         logger.exception("Keyword index rebuild failed after deleting media %s", media_id)

@@ -38,72 +38,50 @@ def test_settings(tmp_path):
         media_worker_url="http://test",
         search_api_url="http://test",
         allow_all_origins=True,
+        caption_max_length=50,
+        caption_min_length=10,
+        caption_num_beams=5,
+        caption_retry_weak=True,
+        caption_retry_num_beams=8,
+        caption_batch_size=8,
+        caption_retry_fallback="Image content unclear.",
+        caption_weak_min_words=3,
+        caption_weak_min_chars=10,
+        caption_retry_max_length=60,
+        caption_retry_min_length=15,
     )
 
 
 def test_generate_captions_batches_processor_calls(test_settings, tmp_path, monkeypatch):
     """Test that generate_captions processes images in batches, not one-by-one."""
-    # Create test images
     image_paths = []
     for i in range(3):
         img_path = tmp_path / f"image_{i}.jpg"
         img_path.write_bytes(b"fake image data")
         image_paths.append(str(img_path))
 
-    # Track processor calls
-    processor_calls = []
-    generate_calls = []
+    batch_call_count = []
 
-    class FakeProcessor:
-        def __call__(self, **kwargs):
-            images = kwargs.get("images", [])
-            num_images = len(images) if isinstance(images, list) else 1
-            processor_calls.append({"num_images": num_images})
-            return {"pixel_values": MagicMock()}
-
-        def batch_decode(self, output_ids, skip_special_tokens=True):
-            # Return captions matching the batch size
-            return [f"caption_{i}" for i in range(len(output_ids))]
-
-    class FakeModel:
-        def eval(self):
-            return self
-
-        def generate(self, **kwargs):
-            generate_calls.append(kwargs)
-            # Return 3 output_ids for the batch
-            return [MagicMock() for _ in range(3)]
-
-    # Mock the resource loading
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
     fake_torch.inference_mode = MagicMock()
-    fake_Image = MagicMock()
-    fake_processor = FakeProcessor()
-    fake_model = FakeModel()
 
     def fake_load_resources(settings):
-        return (
-            fake_torch,
-            fake_Image,
-            settings.caption_model_name,
-            "cpu",
-            False,
-            fake_processor,
-            fake_model,
-            False,
-        )
+        return (fake_torch, MagicMock(), settings.caption_model_name, "cpu", False, MagicMock(), MagicMock(), False)
+
+    def fake_generate_batch(image_module, processor, model, device, use_device_map, paths, gen_kwargs):
+        batch_call_count.append(len(paths))
+        return [f"A descriptive caption number {i}." for i in range(len(paths))]
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
+    monkeypatch.setattr(caption_module, "_generate_batch_captions", fake_generate_batch)
+    monkeypatch.setattr(caption_module, "_is_weak_caption", lambda settings, caption: False)
 
-    # Run the function
     result = generate_captions(test_settings, image_paths)
 
-    # Verify batched processing: should have 1 processor call with 3 images
-    assert len(processor_calls) == 1, f"Expected 1 batched processor call, got {len(processor_calls)}"
-    assert processor_calls[0]["num_images"] == 3, "Expected batch to contain all 3 images"
-    assert len(generate_calls) == 1, f"Expected 1 batched generate call, got {len(generate_calls)}"
+    assert len(batch_call_count) == 1, f"Expected 1 batched call, got {len(batch_call_count)}"
+    assert batch_call_count[0] == 3, "Expected batch to contain all 3 images"
     assert len(result) == len(image_paths), "Should return caption for each image"
 
 
@@ -117,35 +95,20 @@ def test_generate_captions_chunks_large_batches(test_settings, tmp_path, monkeyp
 
     batch_sizes = []
 
-    class FakeProcessor:
-        def __call__(self, **kwargs):
-            images = kwargs.get("images", [])
-            batch_size = len(images) if isinstance(images, list) else 1
-            batch_sizes.append(batch_size)
-            return {"pixel_values": MagicMock()}
-
-        def batch_decode(self, output_ids, skip_special_tokens=True):
-            return [f"caption_{i}" for i in range(len(output_ids))]
-
-    class FakeModel:
-        def eval(self):
-            return self
-
-        def generate(self, **kwargs):
-            current_batch_size = batch_sizes[-1]
-            return [MagicMock() for _ in range(current_batch_size)]
-
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
-    fake_processor = FakeProcessor()
-    fake_model = FakeModel()
 
     def fake_load_resources(settings):
-        return (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, fake_processor, fake_model, False)
+        return (fake_torch, MagicMock(), settings.caption_model_name, "cpu", False, MagicMock(), MagicMock(), False)
+
+    def fake_generate_batch(torch, processor, model, device, use_device_map, paths, gen_kwargs):
+        batch_sizes.append(len(paths))
+        return [f"A descriptive caption {i}." for i in range(len(paths))]
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
+    monkeypatch.setattr(caption_module, "_generate_batch_captions", fake_generate_batch)
+    monkeypatch.setattr(caption_module, "_is_weak_caption", lambda settings, caption: False)
 
     result = generate_captions(test_settings, image_paths)
 
@@ -161,42 +124,33 @@ def test_generate_captions_preserves_order(test_settings, tmp_path, monkeypatch)
         img_path.write_bytes(b"fake image data")
         image_paths.append(str(img_path))
 
-    class FakeProcessor:
-        def __call__(self, **kwargs):
-            return {"pixel_values": MagicMock()}
-
-        def batch_decode(self, output_ids, skip_special_tokens=True):
-            # Return captions with identifiable order
-            return [f"caption_{i}" for i in range(len(output_ids))]
-
-    class FakeModel:
-        def eval(self):
-            return self
-
-        def generate(self, **kwargs):
-            return [MagicMock() for _ in range(5)]
-
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
-    fake_processor = FakeProcessor()
-    fake_model = FakeModel()
 
     def fake_load_resources(settings):
-        return (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, fake_processor, fake_model, False)
+        return (fake_torch, MagicMock(), settings.caption_model_name, "cpu", False, MagicMock(), MagicMock(), False)
+
+    call_index = {"value": 0}
+
+    def fake_generate_batch(image_module, processor, model, device, use_device_map, paths, gen_kwargs):
+        start = call_index["value"]
+        call_index["value"] += len(paths)
+        return [f"Caption number {start + i} is here." for i in range(len(paths))]
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
-
-    def fake_build_image_inputs(processor, images):
-        return processor(images=images, return_tensors="pt")
-
-    monkeypatch.setattr(caption_module, "build_image_inputs", fake_build_image_inputs)
+    monkeypatch.setattr(caption_module, "_generate_batch_captions", fake_generate_batch)
+    monkeypatch.setattr(caption_module, "_is_weak_caption", lambda settings, caption: False)
 
     result = generate_captions(test_settings, image_paths)
 
-    # Verify order is preserved
-    assert result == ["caption_0", "caption_1", "caption_2", "caption_3", "caption_4"]
+    assert result == [
+        "Caption number 0 is here.",
+        "Caption number 1 is here.",
+        "Caption number 2 is here.",
+        "Caption number 3 is here.",
+        "Caption number 4 is here.",
+    ]
 
 
 def test_encode_images_batches_model_calls(test_settings, tmp_path, monkeypatch):
@@ -376,33 +330,29 @@ def test_generate_captions_falls_back_when_inference_fails(test_settings, tmp_pa
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
-    fake_processor = MagicMock()
-
-    class FakeModel:
-        def eval(self):
-            return self
-
-        def generate(self, **kwargs):
-            raise RuntimeError("boom")
 
     def fake_load_resources(settings):
-        return (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, fake_processor, FakeModel(), False)
+        return (fake_torch, MagicMock(), settings.caption_model_name, "cpu", False, MagicMock(), MagicMock(), False)
+
+    def fake_generate_batch(torch, processor, model, device, use_device_map, paths, gen_kwargs):
+        raise RuntimeError("boom")
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
+    monkeypatch.setattr(caption_module, "_generate_batch_captions", fake_generate_batch)
+    monkeypatch.setattr(caption_module, "_is_weak_caption", lambda settings, caption: False)
 
     fallback_calls = []
 
-    def fake_caption_from_path(path):
-        fallback_calls.append(path)
-        return f"fallback:{Path(path).name}"
+    def fake_fallback_captions(paths):
+        fallback_calls.extend(paths)
+        return [f"Fallback: {Path(path).name}" for path in paths]
 
-    monkeypatch.setattr(caption_module, "caption_from_path", fake_caption_from_path)
+    monkeypatch.setattr(caption_module, "_fallback_captions", fake_fallback_captions)
 
     result = generate_captions(test_settings, image_paths)
 
     assert fallback_calls == image_paths
-    assert result == [f"fallback:{Path(path).name}" for path in image_paths]
+    assert result == [f"Fallback: {Path(path).name}" for path in image_paths]
 
 
 def test_encode_images_falls_back_when_inference_fails(test_settings, tmp_path, monkeypatch):
@@ -454,11 +404,12 @@ def test_generate_captions_uses_build_image_inputs_for_batches(test_settings, tm
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
+    fake_image_module = MagicMock()
+    fake_image_module.open.side_effect = lambda path: MagicMock(convert=lambda mode: f"image:{Path(path).name}")
 
     class FakeProcessor:
         def batch_decode(self, output_ids, skip_special_tokens=True):
-            return ["caption"] * len(output_ids)
+            return ["A descriptive caption."] * len(output_ids)
 
     class FakeModel:
         def eval(self):
@@ -468,7 +419,7 @@ def test_generate_captions_uses_build_image_inputs_for_batches(test_settings, tm
             return [MagicMock() for _ in range(3)]
 
     def fake_load_resources(settings):
-        return (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, FakeProcessor(), FakeModel(), False)
+        return (fake_torch, fake_image_module, settings.caption_model_name, "cpu", False, FakeProcessor(), FakeModel(), False)
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
 
@@ -542,11 +493,11 @@ def test_generate_captions_load_failure_uses_fallback(test_settings, tmp_path, m
         raise RuntimeError("load failed")
 
     monkeypatch.setattr(caption_module, "_load_caption_resources", fake_load_resources)
-    monkeypatch.setattr(caption_module, "caption_from_path", lambda path: f"fallback:{Path(path).name}")
+    monkeypatch.setattr(caption_module, "_fallback_captions", lambda paths: [f"Fallback: {Path(path).name}" for path in paths])
 
     assert generate_captions(test_settings, image_paths) == [
-        "fallback:load_fail_0.jpg",
-        "fallback:load_fail_1.jpg",
+        "Fallback: load_fail_0.jpg",
+        "Fallback: load_fail_1.jpg",
     ]
 
 
@@ -578,34 +529,28 @@ def test_generate_captions_maintains_order_across_chunks(test_settings, tmp_path
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
     batch_sizes = []
-    chunk_index = {"value": 0}
+    next_index = {"value": 0}
 
-    class FakeProcessor:
-        def __call__(self, **kwargs):
-            images = kwargs.get("images", [])
-            batch_sizes.append(len(images))
-            return {"pixel_values": MagicMock()}
+    monkeypatch.setattr(
+        caption_module,
+        "_load_caption_resources",
+        lambda settings: (fake_torch, MagicMock(), settings.caption_model_name, "cpu", False, MagicMock(), MagicMock(), False),
+    )
 
-        def batch_decode(self, output_ids, skip_special_tokens=True):
-            start = 0 if chunk_index["value"] == 0 else 8
-            chunk_index["value"] += 1
-            return [f"caption_{start + i}" for i in range(len(output_ids))]
+    def fake_generate_batch(image_module, processor, model, device, use_device_map, paths, gen_kwargs):
+        batch_sizes.append(len(paths))
+        start = next_index["value"]
+        next_index["value"] += len(paths)
+        return [f"Caption number {start + i} is here." for i in range(len(paths))]
 
-    class FakeModel:
-        def eval(self):
-            return self
-
-        def generate(self, **kwargs):
-            return [MagicMock() for _ in range(batch_sizes[-1])]
-
-    monkeypatch.setattr(caption_module, "_load_caption_resources", lambda settings: (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, FakeProcessor(), FakeModel(), False))
+    monkeypatch.setattr(caption_module, "_generate_batch_captions", fake_generate_batch)
+    monkeypatch.setattr(caption_module, "_is_weak_caption", lambda settings, caption: False)
 
     result = generate_captions(test_settings, image_paths)
 
     assert batch_sizes == [8, 2]
-    assert result == [f"caption_{i}" for i in range(10)]
+    assert result == [f"Caption number {i} is here." for i in range(10)]
 
 
 def test_encode_images_maintains_order_across_chunks(test_settings, tmp_path, monkeypatch):
@@ -667,11 +612,12 @@ def test_move_batch_to_device_is_used_for_caption_batches(test_settings, tmp_pat
     import semedia_shared.caption_service as caption_module
 
     fake_torch = MagicMock()
-    fake_Image = MagicMock()
+    fake_image_module = MagicMock()
+    fake_image_module.open.side_effect = lambda path: MagicMock(convert=lambda mode: f"image:{Path(path).name}")
 
     class FakeProcessor:
         def batch_decode(self, output_ids, skip_special_tokens=True):
-            return ["caption"] * len(output_ids)
+            return ["A descriptive caption."] * len(output_ids)
 
     class FakeModel:
         def eval(self):
@@ -680,7 +626,7 @@ def test_move_batch_to_device_is_used_for_caption_batches(test_settings, tmp_pat
         def generate(self, **kwargs):
             return [MagicMock() for _ in range(3)]
 
-    monkeypatch.setattr(caption_module, "_load_caption_resources", lambda settings: (fake_torch, fake_Image, settings.caption_model_name, "cpu", False, FakeProcessor(), FakeModel(), False))
+    monkeypatch.setattr(caption_module, "_load_caption_resources", lambda settings: (fake_torch, fake_image_module, settings.caption_model_name, "cpu", False, FakeProcessor(), FakeModel(), False))
     monkeypatch.setattr(caption_module, "build_image_inputs", lambda processor, images: {"pixel_values": MagicMock()})
 
     move_calls = []

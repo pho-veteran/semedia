@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-Phase 1 established the audit and evaluation foundation for Semedia's search quality improvement project. We audited the current backend search/processing pipeline, frontend result handling, and testing infrastructure. We created evaluation artifacts (`queries.json`, `evaluate_search.py`) and documented concrete failure modes. Manual relevance judgments and the first real baseline metric run are still pending before Phase 1 can be considered fully complete.
+Phase 1 established the audit and evaluation foundation for Semedia's search quality improvement project. We audited the current backend search/processing pipeline, frontend result handling, and testing infrastructure. We created evaluation artifacts (`queries.json`, `evaluate_search.py`) and documented concrete failure modes. Manual relevance judgments were completed and baseline metrics were recorded (all 0.0 due to poor caption quality).
 
 ## Deliverables
 

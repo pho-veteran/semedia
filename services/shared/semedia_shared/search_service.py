@@ -21,18 +21,30 @@ def _cosine(left: np.ndarray, right: np.ndarray) -> float:
 
 
 def _normalize_scores(results: list[dict]) -> list[dict]:
-    if not results:
-        return results
-    scores = [result["score"] for result in results]
-    max_score = max(scores)
-    min_score = min(scores)
-    if max_score == min_score:
-        for result in results:
-            result["score"] = 1.0
-        return results
     for result in results:
-        result["score"] = (result["score"] - min_score) / (max_score - min_score)
+        result["score"] = max(0.0, min(1.0, float(result["score"])))
     return results
+
+
+def _caption_key(caption: str) -> str:
+    return " ".join(caption.lower().split())
+
+
+def _diversify_text_results(results: list[dict]) -> list[dict]:
+    unique_results: list[dict] = []
+    seen_captions: set[str] = set()
+
+    for result in results:
+        caption_key = _caption_key(result.get("caption", ""))
+        if not caption_key:
+            unique_results.append(result)
+            continue
+        if caption_key in seen_captions:
+            continue
+        seen_captions.add(caption_key)
+        unique_results.append(result)
+
+    return unique_results
 
 
 def _completed_media(session: Session) -> list[MediaItem]:
@@ -56,6 +68,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
                 {
                     "key": ("image", media.id),
                     "media_id": media.id,
+                    "scene_id": None,
                     "media_type": media.media_type,
                     "result_type": "image",
                     "original_filename": media.original_filename,
@@ -75,6 +88,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
                     {
                         "key": ("scene", scene.id),
                         "media_id": media.id,
+                        "scene_id": scene.id,
                         "media_type": media.media_type,
                         "result_type": "video_scene",
                         "original_filename": media.original_filename,
@@ -122,6 +136,7 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
         output.append(
             {
                 "media_id": item["media_id"],
+                "scene_id": item.get("scene_id"),
                 "media_type": item["media_type"],
                 "result_type": item["result_type"],
                 "original_filename": item["original_filename"],
@@ -135,6 +150,7 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
         )
 
     output.sort(key=lambda item: item["score"], reverse=True)
+    output = _diversify_text_results(output)
     return output[:limit]
 
 
@@ -147,6 +163,7 @@ def search_image(settings, session: Session, query_embedding: list[float], top_k
         output.append(
             {
                 "media_id": item["media_id"],
+                "scene_id": item.get("scene_id"),
                 "media_type": item["media_type"],
                 "result_type": item["result_type"],
                 "original_filename": item["original_filename"],

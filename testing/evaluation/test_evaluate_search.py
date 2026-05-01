@@ -122,9 +122,15 @@ def test_run_evaluation_returns_aggregated_metrics(tmp_path, monkeypatch):
 
     def mock_search(query_text, top_k):
         if query_text == "cat":
-            return [{"media_id": 1, "score": 95.0}, {"media_id": 3, "score": 80.0}]
+            return [
+                {"media_id": 1, "scene_id": None, "score": 95.0},
+                {"media_id": 3, "scene_id": None, "score": 80.0},
+            ]
         else:
-            return [{"media_id": 4, "score": 90.0}, {"media_id": 2, "score": 85.0}]
+            return [
+                {"media_id": 4, "scene_id": None, "score": 90.0},
+                {"media_id": 2, "scene_id": None, "score": 85.0},
+            ]
 
     results = run_evaluation(queries_file, mock_search, k=10)
 
@@ -133,3 +139,49 @@ def test_run_evaluation_returns_aggregated_metrics(tmp_path, monkeypatch):
     assert "mean_mrr" in results
     assert "mean_ndcg@10" in results
     assert results["num_queries"] == 2
+
+
+def test_run_evaluation_skips_unjudged_queries_and_matches_scene_ids(tmp_path):
+    queries_file = tmp_path / "queries.json"
+    queries_file.write_text(
+        json.dumps(
+            [
+                {
+                    "query_id": "q001",
+                    "query_text": "cat",
+                    "query_type": "object",
+                    "relevant_media_ids": [1],
+                    "relevant_scene_ids": [],
+                    "notes": "",
+                },
+                {
+                    "query_id": "q002",
+                    "query_text": "night scene",
+                    "query_type": "scene",
+                    "relevant_media_ids": [],
+                    "relevant_scene_ids": [2],
+                    "notes": "",
+                },
+                {
+                    "query_id": "q003",
+                    "query_text": "unused",
+                    "query_type": "scene",
+                    "relevant_media_ids": [],
+                    "relevant_scene_ids": [],
+                    "notes": "",
+                },
+            ]
+        )
+    )
+
+    def mock_search(query_text, top_k):
+        if query_text == "cat":
+            return [{"media_id": 1, "scene_id": None, "score": 99.0}]
+        if query_text == "night scene":
+            return [{"media_id": 10, "scene_id": 2, "score": 88.0}]
+        return [{"media_id": 999, "scene_id": None, "score": 10.0}]
+
+    results = run_evaluation(queries_file, mock_search, k=10)
+
+    assert results["num_queries"] == 2
+    assert results["mean_recall@10"] == 1.0

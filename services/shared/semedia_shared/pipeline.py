@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session, selectinload
 
 from .caption_service import generate_captions
 from .clip_service import encode_images
-from .index_service import rebuild_keyword_index
 from .log import get_logger
 from .models import MediaItem, ProcessingStatus, VideoScene
 from .storage import relative_to_media_root
@@ -45,6 +44,8 @@ def process_media(settings, session: Session, media_id: int) -> bool:
     session.commit()
 
     try:
+        from .index_service import rebuild_keyword_index
+
         rebuild_keyword_index(settings, session)
     except Exception:
         logger.exception("Keyword index rebuild failed for media %s", media_id)
@@ -94,6 +95,11 @@ def _process_video(settings, session: Session, media: MediaItem) -> None:
         )
 
     captions = generate_captions(settings, frame_paths)
+    for i in range(1, len(captions)):
+        if captions[i] and captions[i] == captions[i - 1]:
+            logger.warning("Adjacent scenes %d and %d have identical captions: %s", i - 1, i, captions[i])
+            captions[i] = f"{captions[i]} (scene {i + 1})"
+
     embeddings = encode_images(settings, frame_paths)
 
     created_scenes: list[VideoScene] = []

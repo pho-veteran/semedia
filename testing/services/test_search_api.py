@@ -5,6 +5,7 @@ import logging
 from sqlalchemy import inspect, text
 
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
+from semedia_shared.search_service import _normalize_scores
 
 VALID_PNG_BYTES = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
@@ -18,6 +19,120 @@ def test_search_health_endpoint(search_env):
 
     assert response.status_code == 200
     assert response.json()["service"] == "search-api"
+
+
+def test_normalize_scores_clamps_without_min_max_inflation():
+    results = [{"score": 0.02}, {"score": 0.6}, {"score": 1.2}, {"score": -0.5}]
+
+    normalized = _normalize_scores(results)
+
+    assert normalized == [
+        {"score": 0.02},
+        {"score": 0.6},
+        {"score": 1.0},
+        {"score": 0.0},
+    ]
+
+
+
+def test_search_text_prefers_strong_keyword_match_over_weak_vector_match(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        strong_keyword = MediaItem(
+            file_path="originals/office.jpg",
+            original_filename="office.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="office desk workspace laptop meeting room",
+            embedding=[0.02, 0.0],
+            index_key="media:1",
+        )
+        weak_keyword = MediaItem(
+            file_path="originals/person.jpg",
+            original_filename="person.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="a person standing outside",
+            embedding=[0.6, 0.0],
+            index_key="media:2",
+        )
+        session.add_all([strong_keyword, weak_keyword])
+        session.commit()
+        session.refresh(strong_keyword)
+        session.refresh(weak_keyword)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 5})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["results"][0]["media_id"] == strong_keyword.id
+    assert payload["results"][0]["caption"] == "office desk workspace laptop meeting room"
+    assert payload["results"][1]["media_id"] == weak_keyword.id
+    assert payload["results"][0]["score"] > payload["results"][1]["score"]
+
+
+
+def test_search_text_demotes_duplicate_captions(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        relevant = MediaItem(
+            file_path="originals/lake.jpg",
+            original_filename="lake.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="moonlit lake water by a pier",
+            embedding=[0.5, 0.0],
+            index_key="media:1",
+        )
+        duplicate_one = MediaItem(
+            file_path="originals/bat1.jpg",
+            original_filename="bat1.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="there is a man that is standing in the dark with a bat",
+            embedding=[0.55, 0.0],
+            index_key="media:2",
+        )
+        duplicate_two = MediaItem(
+            file_path="originals/bat2.jpg",
+            original_filename="bat2.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="there is a man that is standing in the dark with a bat",
+            embedding=[0.54, 0.0],
+            index_key="media:3",
+        )
+        session.add_all([relevant, duplicate_one, duplicate_two])
+        session.commit()
+        session.refresh(relevant)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "water", "top_k": 3})
+
+    assert response.status_code == 200
+    payload = response.json()
+    captions = [item["caption"] for item in payload["results"]]
+    assert captions[0] == "moonlit lake water by a pier"
+    assert captions.count("there is a man that is standing in the dark with a bat") == 1
 
 
 def test_search_requires_query_text(search_env):
@@ -291,6 +406,7 @@ def test_keyword_search_uses_scene_caption_for_ranking(search_env, monkeypatch):
     payload = response.json()
     assert payload["count"] == 1
     assert payload["results"][0]["result_type"] == "video_scene"
+    assert payload["results"][0]["scene_id"] == scene.id
     assert payload["results"][0]["caption"] == "sunny day park trees grass"
 
 

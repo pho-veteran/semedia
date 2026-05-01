@@ -51,6 +51,17 @@ def make_test_settings(service_name: str, tmp_path: Path) -> Settings:
         media_worker_url="http://media-worker.test",
         search_api_url="http://search-api.test",
         allow_all_origins=True,
+        caption_max_length=50,
+        caption_min_length=10,
+        caption_num_beams=5,
+        caption_retry_weak=True,
+        caption_retry_num_beams=8,
+        caption_batch_size=8,
+        caption_retry_fallback="Image content unclear.",
+        caption_weak_min_words=3,
+        caption_weak_min_chars=10,
+        caption_retry_max_length=60,
+        caption_retry_min_length=15,
     )
 
 

@@ -12,7 +12,8 @@ import {
 import { Search, CloudUpload, X } from 'lucide-react'
 import { searchMedia, searchMediaByImage } from '../api/client'
 import { SearchResultCard } from '../components/SearchResultCard'
-import { 
+import { SearchResultGroup } from '../components/SearchResultGroup'
+import {
   Card, 
   CardContent, 
   CardHeader, 
@@ -32,6 +33,7 @@ import {
 } from '../components/ui'
 import type { SearchResult } from '../types/api'
 import { getErrorMessage } from '../utils/format'
+import { buildSearchRenderEntries } from '../utils/searchResults'
 import { cn } from '../lib/utils'
 
 interface SearchPageProps {
@@ -109,9 +111,11 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       }
     })
 
+  const renderEntries = buildSearchRenderEntries(filteredAndSortedResults)
+
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (filteredAndSortedResults.length === 0) return
+      if (renderEntries.length === 0) return
       
       const activeElement = document.activeElement
       const isTyping = activeElement?.tagName === 'INPUT' || 
@@ -122,17 +126,29 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
 
       if (event.key === 'ArrowDown') {
         event.preventDefault()
-        setFocusedResultIndex((prev) => 
-          prev < filteredAndSortedResults.length - 1 ? prev + 1 : prev
+        setFocusedResultIndex((prev) =>
+          prev < renderEntries.length - 1 ? prev + 1 : prev
         )
       } else if (event.key === 'ArrowUp') {
         event.preventDefault()
         setFocusedResultIndex((prev) => (prev > 0 ? prev - 1 : -1))
       } else if (event.key === 'Enter' && focusedResultIndex >= 0) {
+        if (
+          activeElement instanceof HTMLElement &&
+          activeElement !== document.body &&
+          activeElement !== document.documentElement
+        ) {
+          return
+        }
+
         event.preventDefault()
-        const result = filteredAndSortedResults[focusedResultIndex]
-        if (result) {
-          onOpenMedia(result.media_id, result.start_time)
+        const entry = renderEntries[focusedResultIndex]
+        if (entry) {
+          if (entry.kind === 'single') {
+            onOpenMedia(entry.item.media_id, entry.item.start_time)
+          } else {
+            onOpenMedia(entry.mediaId, entry.lead.start_time)
+          }
         }
       }
     }
@@ -141,7 +157,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [filteredAndSortedResults, focusedResultIndex, onOpenMedia])
+  }, [renderEntries, focusedResultIndex, onOpenMedia])
 
   useEffect(() => {
     setFocusedResultIndex(-1)
@@ -514,7 +530,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       )}
 
       {/* Empty State - No results */}
-      {searchedLabel && !loading && filteredAndSortedResults.length === 0 && !error && (
+      {searchedLabel && !loading && renderEntries.length === 0 && !error && (
         <EmptyState
           variant="no-results"
           title="No results found"
@@ -523,7 +539,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       )}
 
       {/* Search Results */}
-      {filteredAndSortedResults.length > 0 && !loading && (
+      {renderEntries.length > 0 && !loading && (
         <section aria-label="Search results">
           <div className="space-y-6">
           {/* Results Summary */}
@@ -532,7 +548,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
               {searchedMode === 'image' ? 'Image Results' : 'Text Results'}
             </p>
             <h2 className="text-lg font-semibold">
-              {filteredAndSortedResults.length} result{filteredAndSortedResults.length === 1 ? '' : 's'} for {emptyStateLabel}
+              {renderEntries.length} result{renderEntries.length === 1 ? '' : 's'} for {emptyStateLabel}
             </h2>
             <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-sm font-medium text-foreground">How to read these result badges</p>
@@ -548,17 +564,30 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
 
           {/* Results Grid with Staggered Animation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredAndSortedResults.map((item, index) => (
+            {renderEntries.map((entry, index) => (
               <div
-                key={`${item.result_type}-${item.media_id}-${item.start_time ?? 'image'}`}
+                key={entry.kind === 'single'
+                  ? `${entry.item.result_type}-${entry.item.media_id}-${entry.item.start_time ?? 'image'}`
+                  : `video-group-${entry.mediaId}-${entry.lead.start_time ?? 'lead'}`}
                 className="animate-in fade-in-0 duration-150"
                 style={{ animationDelay: `${index * 30}ms` }}
               >
-                <SearchResultCard
-                  item={item}
-                  onOpenMedia={onOpenMedia}
-                  isFocused={index === focusedResultIndex}
-                />
+                {entry.kind === 'single' ? (
+                  <SearchResultCard
+                    item={entry.item}
+                    onOpenMedia={onOpenMedia}
+                    isFocused={index === focusedResultIndex}
+                  />
+                ) : (
+                  <SearchResultGroup
+                    mediaId={entry.mediaId}
+                    lead={entry.lead}
+                    previews={entry.previews}
+                    hidden={entry.hidden}
+                    onOpenMedia={onOpenMedia}
+                    isFocused={index === focusedResultIndex}
+                  />
+                )}
               </div>
             ))}
           </div>

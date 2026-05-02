@@ -18,6 +18,8 @@ const textResult: SearchResult = {
   caption: 'office desk',
   file_url: '/media/office.jpg',
   thumbnail_url: '/media/office.jpg',
+  file_size: 1024,
+  created_at: '2026-05-01T12:00:00Z',
   start_time: null,
   end_time: null,
   explanation: {
@@ -40,6 +42,8 @@ const imageResult: SearchResult = {
   caption: 'a red square',
   file_url: '/media/red.jpg',
   thumbnail_url: '/media/red.jpg',
+  file_size: 2048,
+  created_at: '2026-05-02T12:00:00Z',
   start_time: null,
   end_time: null,
   explanation: {
@@ -62,6 +66,8 @@ const sceneResult: SearchResult = {
   caption: 'office desk workspace laptop with bright window light and conference notebooks',
   file_url: '/media/demo.mp4',
   thumbnail_url: '/media/demo-scene.jpg',
+  file_size: 4096,
+  created_at: '2026-05-03T12:00:00Z',
   start_time: 12,
   end_time: 18,
   explanation: {

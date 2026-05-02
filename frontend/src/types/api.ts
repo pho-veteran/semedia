@@ -69,6 +69,8 @@ export interface SearchResult {
   caption: string
   file_url: string
   thumbnail_url: string
+  file_size: number
+  created_at: string
   start_time: number | null
   end_time: number | null
   explanation: SearchResultExplanation

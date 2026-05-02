@@ -20,6 +20,8 @@ const createSearchResult = (overrides: Partial<SearchResult>): SearchResult => (
   caption: 'test caption',
   file_url: '/media/test.jpg',
   thumbnail_url: '/media/test_thumb.jpg',
+  file_size: 1024,
+  created_at: '2026-05-01T12:00:00Z',
   start_time: null,
   end_time: null,
   explanation: {
@@ -50,6 +52,116 @@ describe('SearchPage score filter', () => {
 
     expect(screen.queryByText(/Semantic/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Rich caption/)).not.toBeInTheDocument()
+  })
+})
+
+describe('SearchPage sorting', () => {
+  it('sorts results by created_at when date sort is selected', async () => {
+    const mockResponse: SearchResponse = {
+      query_mode: 'text',
+      query_text: 'office',
+      count: 3,
+      results: [
+        createSearchResult({
+          media_id: 1,
+          original_filename: 'zzz.jpg',
+          created_at: '2026-05-01T10:00:00Z',
+          file_size: 100,
+          score: 0.95,
+        }),
+        createSearchResult({
+          media_id: 2,
+          original_filename: 'aaa.jpg',
+          created_at: '2026-05-03T10:00:00Z',
+          file_size: 300,
+          score: 0.9,
+        }),
+        createSearchResult({
+          media_id: 3,
+          original_filename: 'mmm.jpg',
+          created_at: '2026-05-02T10:00:00Z',
+          file_size: 200,
+          score: 0.85,
+        }),
+      ],
+    }
+
+    vi.mocked(client.searchMedia).mockResolvedValue(mockResponse)
+
+    render(<SearchPage onOpenMedia={mockOnOpenMedia} />)
+
+    const searchInput = screen.getByPlaceholderText('Search for images and videos...')
+    fireEvent.change(searchInput, { target: { value: 'office' } })
+    fireEvent.keyDown(searchInput, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(screen.getByText('3 results for "office"')).toBeInTheDocument()
+    })
+
+    const [, , sortSelect] = screen.getAllByRole('combobox')
+    fireEvent.click(sortSelect)
+    fireEvent.click(screen.getByText('Date'))
+
+    const resultButtons = screen.getAllByRole('button', { name: /Open .*\.jpg/ })
+    expect(resultButtons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Open aaa.jpg',
+      'Open mmm.jpg',
+      'Open zzz.jpg',
+    ])
+  })
+
+  it('sorts results by file_size when size sort is selected', async () => {
+    const mockResponse: SearchResponse = {
+      query_mode: 'text',
+      query_text: 'office',
+      count: 3,
+      results: [
+        createSearchResult({
+          media_id: 1,
+          original_filename: 'aaa.jpg',
+          created_at: '2026-05-01T10:00:00Z',
+          file_size: 100,
+          score: 0.95,
+        }),
+        createSearchResult({
+          media_id: 2,
+          original_filename: 'zzz.jpg',
+          created_at: '2026-05-03T10:00:00Z',
+          file_size: 300,
+          score: 0.9,
+        }),
+        createSearchResult({
+          media_id: 3,
+          original_filename: 'mmm.jpg',
+          created_at: '2026-05-02T10:00:00Z',
+          file_size: 200,
+          score: 0.85,
+        }),
+      ],
+    }
+
+    vi.mocked(client.searchMedia).mockResolvedValue(mockResponse)
+
+    render(<SearchPage onOpenMedia={mockOnOpenMedia} />)
+
+    const searchInput = screen.getByPlaceholderText('Search for images and videos...')
+    fireEvent.change(searchInput, { target: { value: 'office' } })
+    fireEvent.keyDown(searchInput, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(screen.getByText('3 results for "office"')).toBeInTheDocument()
+    })
+
+    const [, , sortSelect] = screen.getAllByRole('combobox')
+    fireEvent.click(sortSelect)
+    fireEvent.click(screen.getByText('Size'))
+
+    const resultButtons = screen.getAllByRole('button', { name: /Open .*\.jpg/ })
+    expect(resultButtons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Open zzz.jpg',
+      'Open mmm.jpg',
+      'Open aaa.jpg',
+    ])
   })
 })
 

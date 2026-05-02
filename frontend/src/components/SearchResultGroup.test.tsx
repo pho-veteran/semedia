@@ -18,6 +18,8 @@ const createSceneResult = (overrides: Partial<SearchResult>): SearchResult => ({
   caption: 'office desk',
   file_url: '/media/demo.mp4',
   thumbnail_url: '/media/demo-scene.jpg',
+  file_size: 4096,
+  created_at: '2026-05-01T12:00:00Z',
   start_time: 0,
   end_time: 5,
   explanation: {

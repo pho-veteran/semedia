@@ -196,25 +196,26 @@
   - [x] Add backend and frontend tests covering richer ranking payloads and rendering
   - [x] Rebuild and verify the frontend stack
   - [x] Keep current implementation local to existing search and card components (no separate `explanation_service.py`)
-- [ ] 6.3 Group related video scenes
-  - [ ] Update frontend to group results by `media_id`
-  - [ ] Add expandable scene groups in UI
-  - [ ] Show best scene first with "Show N more scenes" button
-- [ ] 6.4 Fix sort options
-  - [ ] Add `created_at` to search results
-  - [ ] Add `file_size` to search results
-  - [ ] Update frontend sorting to use actual metadata
-  - [ ] Remove filename-based sorting
+- [x] 6.3 Group related video scenes
+  - [x] Update frontend to group results by `media_id`
+  - [x] Add expandable scene groups in UI
+  - [x] Show best scene first with "Show N more scenes" button
+- [x] 6.4 Fix sort options
+  - [x] Add `created_at` to search results
+  - [x] Add `file_size` to search results
+  - [x] Update frontend sorting to use actual metadata
+  - [x] Remove filename-based sorting
 
 **Success Criteria:**
-- UI filters behave correctly
-- Sorting behaves correctly
-- Users can understand why results appear
+- ✅ UI filters behave correctly
+- ✅ Sorting behaves correctly
+- ✅ Users can understand why results appear
 
 **Current status:**
 - Score handling is complete and the live frontend now shows low-score text results by default.
 - Richer ranking payloads, badge-based result cards, and the search-page explanation panel are complete.
-- Remaining Phase 6 work: grouped video-scene presentation and real metadata-based sorting.
+- Grouped video-scene presentation is complete (2026-05-02).
+- Real metadata-based sorting is complete (2026-05-02).
 
 ---
 
@@ -347,10 +348,10 @@
 - **Phase 3:** Complete (2026-04-30) — durable keyword retrieval implemented
 - **Phase 4:** Complete (2026-04-30) — caption quality and cleanup refactor implemented
 - **Phase 5:** Complete (2026-05-01) — ranking pipeline, normalized scores, reranking, and diversity implemented; live evaluation improved to Precision@10 0.1000, Recall@10 0.9444, MRR 0.6214, NDCG@10 0.6695
-- **Phase 6:** In progress (2026-05-02)
+- **Phase 6:** Complete (2026-05-02)
   - 6.1 Complete — score handling and frontend filter alignment
   - 6.2 Complete — richer ranking data, badge-based result cards, search page explanation panel
-  - 6.3 Not started — grouped video-scene presentation
-  - 6.4 Not started — real metadata-based sorting
+  - 6.3 Complete — grouped video-scene presentation
+  - 6.4 Complete — real metadata-based sorting
 - **Phase 7:** Not started
 - **Phase 8+:** Not started

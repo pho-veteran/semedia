@@ -15,6 +15,8 @@ describe('buildSearchRenderEntries', () => {
     caption: 'test caption',
     file_url: '/media/test.jpg',
     thumbnail_url: '/media/test_thumb.jpg',
+    file_size: 1024,
+    created_at: '2026-05-01T12:00:00Z',
     start_time: null,
     end_time: null,
     explanation: {

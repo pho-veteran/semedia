@@ -63,6 +63,8 @@ def build_keyword_index(settings, session: Session) -> KeywordIndexData | None:
                     "caption": media.caption or "",
                     "file_url": media_url(settings, media.file_path),
                     "thumbnail_url": media_url(settings, media.file_path),
+                    "file_size": media.file_size,
+                    "created_at": media.uploaded_at,
                     "start_time": None,
                     "end_time": None,
                 }
@@ -82,6 +84,8 @@ def build_keyword_index(settings, session: Session) -> KeywordIndexData | None:
                         "caption": scene.caption or "",
                         "file_url": media_url(settings, media.file_path),
                         "thumbnail_url": media_url(settings, scene.thumbnail_path),
+                        "file_size": media.file_size,
+                        "created_at": media.uploaded_at,
                         "start_time": scene.start_time,
                         "end_time": scene.end_time,
                     }

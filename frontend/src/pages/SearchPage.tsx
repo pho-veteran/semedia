@@ -103,9 +103,9 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
         case 'relevance':
           return b.score - a.score
         case 'date':
-          return b.original_filename.localeCompare(a.original_filename)
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         case 'size':
-          return a.original_filename.localeCompare(b.original_filename)
+          return b.file_size - a.file_size
         default:
           return b.score - a.score
       }

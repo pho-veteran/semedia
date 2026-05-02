@@ -282,30 +282,36 @@ Extend API responses with:
 - Result cards redesigned with badge-based metadata layout
 - Search page includes detailed explanation panel for badge meanings
 
-#### 6.3 Group related video scenes
+#### 6.3 Group related video scenes ✅
 Allow UI to show multiple strong scenes from the same video without flooding the page.
 
-Possible presentation:
-- best scene shown first
-- related scenes expandable under the parent video
+**Status:** Complete (2026-05-02)
+- Frontend groups results by `media_id` using `buildSearchRenderEntries()` utility
+- `SearchResultGroup` component renders lead scene with expandable preview strip
+- Best scene shown first, up to 2 preview scenes visible, remaining scenes behind "Show N more" button
+- Keyboard navigation preserved across top-level render entries only
 
-#### 6.4 Fix sort options
-Replace filename-based sorting with real metadata fields:
-- created time
-- file size
-- maybe media duration if useful
+#### 6.4 Fix sort options ✅
+Replace filename-based sorting with real metadata fields.
+
+**Status:** Complete (2026-05-02)
+- Backend search results now include `created_at` (from `uploaded_at`) and `file_size`
+- Frontend `SearchResult` type extended with `file_size: number` and `created_at: string`
+- Date sort uses `created_at` timestamp (newest first)
+- Size sort uses `file_size` bytes (largest first)
+- Filename-based sorting removed
 
 ### Deliverables
 - ✅ updated API response schema
 - ✅ updated frontend types
 - ✅ updated result card and search page behavior
-- grouped video-scene presentation (remaining)
-- real metadata-based sorting (remaining)
+- ✅ grouped video-scene presentation
+- ✅ real metadata-based sorting
 
 ### Success criteria
 - ✅ UI filters behave correctly
 - ✅ users can understand why results appear
-- sorting behaves correctly (remaining)
+- ✅ sorting behaves correctly
 
 ---
 

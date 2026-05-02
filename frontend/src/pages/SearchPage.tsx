@@ -534,6 +534,16 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
             <h2 className="text-lg font-semibold">
               {filteredAndSortedResults.length} result{filteredAndSortedResults.length === 1 ? '' : 's'} for {emptyStateLabel}
             </h2>
+            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-sm font-medium text-foreground">How to read these result badges</p>
+              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                <p><span className="font-medium text-foreground">Semantic</span> shows visual or embedding similarity between your query and the media.</p>
+                <p><span className="font-medium text-foreground">Caption</span> shows how strongly the generated caption text matches your query terms.</p>
+                <p><span className="font-medium text-foreground">Boost +x%</span> means reranking promoted that result after combining semantic and caption signals.</p>
+                <p><span className="font-medium text-foreground">Exact phrase</span> means the query text appears directly inside the caption.</p>
+                <p><span className="font-medium text-foreground">Rich caption</span> means the caption contains more descriptive detail, which can help text search.</p>
+              </div>
+            </div>
           </div>
 
           {/* Results Grid with Staggered Animation */}

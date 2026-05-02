@@ -95,6 +95,34 @@ def _calibrate_scores(candidates: list[dict]) -> list[dict]:
     return candidates
 
 
+def build_result_explanation(candidate: dict, *, query_text: str | None, query_mode: str) -> dict:
+    vector_score = _clamp_score(candidate.get("vector_score", 0.0))
+    keyword_score = _clamp_score(candidate.get("keyword_score", 0.0))
+    fusion_score = _clamp_score(candidate.get("fusion_score", vector_score if query_mode == "image" else 0.0))
+    rerank_score = _clamp_score(candidate.get("rerank_score", fusion_score))
+
+    normalized_query = _normalize_text(query_text or "")
+    normalized_caption = _normalize_text(candidate.get("caption", ""))
+    exact_phrase_match = bool(query_mode == "text" and normalized_query and normalized_query in normalized_caption)
+    rich_caption = bool(
+        query_mode == "text" and len(candidate.get("caption", "").strip()) > _RICH_CAPTION_LENGTH
+    )
+
+    if query_mode == "image" or keyword_score == 0.0:
+        match_type = "visual"
+    elif vector_score == 0.0 or keyword_score > vector_score:
+        match_type = "caption"
+    else:
+        match_type = "hybrid"
+
+    return {
+        "match_type": match_type,
+        "exact_phrase_match": exact_phrase_match,
+        "rich_caption": rich_caption,
+        "rerank_boost": round(max(0.0, rerank_score - fusion_score), 4),
+    }
+
+
 def rank_candidates(settings, candidates: list[dict], *, query_text: str | None, query_mode: str, limit: int) -> list[dict]:
     ranked = [{**candidate} for candidate in candidates]
 

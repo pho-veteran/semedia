@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from .index_service import ensure_keyword_index_current, search_keyword
 from .models import MediaItem, ProcessingStatus
-from .ranking_service import merge_candidates, rank_candidates
+from .ranking_service import build_result_explanation, merge_candidates, rank_candidates
 from .storage import media_url
 
 
@@ -32,6 +32,29 @@ def _completed_media(session: Session) -> list[MediaItem]:
             .where(MediaItem.status == ProcessingStatus.COMPLETED)
         ).scalars()
     )
+
+
+def _serialize_score(value: float) -> float:
+    return round(max(0.0, min(1.0, float(value))), 4)
+
+
+def _serialize_ranked_result(item: dict, *, query_text: str | None, query_mode: str) -> dict:
+    return {
+        "media_id": item["media_id"],
+        "scene_id": item.get("scene_id"),
+        "media_type": item["media_type"],
+        "result_type": item["result_type"],
+        "original_filename": item["original_filename"],
+        "score": _serialize_score(item["score"]),
+        "vector_score": _serialize_score(item.get("vector_score", 0.0)),
+        "keyword_score": _serialize_score(item.get("keyword_score", 0.0)),
+        "caption": item.get("caption", ""),
+        "file_url": item.get("file_url", ""),
+        "thumbnail_url": item.get("thumbnail_url", ""),
+        "start_time": item.get("start_time"),
+        "end_time": item.get("end_time"),
+        "explanation": build_result_explanation(item, query_text=query_text, query_mode=query_mode),
+    }
 
 
 def _vector_results(settings, session: Session, query_embedding: list[float], top_k: int) -> list[dict]:
@@ -97,19 +120,7 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
     ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit)
 
     return [
-        {
-            "media_id": item["media_id"],
-            "scene_id": item.get("scene_id"),
-            "media_type": item["media_type"],
-            "result_type": item["result_type"],
-            "original_filename": item["original_filename"],
-            "score": item["score"],
-            "caption": item.get("caption", ""),
-            "file_url": item.get("file_url", ""),
-            "thumbnail_url": item.get("thumbnail_url", ""),
-            "start_time": item.get("start_time"),
-            "end_time": item.get("end_time"),
-        }
+        _serialize_ranked_result(item, query_text=query_text, query_mode="text")
         for item in ranked[:limit]
     ]
 
@@ -121,18 +132,6 @@ def search_image(settings, session: Session, query_embedding: list[float], top_k
     ranked = rank_candidates(settings, candidates, query_text=None, query_mode="image", limit=limit)
 
     return [
-        {
-            "media_id": item["media_id"],
-            "scene_id": item.get("scene_id"),
-            "media_type": item["media_type"],
-            "result_type": item["result_type"],
-            "original_filename": item["original_filename"],
-            "score": item["score"],
-            "caption": item.get("caption", ""),
-            "file_url": item.get("file_url", ""),
-            "thumbnail_url": item.get("thumbnail_url", ""),
-            "start_time": item.get("start_time"),
-            "end_time": item.get("end_time"),
-        }
+        _serialize_ranked_result(item, query_text=None, query_mode="image")
         for item in ranked[:limit]
     ]

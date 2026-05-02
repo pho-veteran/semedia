@@ -1041,3 +1041,83 @@ def test_keyword_search_refreshes_when_artifact_timestamp_changes(search_env, mo
 
     assert second.status_code == 200
     assert second.json()["results"] == first.json()["results"]
+
+
+def test_search_text_returns_component_scores_and_explanation(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/office.jpg",
+            original_filename="office.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="office desk",
+            embedding=[0.3, 0.9539392014],
+            index_key="media:90",
+        )
+        session.add(image)
+        session.commit()
+        session.refresh(image)
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = client.post("/api/v1/search/", json={"query_text": "office desk", "top_k": 5})
+
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["media_id"] == image.id
+    assert result["vector_score"] == 0.3
+    assert result["keyword_score"] == 1.0
+    assert result["explanation"] == {
+        "match_type": "caption",
+        "exact_phrase_match": True,
+        "rich_caption": False,
+        "rerank_boost": 0.08,
+    }
+
+
+def test_image_search_returns_visual_explanation(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        image = MediaItem(
+            file_path="originals/red.jpg",
+            original_filename="red.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="a red square",
+            embedding=[1.0, 0.0],
+            index_key="media:91",
+        )
+        session.add(image)
+        session.commit()
+        session.refresh(image)
+
+    monkeypatch.setattr(module, "_embed_image", lambda file: [1.0, 0.0])
+
+    response = client.post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "5"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    result = response.json()["results"][0]
+    assert result["media_id"] == image.id
+    assert result["vector_score"] == 1.0
+    assert result["keyword_score"] == 0.0
+    assert result["explanation"] == {
+        "match_type": "visual",
+        "exact_phrase_match": False,
+        "rich_caption": False,
+        "rerank_boost": 0.0,
+    }

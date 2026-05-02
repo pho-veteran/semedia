@@ -268,13 +268,19 @@ Recommended decision:
 - Align backend score range and frontend filters
 - Update score display formatting
 
-#### 6.2 Return richer ranking data
+#### 6.2 Return richer ranking data ✅
 Extend API responses with:
-- final score
-- vector score
-- keyword score
-- optional rerank adjustments
-- short explanation label
+- final score ✅
+- vector score ✅
+- keyword score ✅
+- rerank adjustments ✅
+- structured explanation object ✅
+
+**Status:** Complete (2026-05-02)
+- Backend exposes `vector_score`, `keyword_score`, and `explanation` in search payloads
+- Frontend types extended with `SearchResultExplanation` interface
+- Result cards redesigned with badge-based metadata layout
+- Search page includes detailed explanation panel for badge meanings
 
 #### 6.3 Group related video scenes
 Allow UI to show multiple strong scenes from the same video without flooding the page.
@@ -290,14 +296,16 @@ Replace filename-based sorting with real metadata fields:
 - maybe media duration if useful
 
 ### Deliverables
-- updated API response schema
-- updated frontend types
-- updated result card and search page behavior
+- ✅ updated API response schema
+- ✅ updated frontend types
+- ✅ updated result card and search page behavior
+- grouped video-scene presentation (remaining)
+- real metadata-based sorting (remaining)
 
 ### Success criteria
-- UI filters behave correctly
-- sorting behaves correctly
-- users can understand why results appear
+- ✅ UI filters behave correctly
+- ✅ users can understand why results appear
+- sorting behaves correctly (remaining)
 
 ---
 
@@ -427,6 +435,6 @@ This improvement cycle is done when:
 
 ## 9. Recommended Next Step
 
-Phases 1 through 5 are complete. Start with **Phase 6: Improve Result Presentation and UI Handling** to expose the new ranking semantics cleanly in the product and make filters, sorting, and explanations trustworthy.
+Phases 1 through 5 are complete, and Phase 6.1 and 6.2 are complete. The remaining Phase 6 work is **scene grouping (6.3)** and **real metadata-based sorting (6.4)**.
 
-The main remaining issues are richer result presentation and semantic coverage for hard queries such as `mountain landscape`, `water`, and `night scene`. The best next move is to ship the Phase 6 UI/API alignment work, then revisit candidate generation or caption vocabulary only if judged-query metrics plateau again.
+The main remaining issues are grouped video-scene presentation and metadata-based sorting. The best next move is to ship the remaining Phase 6 UI work, then revisit candidate generation (Phase 8) or caption vocabulary (Phase 10) only if judged-query metrics plateau again.

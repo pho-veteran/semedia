@@ -10,10 +10,54 @@ interface SearchResultCardProps {
   isFocused?: boolean
 }
 
+function formatBoost(value: number): string {
+  return `+${Math.round(value * 100)}%`
+}
+
+function getExplanationSummary(item: SearchResult): string {
+  const matchTypeLabel = {
+    visual: 'Visual match',
+    caption: 'Caption match',
+    hybrid: 'Hybrid match',
+  }[item.explanation.match_type]
+
+  const reasons: string[] = []
+  if (item.explanation.exact_phrase_match) {
+    reasons.push('exact phrase in caption')
+  }
+  if (item.explanation.rich_caption) {
+    reasons.push('rich caption')
+  }
+
+  return reasons.length > 0 ? `${matchTypeLabel} · ${reasons.join(' · ')}` : matchTypeLabel
+}
+
+function getIdentityBadges(item: SearchResult): string[] {
+  const badges = [item.result_type === 'video_scene' ? 'Scene' : 'Image']
+
+  if (item.result_type === 'video_scene' && item.scene_id !== null) {
+    badges.push(`Scene #${item.scene_id}`)
+  }
+
+  return badges
+}
+
+function getContextBadges(item: SearchResult): string[] {
+  const badges: string[] = []
+
+  if (item.explanation.exact_phrase_match) {
+    badges.push('Exact phrase')
+  }
+  if (item.explanation.rich_caption) {
+    badges.push('Rich caption')
+  }
+
+  return badges
+}
+
 export function SearchResultCard({ item, onOpenMedia, className, isFocused = false }: SearchResultCardProps) {
   const thumbnailUrl = toAbsoluteUrl(item.thumbnail_url || item.file_url)
   const hasVideoScene = item.result_type === 'video_scene'
-  const isScene = item.result_type === 'video_scene'
 
   const handleClick = () => {
     onOpenMedia(item.media_id, hasVideoScene ? item.start_time : null)
@@ -76,25 +120,50 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
       </div>
       
       {/* Content */}
-      <div className="space-y-2">
-        {/* Filename and scene badge */}
-        <div className="flex items-start justify-between gap-2">
+      <div className="space-y-3">
+        <div className="space-y-2">
           <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-1">
             {item.original_filename}
           </h3>
-          {isScene && (
-            <Badge variant="secondary" className="text-xs flex-shrink-0">
-              Scene
+
+          <div className="flex flex-wrap gap-2">
+            {getIdentityBadges(item).map((badge) => (
+              <Badge key={badge} variant={badge === 'Scene' ? 'secondary' : 'outline'} className="text-[11px]">
+                {badge}
+              </Badge>
+            ))}
+            {getContextBadges(item).map((badge) => (
+              <Badge key={badge} variant="outline" className="text-[11px] bg-primary/5 border-primary/20">
+                {badge}
+              </Badge>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="text-[11px]">
+              Semantic {formatScore(item.vector_score)}
             </Badge>
+            <Badge variant="outline" className="text-[11px]">
+              Caption {formatScore(item.keyword_score)}
+            </Badge>
+            {item.explanation.rerank_boost > 0 && (
+              <Badge variant="outline" className="text-[11px] bg-green-500/5 border-green-500/20 text-foreground">
+                Boost {formatBoost(item.explanation.rerank_boost)}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground/90 line-clamp-2">
+            {getExplanationSummary(item)}
+          </p>
+          {item.caption && (
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {item.caption}
+            </p>
           )}
         </div>
-        
-        {/* Caption excerpt */}
-        {item.caption && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {item.caption}
-          </p>
-        )}
       </div>
     </div>
   )

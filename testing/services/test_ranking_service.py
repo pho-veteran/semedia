@@ -6,6 +6,7 @@ from semedia_shared.ranking_service import (
     _apply_diversity,
     _apply_reranking,
     _calibrate_scores,
+    build_result_explanation,
     merge_candidates,
     rank_candidates,
 )
@@ -265,3 +266,60 @@ def test_rank_candidates_handles_equal_scores_without_malformed_output(test_sett
     assert all(0.0 <= item["score"] <= 1.0 for item in ranked)
     assert ranked[0]["score"] == ranked[1]["score"] == 0.5
     assert {item["media_id"] for item in ranked} == {1, 2}
+
+
+def test_build_result_explanation_marks_caption_match(test_settings):
+    candidate = {
+        "caption": "office desk",
+        "vector_score": 0.3,
+        "keyword_score": 1.0,
+        "fusion_score": 0.51,
+        "rerank_score": 0.59,
+    }
+
+    explanation = build_result_explanation(candidate, query_text="office desk", query_mode="text")
+
+    assert explanation == {
+        "match_type": "caption",
+        "exact_phrase_match": True,
+        "rich_caption": False,
+        "rerank_boost": 0.08,
+    }
+
+
+def test_build_result_explanation_marks_hybrid_match_with_rich_caption(test_settings):
+    candidate = {
+        "caption": "office desk workspace laptop with bright window light and conference notebooks",
+        "vector_score": 0.8,
+        "keyword_score": 0.4,
+        "fusion_score": 0.68,
+        "rerank_score": 0.78,
+    }
+
+    explanation = build_result_explanation(candidate, query_text="office desk", query_mode="text")
+
+    assert explanation == {
+        "match_type": "hybrid",
+        "exact_phrase_match": True,
+        "rich_caption": True,
+        "rerank_boost": 0.1,
+    }
+
+
+def test_build_result_explanation_marks_image_results_as_visual(test_settings):
+    candidate = {
+        "caption": "a red square",
+        "vector_score": 0.9,
+        "keyword_score": 0.0,
+        "fusion_score": 0.9,
+        "rerank_score": 0.9,
+    }
+
+    explanation = build_result_explanation(candidate, query_text=None, query_mode="image")
+
+    assert explanation == {
+        "match_type": "visual",
+        "exact_phrase_match": False,
+        "rich_caption": False,
+        "rerank_boost": 0.0,
+    }

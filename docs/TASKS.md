@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** Phase 5 complete / Phase 6 in progress
+**Status:** Phase 6 in progress (6.1 and 6.2 complete, 6.3 and 6.4 remaining)
 
 ## Phase 1 — Audit and Baseline
 
@@ -186,12 +186,16 @@
   - [x] Update frontend score filters to use [0, 1] thresholds with a permissive default (`0.0`, plus `0.5`, `0.7`, `0.9` options)
   - [x] Update `formatScore()` to display as percentages
   - [x] Rebuild frontend so the live bundle serves the fixed default filter
-- [ ] 6.2 Return richer ranking data
-  - [ ] Add `vector_score` to API response
-  - [ ] Add `keyword_score` to API response
-  - [ ] Add `recency_score` to API response
-  - [ ] Add `explanation` field to API response
-  - [ ] Create `services/shared/semedia_shared/explanation_service.py`
+- [x] 6.2 Return richer ranking data
+  - [x] Add `vector_score` to API response
+  - [x] Add `keyword_score` to API response
+  - [x] Add structured `explanation` field to API response
+  - [x] Extend frontend `SearchResult` typing for richer ranking metadata
+  - [x] Redesign `SearchResultCard` with badge-based ranking and explanation metadata
+  - [x] Add detailed badge explanation panel to `SearchPage`
+  - [x] Add backend and frontend tests covering richer ranking payloads and rendering
+  - [x] Rebuild and verify the frontend stack
+  - [x] Keep current implementation local to existing search and card components (no separate `explanation_service.py`)
 - [ ] 6.3 Group related video scenes
   - [ ] Update frontend to group results by `media_id`
   - [ ] Add expandable scene groups in UI
@@ -209,7 +213,8 @@
 
 **Current status:**
 - Score handling is complete and the live frontend now shows low-score text results by default.
-- Remaining Phase 6 work: richer ranking explanations, grouped video-scene presentation, and real metadata-based sorting.
+- Richer ranking payloads, badge-based result cards, and the search-page explanation panel are complete.
+- Remaining Phase 6 work: grouped video-scene presentation and real metadata-based sorting.
 
 ---
 
@@ -330,8 +335,8 @@
 
 ## Notes
 
-- **Current Phase:** Phase 5 complete
-- **Next Phase:** Phase 6 (Improve Result Presentation and UI Handling)
+- **Current Phase:** Phase 6 (Improve Result Presentation and UI Handling)
+- **Next Phase:** Phase 6.3 grouped video-scene presentation, then Phase 6.4 metadata-based sorting
 - **Blocked Tasks:** None currently
 - **Risks:** See `Semedia/docs/plan.md` section 7
 
@@ -342,6 +347,10 @@
 - **Phase 3:** Complete (2026-04-30) — durable keyword retrieval implemented
 - **Phase 4:** Complete (2026-04-30) — caption quality and cleanup refactor implemented
 - **Phase 5:** Complete (2026-05-01) — ranking pipeline, normalized scores, reranking, and diversity implemented; live evaluation improved to Precision@10 0.1000, Recall@10 0.9444, MRR 0.6214, NDCG@10 0.6695
-- **Phase 6:** Not started
+- **Phase 6:** In progress (2026-05-02)
+  - 6.1 Complete — score handling and frontend filter alignment
+  - 6.2 Complete — richer ranking data, badge-based result cards, search page explanation panel
+  - 6.3 Not started — grouped video-scene presentation
+  - 6.4 Not started — real metadata-based sorting
 - **Phase 7:** Not started
 - **Phase 8+:** Not started

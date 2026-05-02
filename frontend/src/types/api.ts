@@ -50,17 +50,28 @@ export interface UploadResponse {
   data: MediaSummary
 }
 
+export interface SearchResultExplanation {
+  match_type: 'visual' | 'caption' | 'hybrid'
+  exact_phrase_match: boolean
+  rich_caption: boolean
+  rerank_boost: number
+}
+
 export interface SearchResult {
   media_id: number
+  scene_id: number | null
   media_type: MediaType
   result_type: 'image' | 'video_scene'
   original_filename: string
   score: number
+  vector_score: number
+  keyword_score: number
   caption: string
   file_url: string
   thumbnail_url: string
   start_time: number | null
   end_time: number | null
+  explanation: SearchResultExplanation
 }
 
 export interface SearchResponse {

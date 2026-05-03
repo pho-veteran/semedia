@@ -13,7 +13,10 @@ import sys
 import urllib.request
 from pathlib import Path
 
-from evaluate_search import load_queries, run_evaluation
+try:
+    from .evaluate_search import compare_reports, load_queries, run_evaluation
+except ImportError:
+    from evaluate_search import compare_reports, load_queries, run_evaluation
 
 
 def search_text_via_api(base_url: str, query_text: str, top_k: int) -> list[dict]:
@@ -37,9 +40,16 @@ def main() -> int:
     parser.add_argument("--top-k", type=int, default=10, help="Number of results to retrieve per query")
     parser.add_argument("--per-query", action="store_true", help="Print per-query metrics and retrieved IDs")
     parser.add_argument("--by-type", action="store_true", help="Print aggregate metrics grouped by query type")
+    parser.add_argument("--output", default=None, help="Write the evaluation report JSON to this path")
+    parser.add_argument("--compare-to", default=None, help="Path to a saved baseline report JSON")
+    parser.add_argument(
+        "--relative-drop-threshold",
+        type=float,
+        default=0.05,
+        help="Relative metric drop that should be flagged as a regression",
+    )
     args = parser.parse_args()
 
-    include_details = args.per_query or args.by_type
 
     def print_metric_block(title: str, metrics: dict) -> None:
         print(f"\n{title}")
@@ -105,8 +115,11 @@ def main() -> int:
             queries_file,
             search_fn,
             k=args.top_k,
-            include_per_query=include_details,
-            include_by_type=args.by_type,
+            include_per_query=True,
+            include_by_type=True,
+            include_by_modality=True,
+            include_by_difficulty=True,
+            include_negative_summary=True,
         )
     except Exception as exc:
         print(f"Error during evaluation: {exc}", file=sys.stderr)
@@ -119,6 +132,34 @@ def main() -> int:
 
     if args.by_type:
         print_by_type(results.get("by_type", {}))
+
+    if "negative_queries" in results:
+        negatives = results["negative_queries"]
+        print("\nNegative-query Summary")
+        print("=" * 80)
+        print(f"Queries evaluated: {negatives['num_queries']}")
+        print(f"False positive rate: {negatives['false_positive_rate']:.4f}")
+        print(f"Mean false positives/query: {negatives['mean_false_positives_per_query']:.4f}")
+
+    payload = {"report": results}
+
+    if args.compare_to:
+        baseline_payload = json.loads(Path(args.compare_to).read_text())
+        baseline_report = baseline_payload.get("report", baseline_payload)
+        comparison = compare_reports(
+            results,
+            baseline_report,
+            k=args.top_k,
+            relative_drop_threshold=args.relative_drop_threshold,
+        )
+        payload["comparison"] = comparison
+        print(f"\nComparison status: {comparison['status']}")
+
+    if args.output:
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(payload, indent=2))
+        print(f"\nSaved evaluation report to {output_path}")
 
     return 0
 

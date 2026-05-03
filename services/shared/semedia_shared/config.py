@@ -37,6 +37,7 @@ class Settings:
     caption_weak_min_chars: int = 10
     caption_retry_max_length: int = 60
     caption_retry_min_length: int = 15
+    caption_enable_weak_filtering: bool = True
 
 
 def _truthy(name: str, default: str = "0") -> bool:
@@ -79,4 +80,5 @@ def get_settings(service_name: str) -> Settings:
         caption_weak_min_chars=int(os.getenv("CAPTION_WEAK_MIN_CHARS", "10")),
         caption_retry_max_length=int(os.getenv("CAPTION_RETRY_MAX_LENGTH", "60")),
         caption_retry_min_length=int(os.getenv("CAPTION_RETRY_MIN_LENGTH", "15")),
+        caption_enable_weak_filtering=_truthy("CAPTION_ENABLE_WEAK_FILTERING", "1"),
     )

@@ -40,6 +40,84 @@ def compute_metrics(relevant_ids: set[int], retrieved_ids: list[int], k: int = 1
     }
 
 
+def summarize_group(per_query_results: list[dict], key: str, k: int) -> dict[str, dict[str, float]]:
+    grouped: dict[str, list[dict]] = {}
+    for result in per_query_results:
+        group_key = result.get(key, "unknown") or "unknown"
+        grouped.setdefault(group_key, []).append(result)
+
+    summary: dict[str, dict[str, float]] = {}
+    for group_key, rows in grouped.items():
+        summary[group_key] = {
+            f"mean_precision@{k}": sum(r["precision@k"] for r in rows) / len(rows),
+            f"mean_recall@{k}": sum(r["recall@k"] for r in rows) / len(rows),
+            "mean_mrr": sum(r["mrr"] for r in rows) / len(rows),
+            f"mean_ndcg@{k}": sum(r["ndcg@k"] for r in rows) / len(rows),
+            "num_queries": len(rows),
+        }
+    return summary
+
+
+def summarize_negative_queries(per_query_results: list[dict], k: int) -> dict[str, float]:
+    negatives = [row for row in per_query_results if "negative" in row.get("tags", [])]
+    if not negatives:
+        return {"num_queries": 0, "false_positive_rate": 0.0, "mean_false_positives_per_query": 0.0}
+
+    false_positive_counts = [len(row["retrieved_ids"]) for row in negatives]
+    queries_with_false_positives = sum(1 for count in false_positive_counts if count > 0)
+
+    return {
+        "num_queries": len(negatives),
+        "false_positive_rate": queries_with_false_positives / len(negatives),
+        "mean_false_positives_per_query": sum(false_positive_counts) / len(negatives),
+    }
+
+
+def compare_reports(
+    current_report: dict,
+    baseline_report: dict,
+    *,
+    k: int,
+    relative_drop_threshold: float = 0.05,
+) -> dict:
+    metric_names = [
+        f"mean_precision@{k}",
+        f"mean_recall@{k}",
+        "mean_mrr",
+        f"mean_ndcg@{k}",
+    ]
+    deltas = {}
+    regressions = []
+
+    for metric_name in metric_names:
+        baseline_value = baseline_report.get(metric_name, 0.0)
+        current_value = current_report.get(metric_name, 0.0)
+        deltas[metric_name] = current_value - baseline_value
+        if baseline_value > 0 and current_value < baseline_value * (1 - relative_drop_threshold):
+            regressions.append(metric_name)
+
+    baseline_negative_rate = baseline_report.get("negative_queries", {}).get("false_positive_rate", 0.0)
+    current_negative_rate = current_report.get("negative_queries", {}).get("false_positive_rate", 0.0)
+    deltas["negative_false_positive_rate"] = current_negative_rate - baseline_negative_rate
+    if current_negative_rate > baseline_negative_rate + 0.05:
+        regressions.append("negative_false_positive_rate")
+
+    return {
+        "status": "regression" if regressions else "ok",
+        "regressions": regressions,
+        "deltas": deltas,
+    }
+
+
+def _result_identifier(result: dict) -> str:
+    scene_key = result.get("scene_key")
+    if scene_key:
+        return scene_key
+    if result.get("scene_id") is not None:
+        return f"scene:{result['scene_id']}"
+    return f"media:{result['media_id']}"
+
+
 def run_evaluation(
     queries_file: Path,
     search_fn: Callable[[str, int], list[dict]],
@@ -47,6 +125,9 @@ def run_evaluation(
     *,
     include_per_query: bool = False,
     include_by_type: bool = False,
+    include_by_modality: bool = False,
+    include_by_difficulty: bool = False,
+    include_negative_summary: bool = False,
 ) -> dict:
     queries = load_queries(queries_file)
     judged_queries = [
@@ -58,6 +139,15 @@ def run_evaluation(
     ]
     all_metrics: list[dict[str, float]] = []
     per_query_results: list[dict] = []
+    collect_per_query = any(
+        [
+            include_per_query,
+            include_by_type,
+            include_by_modality,
+            include_by_difficulty,
+            include_negative_summary,
+        ]
+    )
 
     for query in judged_queries:
         relevant_media_ids = set(query.get("relevant_media_ids", []))
@@ -68,64 +158,55 @@ def run_evaluation(
         }
 
         results = search_fn(query["query_text"], k)
-        retrieved_ids = [
-            f"scene:{result['scene_id']}"
-            if result.get("scene_id") is not None
-            else f"media:{result['media_id']}"
-            for result in results
-        ]
+        retrieved_ids = [_result_identifier(result) for result in results]
         metrics = compute_metrics(relevant_ids, retrieved_ids, k=k)
         all_metrics.append(metrics)
 
-        if include_per_query:
-            per_query_results.append({
-                "query_id": query["query_id"],
-                "query_text": query["query_text"],
-                "query_type": query.get("query_type", "unknown"),
-                "precision@k": metrics[f"precision@{k}"],
-                "recall@k": metrics[f"recall@{k}"],
-                "mrr": metrics["mrr"],
-                "ndcg@k": metrics[f"ndcg@{k}"],
-                "retrieved_ids": retrieved_ids[:k],
-            })
-
-    if not all_metrics:
-        result = {
-            f"mean_precision@{k}": 0.0,
-            f"mean_recall@{k}": 0.0,
-            "mean_mrr": 0.0,
-            f"mean_ndcg@{k}": 0.0,
-            "num_queries": 0,
-        }
-        if include_per_query:
-            result["per_query"] = []
-        if include_by_type:
-            result["by_type"] = {}
-        return result
+        if collect_per_query:
+            per_query_results.append(
+                {
+                    "query_id": query["query_id"],
+                    "query_text": query["query_text"],
+                    "query_type": query.get("query_type", "unknown"),
+                    "media_type_target": query.get("media_type_target", "mixed"),
+                    "difficulty": query.get("difficulty", "unknown"),
+                    "tags": query.get("tags", []),
+                    "precision@k": metrics[f"precision@{k}"],
+                    "recall@k": metrics[f"recall@{k}"],
+                    "mrr": metrics["mrr"],
+                    "ndcg@k": metrics[f"ndcg@{k}"],
+                    "retrieved_ids": retrieved_ids[:k],
+                }
+            )
 
     result = {
-        f"mean_precision@{k}": sum(metric[f"precision@{k}"] for metric in all_metrics) / len(all_metrics),
-        f"mean_recall@{k}": sum(metric[f"recall@{k}"] for metric in all_metrics) / len(all_metrics),
-        "mean_mrr": sum(metric["mrr"] for metric in all_metrics) / len(all_metrics),
-        f"mean_ndcg@{k}": sum(metric[f"ndcg@{k}"] for metric in all_metrics) / len(all_metrics),
+        f"mean_precision@{k}": 0.0,
+        f"mean_recall@{k}": 0.0,
+        "mean_mrr": 0.0,
+        f"mean_ndcg@{k}": 0.0,
         "num_queries": len(all_metrics),
     }
+
+    if all_metrics:
+        result.update(
+            {
+                f"mean_precision@{k}": sum(metric[f"precision@{k}"] for metric in all_metrics) / len(all_metrics),
+                f"mean_recall@{k}": sum(metric[f"recall@{k}"] for metric in all_metrics) / len(all_metrics),
+                "mean_mrr": sum(metric["mrr"] for metric in all_metrics) / len(all_metrics),
+                f"mean_ndcg@{k}": sum(metric[f"ndcg@{k}"] for metric in all_metrics) / len(all_metrics),
+            }
+        )
 
     if include_per_query:
         result["per_query"] = per_query_results
 
     if include_by_type:
-        by_type = {}
-        for query_type in {"object", "action", "scene"}:
-            type_results = [r for r in per_query_results if r["query_type"] == query_type]
-            if type_results:
-                by_type[query_type] = {
-                    f"mean_precision@{k}": sum(r["precision@k"] for r in type_results) / len(type_results),
-                    f"mean_recall@{k}": sum(r["recall@k"] for r in type_results) / len(type_results),
-                    "mean_mrr": sum(r["mrr"] for r in type_results) / len(type_results),
-                    f"mean_ndcg@{k}": sum(r["ndcg@k"] for r in type_results) / len(type_results),
-                    "num_queries": len(type_results),
-                }
-        result["by_type"] = by_type
+        result["by_type"] = summarize_group(per_query_results, "query_type", k)
+    if include_by_modality:
+        result["by_modality"] = summarize_group(per_query_results, "media_type_target", k)
+    if include_by_difficulty:
+        result["by_difficulty"] = summarize_group(per_query_results, "difficulty", k)
+    if include_negative_summary:
+        result["negative_queries"] = summarize_negative_queries(per_query_results, k)
 
     return result

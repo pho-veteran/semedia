@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import os
 import time
 import urllib.request
 from pathlib import Path
@@ -60,21 +61,39 @@ def poll_media(base_url: str, media_id: int, timeout_seconds: int) -> dict:
 
 def main():
     base_url = "http://gateway-api:8000"
-    assets_dir = Path("/app/testing/smoke-assets")
+    evaluation_dir = Path(
+        os.environ.get("SEMEDIA_EVALUATION_DIR", "/app/testing/evaluation")
+    )
+    manifest_file = evaluation_dir / "asset_manifest.json"
+    assets_dir = evaluation_dir / "assets"
 
-    media_files = list(assets_dir.glob("*.png")) + list(assets_dir.glob("*.mp4"))
+    if not manifest_file.exists():
+        raise FileNotFoundError(f"Asset manifest not found: {manifest_file}")
 
-    print(f"Uploading {len(media_files)} files from {assets_dir}")
+    manifest = json.loads(manifest_file.read_text())
+    print(f"Uploading {len(manifest)} files from manifest")
 
-    for file_path in media_files:
-        print(f"\n[upload] {file_path.name}")
+    for item in manifest:
+        filename = item["filename"]
+        file_path = assets_dir / filename
+        if not file_path.exists():
+            raise FileNotFoundError(f"Manifest references missing file: {file_path}")
+
+        print(f"\n[upload] {filename} (asset_id={item['asset_id']})")
         result = upload_file(base_url, file_path)
         media_id = result["data"]["id"]
         detail = poll_media(base_url, media_id, timeout_seconds=300)
-        if detail["status"] == "completed":
-            print(f"  [done] media_id={media_id} caption={detail.get('caption', 'N/A')}")
-        else:
-            print(f"  [failed] media_id={media_id} error={detail.get('error_message', 'unknown')}")
+        print(
+            json.dumps(
+                {
+                    "asset_id": item["asset_id"],
+                    "filename": filename,
+                    "media_id": media_id,
+                    "status": detail["status"],
+                    "caption": detail.get("caption"),
+                }
+            )
+        )
 
     print("\n[done] Media seeding complete")
 

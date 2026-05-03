@@ -53,6 +53,9 @@ def _clean_caption(caption: str) -> str:
 
 
 def _is_weak_caption(settings, caption: str) -> bool:
+    if not settings.caption_enable_weak_filtering:
+        return False
+
     cleaned = caption.strip()
     if len(cleaned) < settings.caption_weak_min_chars:
         return True

@@ -47,6 +47,7 @@ def test_settings(tmp_path):
         caption_weak_min_chars=10,
         caption_retry_max_length=60,
         caption_retry_min_length=15,
+        caption_enable_weak_filtering=True,
     )
 
 

@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** Phase 6 in progress (6.1 and 6.2 complete, 6.3 and 6.4 remaining)
+**Status:** Phase 7 complete (locked benchmark, baseline report, metrics history, and tuning checklist complete; Phase 8 candidate-generation work remains)
 
 ## Phase 1 — Audit and Baseline
 
@@ -224,31 +224,38 @@
 **Goal:** Make search improvement iterative and measurable.
 
 ### Tasks
-- [ ] 7.1 Finalize judged dataset
-  - [ ] Expand query set if needed
-  - [ ] Add query categories
-  - [ ] Document judging criteria
-- [ ] 7.2 Build evaluation runner
-  - [ ] Enhance `testing/evaluation/evaluate_search.py`
-  - [ ] Add metric comparison reports
-  - [ ] Add regression detection
-- [ ] 7.3 Compute baseline vs new metrics
-  - [ ] Run evaluation after each major change
-  - [ ] Track improvements by query category
-  - [ ] Document metric changes
-- [ ] 7.4 Add query/result logging hooks
-  - [ ] Add `search_logs` table
-  - [ ] Log queries, results, and clicks
-  - [ ] Add analytics endpoint
-- [ ] 7.5 Create tuning checklist
-  - [ ] Document weight tuning process
-  - [ ] Document reranking rule tuning
-  - [ ] Document threshold tuning
+- [x] 7.1 Finalize judged dataset
+  - [x] Add `testing/evaluation/asset_manifest.json`
+  - [x] Commit 35+ locked local evaluation assets under `testing/evaluation/assets/`
+  - [x] Expand `testing/evaluation/queries.json` to 100+ judged queries
+  - [x] Double-check authenticity by comparing the actual media content against every judged query
+  - [x] Add query categories
+  - [x] Document judging criteria in query metadata and manual notes
+- [x] 7.2 Build evaluation runner
+  - [x] Enhance `testing/evaluation/evaluate_search.py`
+  - [x] Add metric comparison reports
+  - [x] Add regression detection
+  - [x] Add modality, difficulty, and negative-query summaries
+  - [x] Add CLI output saving and baseline comparison flow in `testing/evaluation/run_evaluation.py`
+- [x] 7.3 Compute baseline vs new metrics
+  - [x] Run Docker baseline evaluation against the locked corpus
+  - [x] Save `testing/evaluation/baselines/baseline-phase7.json`
+  - [x] Track improvements by query category
+  - [x] Record the baseline in `docs/metrics/search_quality_history.md`
+- [x] 7.4 Maintain metrics history and project tracking
+  - [x] Create `docs/metrics/search_quality_history.md`
+  - [x] Update `docs/plan.md` with Phase 7 deliverables
+  - [x] Update `docs/TASKS.md` to reflect the locked benchmark workflow
+- [x] 7.5 Create tuning checklist (`docs/metrics/search_tuning_checklist.md`)
+  - [x] Document weight tuning process
+  - [x] Document reranking rule tuning
+  - [x] Document threshold tuning
 
 **Success Criteria:**
 - Every major ranking change is evaluated before adoption
 - Relevance improvements are evidence-based
 - Regression tests prevent quality degradation
+- Locked local corpus, judged queries, and baseline workflow are documented in-project
 
 ---
 
@@ -336,8 +343,8 @@
 
 ## Notes
 
-- **Current Phase:** Phase 6 (Improve Result Presentation and UI Handling)
-- **Next Phase:** Phase 6.3 grouped video-scene presentation, then Phase 6.4 metadata-based sorting
+- **Current Phase:** Phase 8 (Expand Candidate Generation)
+- **Next Phase:** Phase 8.1 candidate pool sizing, then later tuning work from the new checklist
 - **Blocked Tasks:** None currently
 - **Risks:** See `Semedia/docs/plan.md` section 7
 
@@ -353,5 +360,5 @@
   - 6.2 Complete — richer ranking data, badge-based result cards, search page explanation panel
   - 6.3 Complete — grouped video-scene presentation
   - 6.4 Complete — real metadata-based sorting
-- **Phase 7:** Not started
+- **Phase 7:** Complete (2026-05-02) — locked benchmark corpus, judged dataset, baseline report, metrics history, and tuning checklist documented
 - **Phase 8+:** Not started

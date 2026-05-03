@@ -38,10 +38,19 @@ def _serialize_score(value: float) -> float:
     return round(max(0.0, min(1.0, float(value))), 4)
 
 
+def _stable_scene_key(item: dict) -> str | None:
+    scene_index = item.get("scene_index")
+    if scene_index is None or not item.get("original_filename"):
+        return None
+    return f"scene:{item['original_filename']}:{scene_index}"
+
+
 def _serialize_ranked_result(item: dict, *, query_text: str | None, query_mode: str) -> dict:
     return {
         "media_id": item["media_id"],
         "scene_id": item.get("scene_id"),
+        "scene_index": item.get("scene_index"),
+        "scene_key": _stable_scene_key(item),
         "media_type": item["media_type"],
         "result_type": item["result_type"],
         "original_filename": item["original_filename"],
@@ -71,6 +80,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
                     "key": ("image", media.id),
                     "media_id": media.id,
                     "scene_id": None,
+                    "scene_index": None,
                     "media_type": media.media_type,
                     "result_type": "image",
                     "original_filename": media.original_filename,
@@ -93,6 +103,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
                         "key": ("scene", scene.id),
                         "media_id": media.id,
                         "scene_id": scene.id,
+                        "scene_index": scene.scene_index,
                         "media_type": media.media_type,
                         "result_type": "video_scene",
                         "original_filename": media.original_filename,

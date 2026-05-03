@@ -31,6 +31,7 @@ services:
       ML_PRELOAD_MODELS: ${ML_PRELOAD_MODELS:-1}
       CLIP_MODEL_NAME: ${CLIP_MODEL_NAME:-openai/clip-vit-base-patch16}
       CAPTION_MODEL_NAME: ${CAPTION_MODEL_NAME:-Salesforce/blip-image-captioning-large}
+      CAPTION_ENABLE_WEAK_FILTERING: ${CAPTION_ENABLE_WEAK_FILTERING:-1}
       SCENE_DETECTION_THRESHOLD: ${SCENE_DETECTION_THRESHOLD:-27.0}
     volumes:
       - backend_media:${MEDIA_ROOT:-/app/storage}

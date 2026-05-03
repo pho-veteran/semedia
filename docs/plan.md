@@ -322,10 +322,10 @@ Replace filename-based sorting with real metadata fields.
 - Prevent future regressions
 
 ### Work
-1. Finalize judged dataset
-2. Build evaluation runner
+1. Finalize a locked local benchmark corpus and judged dataset
+2. Build an evaluation runner with reproducible reporting and regression comparison
 3. Compute baseline vs new metrics after every major algorithm revision
-4. Track improvements by query category
+4. Track improvements by query category and record them over time
 5. Add optional query/result logging hooks for future online evaluation
 
 ### Metrics
@@ -334,15 +334,21 @@ Replace filename-based sorting with real metadata fields.
 - MRR
 - NDCG@10
 - qualitative failure counts by category
+- negative-query false positive rate
 
 ### Deliverables
+- `testing/evaluation/asset_manifest.json`
+- locked benchmark corpus under `testing/evaluation/assets/`
 - `testing/evaluation/evaluate_search.py`
-- reproducible metric reports
-- tuning checklist for weights and rules
+- `testing/evaluation/baselines/baseline-phase7.json`
+- `docs/metrics/search_quality_history.md`
+- reproducible metric reports and comparison flow
+- `docs/metrics/search_tuning_checklist.md` with tuning guidance for weights, reranking rules, and thresholds
 
 ### Success criteria
 - Every major ranking change is evaluated before adoption
 - Relevance improvements are evidence-based, not subjective only
+- Locked local benchmark assets, judged queries, baseline report, and metrics-history workflow are documented in-project
 
 ---
 

@@ -412,6 +412,6 @@ Phase 7 is complete when:
 
 1. Run baseline evaluation and establish initial metrics
 2. Use the benchmark to validate any future ranking or retrieval changes
-3. Consider expanding candidate generation (Phase 8) if metrics show early truncation issues
+3. Consider future retrieval experiments only if evaluation evidence shows a specific truncation or candidate-recall problem
 4. Consider caption quality improvements (Phase 10) if semantic coverage gaps are identified
 5. Add production logging hooks (Phase 9) once the evaluation framework is stable

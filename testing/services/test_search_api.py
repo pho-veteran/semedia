@@ -1121,3 +1121,43 @@ def test_image_search_returns_visual_explanation(search_env, monkeypatch):
         "rich_caption": False,
         "rerank_boost": 0.0,
     }
+
+
+def test_search_keyword_exact_top_k(search_env, monkeypatch):
+    """Verify that search_keyword() returns exactly top_k results, not top_k * 2."""
+    module = search_env["module"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        # Create 10 media items with distinct captions
+        for i in range(10):
+            image = MediaItem(
+                file_path=f"originals/item_{i}.jpg",
+                original_filename=f"item_{i}.jpg",
+                media_type="image",
+                mime_type="image/jpeg",
+                file_size=3,
+                status=ProcessingStatus.COMPLETED,
+                caption=f"office desk workspace item {i}",
+                index_key=f"media:{100+i}",
+            )
+            session.add(image)
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_text", lambda query_text: [0.5, 0.5])
+
+    # Rebuild the keyword index to include all items
+    from semedia_shared.index_service import rebuild_keyword_index
+    with session_factory() as session:
+        rebuild_keyword_index(module.settings, session)
+
+    # Call search_keyword directly with top_k=3
+    from semedia_shared.index_service import search_keyword, ensure_keyword_index_current
+    with session_factory() as session:
+        index_data = ensure_keyword_index_current(module.settings, session)
+        results = search_keyword("office desk", index_data, top_k=3)
+
+    # Should return exactly 3 results, not 6 (3 * 2)
+    assert len(results) == 3, f"Expected exactly 3 results, got {len(results)}"
+
+

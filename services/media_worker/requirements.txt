@@ -4,6 +4,7 @@ sqlalchemy>=2.0,<3
 psycopg2-binary>=2.9,<3
 python-multipart>=0.0.9,<1
 numpy>=2.0,<3
+scikit-learn>=1.5,<2
 Pillow>=10,<12
 opencv-python-headless>=4.10,<5
 scenedetect[opencv]>=0.6.4,<0.7

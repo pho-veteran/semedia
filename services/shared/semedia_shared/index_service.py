@@ -202,7 +202,7 @@ def search_keyword(query_text: str, index_data: KeywordIndexData, top_k: int) ->
         results.append({**index_data.payloads[index], "score": float(similarity)})
 
     results.sort(key=lambda item: item["score"], reverse=True)
-    return results[: max(top_k * 2, top_k)]
+    return results[:top_k]
 
 
 def ensure_keyword_index_current(settings, session: Session) -> KeywordIndexData | None:

@@ -46,6 +46,7 @@ def process_media(settings, session: Session, media_id: int) -> bool:
     try:
         from .index_service import rebuild_keyword_index
 
+        session.expire_all()
         rebuild_keyword_index(settings, session)
     except Exception:
         logger.exception("Keyword index rebuild failed for media %s", media_id)

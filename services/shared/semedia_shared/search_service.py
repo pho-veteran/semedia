@@ -5,9 +5,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from .index_service import ensure_keyword_index_current, search_keyword
+from .log import get_logger
 from .models import MediaItem, ProcessingStatus
 from .ranking_service import build_result_explanation, merge_candidates, rank_candidates
 from .storage import media_url
+
+logger = get_logger(__name__)
 
 
 def _cosine(left: np.ndarray, right: np.ndarray) -> float:
@@ -119,7 +122,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
                 )
 
     results.sort(key=lambda item: item["score"], reverse=True)
-    return results[: max(top_k * 2, top_k)]
+    return results[:top_k]
 
 
 def _keyword_results(settings, session: Session, query_text: str, top_k: int) -> list[dict]:

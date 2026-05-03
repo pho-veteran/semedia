@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy import inspect, text
 
 from semedia_shared.database import build_engine, build_session_factory, init_database
+from semedia_shared.index_service import load_keyword_index, search_keyword
 from semedia_shared.models import MediaItem, ProcessingStatus, VideoScene
 from semedia_shared.pipeline import process_media
 from semedia_shared.storage import ensure_media_root
@@ -380,5 +381,86 @@ def test_process_media_rebuilds_keyword_index_artifact(tmp_path, monkeypatch):
 
         assert process_media(settings, session, media.id) is True
         assert session.execute(text("SELECT COUNT(*) FROM keyword_index_artifacts")).scalar_one() == 1
+
+    engine.dispose()
+
+
+
+def test_process_media_video_rebuilds_keyword_index_with_new_scenes(tmp_path, monkeypatch):
+    settings, engine, session_factory = _prepare_session(tmp_path)
+    original_dir = settings.media_root / "originals"
+    original_dir.mkdir(parents=True, exist_ok=True)
+    video_path = original_dir / "dog.mp4"
+    video_path.write_bytes(b"video-bytes")
+
+    from semedia_shared import pipeline as pipeline_module
+
+    monkeypatch.setattr(pipeline_module, "get_video_duration", lambda path: 3.0)
+    monkeypatch.setattr(
+        pipeline_module,
+        "detect_scenes",
+        lambda settings, path: [
+            SceneSpan(scene_index=0, start_time=0.0, end_time=1.0),
+            SceneSpan(scene_index=1, start_time=1.0, end_time=2.0),
+            SceneSpan(scene_index=2, start_time=2.0, end_time=3.0),
+        ],
+    )
+
+    def fake_extract_single(settings, path, media_id, scene):
+        keyframe_dir = settings.media_root / "keyframes" / str(media_id)
+        thumbnail_dir = settings.media_root / "thumbnails" / str(media_id)
+        keyframe_dir.mkdir(parents=True, exist_ok=True)
+        thumbnail_dir.mkdir(parents=True, exist_ok=True)
+
+        keyframe = keyframe_dir / f"scene_{scene.scene_index:04d}.jpg"
+        thumbnail = thumbnail_dir / f"scene_{scene.scene_index:04d}.jpg"
+        keyframe.write_bytes(f"keyframe-{scene.scene_index}".encode())
+        thumbnail.write_bytes(f"thumbnail-{scene.scene_index}".encode())
+
+        return str(keyframe), str(thumbnail)
+
+    monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
+    monkeypatch.setattr(
+        pipeline_module,
+        "generate_captions",
+        lambda settings, paths: [
+            "There is a dog sitting on the floor.",
+            "There is a dog laying down on the floor.",
+            "There is a dog laying on the floor with its mouth open.",
+        ],
+    )
+    monkeypatch.setattr(
+        pipeline_module,
+        "encode_images",
+        lambda settings, paths: [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+    )
+
+    with session_factory() as session:
+        media = MediaItem(
+            file_path="originals/dog.mp4",
+            original_filename="dog.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=11,
+            status=ProcessingStatus.PENDING,
+        )
+        session.add(media)
+        session.commit()
+        session.refresh(media)
+
+        assert process_media(settings, session, media.id) is True
+
+        index_data = load_keyword_index(session)
+        assert index_data is not None
+        assert index_data.document_count == 3
+
+        dog_results = search_keyword("dog", index_data, 10)
+        assert {item["scene_id"] for item in dog_results} == {1, 2, 3}
+        assert all(item["original_filename"] == "dog.mp4" for item in dog_results)
+        assert all(item["score"] > 0 for item in dog_results)
 
     engine.dispose()

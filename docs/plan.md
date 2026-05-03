@@ -192,7 +192,6 @@ n   - scene captions
 - Candidate set should be large enough to allow fusion + diversity without losing true positives too early
 
 ### Deliverables
-- Candidate-generation parameters in config
 - Unified candidate object containing vector and keyword components
 
 ### Success criteria
@@ -397,7 +396,7 @@ Add/update:
 5. ✅ Add reranking and diversity (Phase 5 complete)
 6. ✅ Fix API score semantics and frontend handling baseline (Phase 6.1 complete)
 7. Add richer ranking data, scene grouping, and real metadata sorting (remaining Phase 6)
-8. Expand candidate generation (Phase 8)
+8. Keep candidate-generation expansion as an optional future experiment only if evaluation evidence justifies it
 9. Tune weights with evaluation loop (Phase 7)
 10. Run final regression pass
 
@@ -449,4 +448,4 @@ This improvement cycle is done when:
 
 Phases 1 through 5 are complete, and Phase 6.1 and 6.2 are complete. The remaining Phase 6 work is **scene grouping (6.3)** and **real metadata-based sorting (6.4)**.
 
-The main remaining issues are grouped video-scene presentation and metadata-based sorting. The best next move is to ship the remaining Phase 6 UI work, then revisit candidate generation (Phase 8) or caption vocabulary (Phase 10) only if judged-query metrics plateau again.
+The main remaining issues are grouped video-scene presentation and metadata-based sorting. The best next move is to ship the remaining Phase 6 UI work, then revisit caption vocabulary (Phase 10) or other retrieval experiments only if judged-query metrics plateau again.

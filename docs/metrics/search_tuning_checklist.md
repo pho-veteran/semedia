@@ -294,4 +294,4 @@ Once you've accepted a tuning change:
    docker compose --profile test run --rm --build service-tests
    ```
 2. Keep the updated metrics history entry and accepted baseline report together with the tuning change
-3. Use Phase 8 candidate-generation work if metrics plateau and the tuning checklist no longer yields meaningful gains
+3. Revisit future retrieval experiments only if measured evidence justifies them after the accepted Phase 7 baseline and later tuning work

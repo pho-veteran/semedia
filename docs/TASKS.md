@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** Phase 7 complete (locked benchmark, baseline report, metrics history, and tuning checklist complete; Phase 8 candidate-generation work remains)
+**Status:** Phase 7 complete (locked benchmark, baseline report, metrics history, and tuning checklist complete; Phase 7 remains the accepted baseline)
 
 ## Phase 1 — Audit and Baseline
 
@@ -259,28 +259,6 @@
 
 ---
 
-## Phase 8 — Expand Candidate Generation
-
-**Goal:** Give ranking enough candidates to work with.
-
-### Tasks
-- [ ] 8.1 Increase candidate pool sizes
-  - [ ] Update `search_service.py:_vector_results()` to return a larger candidate pool
-  - [ ] Update `search_service.py:_keyword_results()` to return a larger candidate pool
-- [ ] 8.2 Add candidate-generation configuration
-  - [ ] Add configurable candidate multiplier to search settings
-  - [ ] Update search service to use configurable multiplier
-- [ ] 8.3 Preserve component scores
-  - [ ] Update candidate objects to store vector and keyword scores separately
-  - [ ] Pass component scores through to ranking pipeline
-
-**Success Criteria:**
-- More relevant items survive into reranking stage
-- Tail-relevant matches no longer disappear too early
-- Ranking has enough candidates to recover from early retrieval misses
-
----
-
 ## Phase 9 — Future Evaluation and Logging Enhancements
 
 **Goal:** Extend observability and tuning once the main ranking pipeline is in place.
@@ -343,8 +321,8 @@
 
 ## Notes
 
-- **Current Phase:** Phase 8 (Expand Candidate Generation)
-- **Next Phase:** Phase 8.1 candidate pool sizing, then later tuning work from the new checklist
+- **Current Phase:** Phase 7 baseline remains current
+- **Next Phase:** Revisit future retrieval experiments only if new measured evidence justifies them
 - **Blocked Tasks:** None currently
 - **Risks:** See `Semedia/docs/plan.md` section 7
 
@@ -361,4 +339,4 @@
   - 6.3 Complete — grouped video-scene presentation
   - 6.4 Complete — real metadata-based sorting
 - **Phase 7:** Complete (2026-05-02) — locked benchmark corpus, judged dataset, baseline report, metrics history, and tuning checklist documented
-- **Phase 8+:** Not started
+- **Phase 8+:** Reverted / not active

@@ -52,6 +52,18 @@ def get_db():
     yield from session_dependency(SessionLocal)
 
 
+def _coerce_positive_top_k(raw_top_k) -> int | None:
+    if raw_top_k is None:
+        return None
+    try:
+        top_k = int(raw_top_k)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="top_k must be an integer.") from exc
+    if top_k <= 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="top_k must be greater than 0.")
+    return top_k
+
+
 def _response_detail(response) -> str:
     try:
         payload = response.json()
@@ -121,12 +133,7 @@ def search(payload: dict, session: Session = Depends(get_db)) -> dict:
     if not query_text:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="query_text is required.")
 
-    top_k = payload.get("top_k")
-    if top_k is not None:
-        try:
-            top_k = int(top_k)
-        except Exception as exc:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="top_k must be an integer.") from exc
+    top_k = _coerce_positive_top_k(payload.get("top_k"))
 
     query_embedding = _embed_text(query_text)
     results = search_text(settings, session, query_text, query_embedding, top_k=top_k)
@@ -147,8 +154,10 @@ def search_by_image(
     if inferred_type != "image":
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="image query file is required.")
 
+    validated_top_k = _coerce_positive_top_k(top_k)
+
     query_embedding = _embed_image(file)
-    results = search_image(settings, session, query_embedding, top_k=top_k)
+    results = search_image(settings, session, query_embedding, top_k=validated_top_k)
     return {
         "query_mode": "image",
         "query_image_name": file.filename or "query-image.bin",

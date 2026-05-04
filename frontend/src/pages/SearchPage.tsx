@@ -41,6 +41,8 @@ interface SearchPageProps {
   searchInputRef?: React.RefObject<HTMLInputElement>
 }
 
+const TEXT_SEARCH_DEBOUNCE_MS = 600
+
 export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
   // Search state
   const [activeTab, setActiveTab] = useState<'text' | 'image'>('text')
@@ -186,7 +188,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       if (searchQuery.trim()) {
         handleTextSearch(searchQuery.trim())
       }
-    }, 300)
+    }, TEXT_SEARCH_DEBOUNCE_MS)
   }, [])
 
   const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {

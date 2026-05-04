@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { SearchPage } from './SearchPage'
 import * as client from '../api/client'
 import type { SearchResponse, SearchResult } from '../types/api'
@@ -39,6 +39,10 @@ beforeEach(() => {
   vi.mocked(client.searchMediaByImage).mockClear()
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('SearchPage score filter', () => {
   it('shows results with scores below 0.5 when default filter is permissive', () => {
     render(<SearchPage onOpenMedia={mockOnOpenMedia} />)
@@ -52,6 +56,28 @@ describe('SearchPage score filter', () => {
 
     expect(screen.queryByText(/Semantic/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Rich caption/)).not.toBeInTheDocument()
+  })
+
+  it('waits longer before firing a text search while typing', () => {
+    vi.useFakeTimers()
+    vi.mocked(client.searchMedia).mockImplementation(() => new Promise(() => {}))
+
+    render(<SearchPage onOpenMedia={mockOnOpenMedia} />)
+
+    const searchInput = screen.getByPlaceholderText('Search for images and videos...')
+    act(() => {
+      fireEvent.change(searchInput, { target: { value: 'office' } })
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(599)
+    })
+    expect(client.searchMedia).not.toHaveBeenCalled()
+
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(client.searchMedia).toHaveBeenCalledWith('office')
   })
 })
 

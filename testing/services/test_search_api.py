@@ -624,6 +624,50 @@ def test_search_requires_integer_top_k(search_env):
     assert "top_k must be an integer" in response.json()["detail"]
 
 
+def test_search_rejects_zero_top_k(search_env, monkeypatch):
+    monkeypatch.setattr(search_env["module"], "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = search_env["client"].post("/api/v1/search/", json={"query_text": "cat", "top_k": 0})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "top_k must be greater than 0."
+
+
+def test_search_rejects_negative_top_k(search_env, monkeypatch):
+    monkeypatch.setattr(search_env["module"], "_embed_text", lambda query_text: [1.0, 0.0])
+
+    response = search_env["client"].post("/api/v1/search/", json={"query_text": "cat", "top_k": -5})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "top_k must be greater than 0."
+
+
+def test_image_search_rejects_zero_top_k(search_env, monkeypatch):
+    monkeypatch.setattr(search_env["module"], "_embed_image", lambda file: [1.0, 0.0])
+
+    response = search_env["client"].post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "0"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "top_k must be greater than 0."
+
+
+def test_image_search_rejects_negative_top_k(search_env, monkeypatch):
+    monkeypatch.setattr(search_env["module"], "_embed_image", lambda file: [1.0, 0.0])
+
+    response = search_env["client"].post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "-5"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "top_k must be greater than 0."
+
+
 def test_search_returns_ranked_results(search_env, monkeypatch):
     module = search_env["module"]
     client = search_env["client"]
@@ -745,6 +789,53 @@ def test_image_search_returns_ranked_results(search_env, monkeypatch):
     assert payload["count"] >= 1
     assert payload["results"][0]["media_id"] == image.id
     assert payload["results"][0]["result_type"] == "image"
+
+
+def test_video_scene_results_use_stable_scene_keys(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        video = MediaItem(
+            file_path="originals/city.mp4",
+            original_filename="duplicate-name.mp4",
+            media_type="video",
+            mime_type="video/mp4",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="",
+            index_key="media:1",
+        )
+        session.add(video)
+        session.commit()
+        session.refresh(video)
+
+        scene = VideoScene(
+            media_id=video.id,
+            scene_index=0,
+            start_time=0.0,
+            end_time=1.0,
+            caption="blue city scene",
+            embedding=[1.0, 0.0],
+            keyframe_path="keyframes/1/scene_0000.jpg",
+            thumbnail_path="thumbnails/1/scene_0000.jpg",
+            index_key="scene:1:0",
+        )
+        session.add(scene)
+        session.commit()
+        session.refresh(scene)
+        scene_id = scene.id
+
+    monkeypatch.setattr(module, "_embed_image", lambda file: [1.0, 0.0])
+
+    response = client.post(
+        "/api/v1/search/by-image/",
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["results"][0]["scene_key"] == f"scene:{scene_id}"
 
 
 def test_search_returns_service_unavailable_when_worker_embedding_fails(search_env, monkeypatch):

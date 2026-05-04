@@ -42,10 +42,10 @@ def _serialize_score(value: float) -> float:
 
 
 def _stable_scene_key(item: dict) -> str | None:
-    scene_index = item.get("scene_index")
-    if scene_index is None or not item.get("original_filename"):
+    scene_id = item.get("scene_id")
+    if scene_id is None:
         return None
-    return f"scene:{item['original_filename']}:{scene_index}"
+    return f"scene:{scene_id}"
 
 
 def _serialize_ranked_result(item: dict, *, query_text: str | None, query_mode: str) -> dict:

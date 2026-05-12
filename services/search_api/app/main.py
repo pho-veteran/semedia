@@ -61,7 +61,7 @@ def _coerce_positive_top_k(raw_top_k) -> int | None:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="top_k must be an integer.") from exc
     if top_k <= 0:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="top_k must be greater than 0.")
-    return top_k
+    return min(top_k, settings.search_max_results)
 
 
 def _response_detail(response) -> str:

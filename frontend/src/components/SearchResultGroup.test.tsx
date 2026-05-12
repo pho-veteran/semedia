@@ -9,6 +9,8 @@ const onOpenMedia = vi.fn()
 const createSceneResult = (overrides: Partial<SearchResult>): SearchResult => ({
   media_id: 1,
   scene_id: 1,
+  scene_index: 0,
+  scene_key: 'media:1:scene:0',
   media_type: 'video',
   result_type: 'video_scene',
   original_filename: 'demo.mp4',
@@ -33,6 +35,8 @@ const createSceneResult = (overrides: Partial<SearchResult>): SearchResult => ({
 
 const leadScene = createSceneResult({
   scene_id: 1,
+  scene_index: 0,
+  scene_key: 'media:1:scene:0',
   start_time: 0,
   end_time: 5,
   score: 0.95,
@@ -40,6 +44,8 @@ const leadScene = createSceneResult({
 
 const previewScene1 = createSceneResult({
   scene_id: 2,
+  scene_index: 1,
+  scene_key: 'media:1:scene:1',
   start_time: 5,
   end_time: 10,
   score: 0.85,
@@ -47,6 +53,8 @@ const previewScene1 = createSceneResult({
 
 const previewScene2 = createSceneResult({
   scene_id: 3,
+  scene_index: 2,
+  scene_key: 'media:1:scene:2',
   start_time: 10,
   end_time: 15,
   score: 0.80,
@@ -54,6 +62,8 @@ const previewScene2 = createSceneResult({
 
 const hiddenScene1 = createSceneResult({
   scene_id: 4,
+  scene_index: 3,
+  scene_key: 'media:1:scene:3',
   start_time: 15,
   end_time: 20,
   score: 0.75,
@@ -61,6 +71,8 @@ const hiddenScene1 = createSceneResult({
 
 const hiddenScene2 = createSceneResult({
   scene_id: 5,
+  scene_index: 4,
+  scene_key: 'media:1:scene:4',
   start_time: 20,
   end_time: 25,
   score: 0.70,
@@ -127,8 +139,8 @@ describe('SearchResultGroup', () => {
       />
     )
 
-    expect(screen.getByLabelText(/Open scene #2/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Open scene #3/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Open Scene 2/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Open Scene 3/)).toBeInTheDocument()
   })
 
   it('renders preview scene thumbnails with time ranges', () => {
@@ -172,7 +184,7 @@ describe('SearchResultGroup', () => {
       />
     )
 
-    fireEvent.click(screen.getByLabelText(/Open scene #2/))
+    fireEvent.click(screen.getByLabelText(/Open Scene 2/))
 
     expect(onOpenMedia).toHaveBeenCalledWith(1, 5)
   })
@@ -270,7 +282,7 @@ describe('SearchResultGroup', () => {
 
     fireEvent.click(screen.getByText('Show 2 more scenes'))
 
-    fireEvent.click(screen.getByLabelText(/Open scene #4/))
+    fireEvent.click(screen.getByLabelText(/Open Scene 4/))
 
     expect(onOpenMedia).toHaveBeenCalledWith(1, 15)
   })

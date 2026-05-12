@@ -34,6 +34,75 @@ def test_normalize_scores_clamps_without_min_max_inflation():
     ]
 
 
+def test_stable_scene_key_fallback_is_string():
+    from semedia_shared.search_service import _stable_scene_key
+
+    scene_key = _stable_scene_key({"scene_id": 42, "original_filename": "", "scene_index": None})
+
+    assert scene_key == "scene:42"
+    assert isinstance(scene_key, str)
+
+
+def test_coerce_positive_top_k_caps_to_max_results(search_env):
+    assert search_env["module"]._coerce_positive_top_k(9999) == search_env["settings"].search_max_results
+
+
+def test_coerce_positive_top_k_keeps_valid_small_value(search_env):
+    assert search_env["module"]._coerce_positive_top_k(3) == 3
+
+
+def test_search_text_uses_candidate_breadth_before_final_limit(search_env, monkeypatch):
+    from semedia_shared import search_service
+
+    calls = []
+    ranked = [
+        {
+            "media_id": index,
+            "scene_id": None,
+            "scene_index": None,
+            "media_type": "image",
+            "result_type": "image",
+            "original_filename": f"item-{index}.jpg",
+            "score": 1.0,
+            "vector_score": 0.0,
+            "keyword_score": 0.0,
+            "caption": "",
+            "file_url": "",
+            "thumbnail_url": "",
+            "file_size": 0,
+            "created_at": None,
+            "start_time": None,
+            "end_time": None,
+        }
+        for index in range(6)
+    ]
+
+    def fake_vector_results(settings, session, query_embedding, top_k):
+        calls.append(("vector", top_k))
+        return []
+
+    def fake_keyword_results(settings, session, query_text, top_k):
+        calls.append(("keyword", top_k))
+        return []
+
+    def fake_rank_candidates(settings, candidates, *, query_text, query_mode, limit):
+        calls.append(("rank", limit))
+        return ranked
+
+    monkeypatch.setattr(search_service, "_vector_results", fake_vector_results)
+    monkeypatch.setattr(search_service, "_keyword_results", fake_keyword_results)
+    monkeypatch.setattr(search_service, "rank_candidates", fake_rank_candidates)
+    monkeypatch.setattr(search_service, "_serialize_ranked_result", lambda item, **kwargs: item)
+    object.__setattr__(search_env["settings"], "search_candidate_multiplier", 3)
+
+    results = search_service.search_text(search_env["settings"], None, "birds", [0.1, 0.2], top_k=5)
+
+    assert ("vector", 15) in calls
+    assert ("keyword", 15) in calls
+    assert ("rank", 5) in calls
+    assert len(results) == 5
+    assert [item["media_id"] for item in results] == [0, 1, 2, 3, 4]
+
 
 def test_search_text_prefers_strong_keyword_match_over_weak_vector_match(search_env, monkeypatch):
     module = search_env["module"]

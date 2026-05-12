@@ -60,6 +60,8 @@ export interface SearchResultExplanation {
 export interface SearchResult {
   media_id: number
   scene_id: number | null
+  scene_index: number | null
+  scene_key: string | null
   media_type: MediaType
   result_type: 'image' | 'video_scene'
   original_filename: string

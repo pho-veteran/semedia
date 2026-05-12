@@ -50,7 +50,7 @@ def _stable_scene_key(item: dict) -> str | None:
     scene_id = item.get("scene_id")
     if scene_id is None:
         return None
-    return f"scene:{scene_id}",
+    return f"scene:{scene_id}"
 
 
 def _serialize_ranked_result(item: dict, *, query_text: str | None, query_mode: str) -> dict:
@@ -139,8 +139,10 @@ def _keyword_results(settings, session: Session, query_text: str, top_k: int) ->
 
 def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None) -> list[dict]:
     limit = top_k or settings.search_max_results
-    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, limit))
-    keyword_results = _normalize_scores(_keyword_results(settings, session, query_text, limit))
+    candidate_multiplier = max(1, int(getattr(settings, "search_candidate_multiplier", 1)))
+    candidate_limit = limit * candidate_multiplier
+    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, candidate_limit))
+    keyword_results = _normalize_scores(_keyword_results(settings, session, query_text, candidate_limit))
     candidates = merge_candidates(vector_results, keyword_results)
     ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit)
 

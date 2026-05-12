@@ -16,7 +16,19 @@ def load_queries(file_path: Path) -> list[dict]:
     return load_benchmark_definition(file_path)["queries"]
 
 
+def _dedupe_preserving_order(values: list[object]) -> list[object]:
+    deduped: list[object] = []
+    seen: set[object] = set()
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        deduped.append(value)
+    return deduped
+
+
 def compute_metrics(relevant_ids: set[object], retrieved_ids: list[object], k: int = 10) -> dict[str, float]:
+    retrieved_ids = _dedupe_preserving_order(retrieved_ids)
     top_k = retrieved_ids[:k]
     hits = sum(1 for item_id in top_k if item_id in relevant_ids)
 
@@ -164,7 +176,7 @@ def run_evaluation(
         }
 
         results = search_fn(query["query_text"], k)
-        retrieved_ids = [_result_identifier(result) for result in results]
+        retrieved_ids = _dedupe_preserving_order([_result_identifier(result) for result in results])
         metrics = compute_metrics(relevant_ids, retrieved_ids, k=k)
         all_metrics.append(metrics)
 

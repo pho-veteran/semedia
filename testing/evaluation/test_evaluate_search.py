@@ -84,6 +84,15 @@ def test_compute_metrics_calculates_ndcg():
     assert 0 < metrics["ndcg@5"] <= 1
 
 
+def test_compute_metrics_deduplicates_retrieved_ids_preserving_order():
+    metrics = compute_metrics({"media:1", "media:2"}, ["media:1", "media:1", "media:3", "media:2"], k=3)
+
+    assert metrics["precision@3"] == 2 / 3
+    assert metrics["recall@3"] == 1.0
+    assert metrics["mrr"] == 1.0
+    assert metrics["ndcg@3"] < 1.0
+
+
 def test_compute_metrics_handles_no_relevant_results():
     relevant_ids = {1, 2}
     retrieved_ids = [3, 4, 5]
@@ -474,6 +483,37 @@ def test_run_evaluation_includes_modality_and_difficulty_breakdowns(tmp_path):
     assert results["by_difficulty"]["hard"]["num_queries"] == 1
     assert "negative_queries" in results
     assert results["negative_queries"]["num_queries"] == 0
+
+
+def test_run_evaluation_deduplicates_per_query_retrieved_ids_for_negative_summary(tmp_path):
+    queries_file = tmp_path / "queries.json"
+    queries_file.write_text(
+        json.dumps(
+            [
+                {
+                    "query_id": "q001",
+                    "query_text": "no matching asset",
+                    "query_type": "object",
+                    "judged": True,
+                    "relevant_media_ids": [],
+                    "relevant_scene_ids": [],
+                    "tags": ["negative"],
+                    "notes": "Negative query for duplicate handling.",
+                }
+            ]
+        )
+    )
+
+    def mock_search(query_text, top_k):
+        return [
+            {"media_id": 1, "scene_id": None, "score": 0.9},
+            {"media_id": 1, "scene_id": None, "score": 0.8},
+        ]
+
+    results = run_evaluation(queries_file, mock_search, k=10, include_per_query=True, include_negative_summary=True)
+
+    assert results["per_query"][0]["retrieved_ids"] == ["media:1"]
+    assert results["negative_queries"]["mean_false_positives_per_query"] == 1.0
 
 
 def test_compare_reports_flags_metric_regressions():

@@ -9,3 +9,5 @@ storage/
 .env
 # CocoIndex Code (ccc)
 /.cocoindex_code/
+# Claude
+/.claude/

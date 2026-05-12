@@ -11,6 +11,8 @@ const mockOnOpenMedia = vi.fn()
 const createSearchResult = (overrides: Partial<SearchResult>): SearchResult => ({
   media_id: 1,
   scene_id: null,
+  scene_index: null,
+  scene_key: null,
   media_type: 'image',
   result_type: 'image',
   original_filename: 'test.jpg',
@@ -472,7 +474,7 @@ describe('SearchPage grouped video-scene rendering', () => {
     })
 
     // Click the preview scene directly
-    const previewScene = screen.getByLabelText(/Open scene #2/)
+    const previewScene = screen.getByLabelText(/Open Scene 2/)
     fireEvent.click(previewScene)
 
     expect(mockOnOpenMedia).toHaveBeenCalledWith(10, 5)
@@ -554,7 +556,7 @@ describe('SearchPage grouped video-scene rendering', () => {
       expect(screen.getByText('1 result for "office"')).toBeInTheDocument()
     })
 
-    const previewButton = screen.getByLabelText(/Open scene #2/)
+    const previewButton = screen.getByLabelText(/Open Scene 2/)
     previewButton.focus()
 
     fireEvent.keyDown(window, { key: 'Enter' })

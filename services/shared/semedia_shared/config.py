@@ -25,6 +25,7 @@ class Settings:
     search_api_url: str
     allow_all_origins: bool
     search_max_per_media: int = 2
+    search_candidate_multiplier: int = 3
     ml_device: str = "auto"
     caption_max_length: int = 50
     caption_min_length: int = 10
@@ -63,6 +64,7 @@ def get_settings(service_name: str) -> Settings:
         search_keyword_weight=float(os.getenv("SEARCH_KEYWORD_WEIGHT", "0.3")),
         search_max_results=int(os.getenv("SEARCH_MAX_RESULTS", "20")),
         search_max_per_media=int(os.getenv("SEARCH_MAX_PER_MEDIA", "2")),
+        search_candidate_multiplier=int(os.getenv("SEARCH_CANDIDATE_MULTIPLIER", "3")),
         ml_device=os.getenv("ML_DEVICE", "auto").strip().lower() or "auto",
         ml_strict_cuda=_truthy("ML_STRICT_CUDA"),
         ml_preload_models=_truthy("ML_PRELOAD_MODELS", "1"),

@@ -15,6 +15,16 @@ interface SearchResultGroupProps {
   isFocused?: boolean
 }
 
+function sceneRenderKey(scene: SearchResult): string {
+  if (scene.scene_key) {
+    return scene.scene_key
+  }
+  if (scene.scene_id !== null) {
+    return `scene:${scene.scene_id}`
+  }
+  return `media:${scene.media_id}:start:${scene.start_time ?? 'unknown'}`
+}
+
 function CompactScenePreview({
   scene,
   mediaId,
@@ -25,18 +35,22 @@ function CompactScenePreview({
   onOpenMedia: (mediaId: number, startTime: number | null) => void
 }) {
   const thumbnailUrl = toAbsoluteUrl(scene.thumbnail_url || scene.file_url)
+  const sceneLabel = scene.scene_index !== null && scene.scene_index !== undefined
+    ? `Scene ${scene.scene_index + 1}`
+    : scene.scene_id !== null
+      ? `Scene ${scene.scene_id}`
+      : 'Scene'
 
   const handleClick = () => {
     if (scene.start_time === null) {
-      console.warn(`CompactScenePreview: scene #${scene.scene_id} has null start_time`)
+      console.warn(`CompactScenePreview: ${sceneLabel} has null start_time`)
     }
     onOpenMedia(mediaId, scene.start_time)
   }
 
-  // Build null-safe aria-label for video scenes
   const ariaLabel = scene.start_time !== null && scene.end_time !== null
-    ? `Open scene #${scene.scene_id} at ${formatTimeRange(scene.start_time, scene.end_time)}`
-    : `Open scene #${scene.scene_id}`
+    ? `Open ${sceneLabel} at ${formatTimeRange(scene.start_time, scene.end_time)}`
+    : `Open ${sceneLabel}`
 
   return (
     <button
@@ -54,7 +68,7 @@ function CompactScenePreview({
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
-            alt={`Scene #${scene.scene_id}`}
+            alt={sceneLabel}
             className="w-full h-full object-cover"
             loading="lazy"
           />
@@ -121,7 +135,7 @@ export function SearchResultGroup({
             <div className="grid grid-cols-2 gap-2">
               {previews.map((scene) => (
                 <CompactScenePreview
-                  key={scene.scene_id}
+                  key={sceneRenderKey(scene)}
                   scene={scene}
                   mediaId={mediaId}
                   onOpenMedia={onOpenMedia}
@@ -149,7 +163,7 @@ export function SearchResultGroup({
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {hidden.map((scene) => (
                     <CompactScenePreview
-                      key={scene.scene_id}
+                      key={sceneRenderKey(scene)}
                       scene={scene}
                       mediaId={mediaId}
                       onOpenMedia={onOpenMedia}

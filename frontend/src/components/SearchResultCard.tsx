@@ -35,8 +35,14 @@ function getExplanationSummary(item: SearchResult): string {
 function getIdentityBadges(item: SearchResult): string[] {
   const badges = [item.result_type === 'video_scene' ? 'Scene' : 'Image']
 
-  if (item.result_type === 'video_scene' && item.scene_id !== null) {
-    badges.push(`Scene #${item.scene_id}`)
+  const sceneLabel = item.scene_index !== null && item.scene_index !== undefined
+    ? `Scene ${item.scene_index + 1}`
+    : item.scene_id !== null
+      ? `Scene ${item.scene_id}`
+      : 'Scene'
+
+  if (item.result_type === 'video_scene') {
+    badges.push(sceneLabel)
   }
 
   return badges

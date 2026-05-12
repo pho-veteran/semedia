@@ -6,6 +6,8 @@ describe('buildSearchRenderEntries', () => {
   const createSearchResult = (overrides: Partial<SearchResult>): SearchResult => ({
     media_id: 1,
     scene_id: null,
+    scene_index: null,
+    scene_key: null,
     media_type: 'image',
     result_type: 'image',
     original_filename: 'test.jpg',

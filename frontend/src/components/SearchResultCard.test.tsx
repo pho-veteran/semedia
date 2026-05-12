@@ -9,6 +9,8 @@ const onOpenMedia = vi.fn()
 const textResult: SearchResult = {
   media_id: 1,
   scene_id: null,
+  scene_index: null,
+  scene_key: null,
   media_type: 'image',
   result_type: 'image',
   original_filename: 'office.jpg',
@@ -33,6 +35,8 @@ const textResult: SearchResult = {
 const imageResult: SearchResult = {
   media_id: 2,
   scene_id: null,
+  scene_index: null,
+  scene_key: null,
   media_type: 'image',
   result_type: 'image',
   original_filename: 'red.jpg',
@@ -57,6 +61,8 @@ const imageResult: SearchResult = {
 const sceneResult: SearchResult = {
   media_id: 3,
   scene_id: 12,
+  scene_index: 2,
+  scene_key: 'media:3:scene:2',
   media_type: 'video',
   result_type: 'video_scene',
   original_filename: 'demo.mp4',
@@ -111,7 +117,7 @@ describe('SearchResultCard explanations', () => {
     render(<SearchResultCard item={sceneResult} onOpenMedia={onOpenMedia} />)
 
     expect(screen.getByText('Scene')).toBeInTheDocument()
-    expect(screen.getByText('Scene #12')).toBeInTheDocument()
+    expect(screen.getByText('Scene 3')).toBeInTheDocument()
     expect(screen.getByText('Rich caption')).toBeInTheDocument()
     expect(screen.getByText('Hybrid match · exact phrase in caption · rich caption')).toBeInTheDocument()
     expect(screen.getByText('0:12 - 0:18')).toBeInTheDocument()

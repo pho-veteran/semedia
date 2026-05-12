@@ -134,7 +134,7 @@
 - Search quality metrics move off the zero baseline
 - Live evaluation shows improved retrieval behavior
 
-**Outcome:** Complete. Caption cleanup was extracted and refactored, the relaxed weak-caption policy was applied, and live evaluation improved to Precision@10 0.0889, Recall@10 0.8333, MRR 0.5262, NDCG@10 0.5692.
+**Outcome:** Complete. Caption cleanup was extracted and refactored, the relaxed weak-caption policy was applied, and the accepted metrics are recorded in `docs/metrics/search_quality_history.md`.
 
 ---
 
@@ -172,7 +172,7 @@
 - Less duplicate-heavy first page
 - Scores become interpretable across result types
 
-**Outcome:** Complete. Phase 5 introduced `ranking_service.py`, normalized search scores to `[0,1]`, added reranking and diversity controls, and improved live judged-query evaluation to Precision@10 0.1000, Recall@10 0.9444, MRR 0.6214, NDCG@10 0.6695. Full service tests and the smoke test passed.
+**Outcome:** Complete. Phase 5 introduced `ranking_service.py`, normalized search scores to `[0,1]`, and added reranking and diversity controls. Accepted metrics are recorded in `docs/metrics/search_quality_history.md`, and the full service tests and smoke test passed.
 
 ---
 

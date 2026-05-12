@@ -5,12 +5,18 @@ import math
 from pathlib import Path
 from typing import Callable
 
+try:
+    from .benchmark_validation import load_benchmark_definition, normalize_relevant_id
+except ImportError:
+    from benchmark_validation import load_benchmark_definition, normalize_relevant_id
+
+
 
 def load_queries(file_path: Path) -> list[dict]:
-    return json.loads(file_path.read_text())
+    return load_benchmark_definition(file_path)["queries"]
 
 
-def compute_metrics(relevant_ids: set[int], retrieved_ids: list[int], k: int = 10) -> dict[str, float]:
+def compute_metrics(relevant_ids: set[object], retrieved_ids: list[object], k: int = 10) -> dict[str, float]:
     top_k = retrieved_ids[:k]
     hits = sum(1 for item_id in top_k if item_id in relevant_ids)
 
@@ -153,8 +159,8 @@ def run_evaluation(
         relevant_media_ids = set(query.get("relevant_media_ids", []))
         relevant_scene_ids = set(query.get("relevant_scene_ids", []))
         relevant_ids = {
-            *(f"media:{item_id}" for item_id in relevant_media_ids),
-            *(f"scene:{item_id}" for item_id in relevant_scene_ids),
+            *(normalize_relevant_id(item_id, kind="media") for item_id in relevant_media_ids),
+            *(normalize_relevant_id(item_id, kind="scene") for item_id in relevant_scene_ids),
         }
 
         results = search_fn(query["query_text"], k)

@@ -10,48 +10,16 @@ This file records every accepted evaluation run after a search algorithm or benc
 - **Queries:** `<query-version>`
 - **What changed:**
   - `<short change summary>`
-- **Tuning parameters:**
-  - **Fusion weights:**
-    - Vector weight: `<value>` (default: 0.7)
-    - Keyword weight: `<value>` (default: 0.3)
-  - **Scene detection:**
-    - Base threshold: `<value>` (default: 27.0)
-    - Adaptive: `<20.0 for <30s, 35.0 for >10min, base otherwise>`
-  - **Reranking boosts:**
-    - Exact phrase match: `<value>` (default: +0.08)
-    - Rich caption (>50 chars): `<value>` (default: +0.02)
-  - **Diversity controls:**
-    - Max scenes per video in top results: `<value>` (default: 2)
-    - Caption deduplication: `<enabled/disabled>` (default: enabled for text search)
-  - **Caption generation:**
-    - Model: `<model-name>` (default: Salesforce/blip-image-captioning-large)
-    - Max length: `<value>` (default: 50)
-    - Min length: `<value>` (default: 10)
-    - Num beams: `<value>` (default: 5)
-    - Retry weak captions: `<enabled/disabled>` (default: enabled)
-    - Retry num beams: `<value>` (default: 8)
-    - Batch size: `<value>` (default: 8)
-  - **Embedding model:**
-    - CLIP model: `<model-name>` (default: openai/clip-vit-base-patch16)
 - **Metrics:**
   - Precision@10: `<value>`
   - Recall@10: `<value>`
   - MRR: `<value>`
   - NDCG@10: `<value>`
   - Negative false positive rate: `<value>`
-- **By type:**
-  - Objects: `<summary>`
-  - Actions: `<summary>`
-  - Scenes: `<summary>`
-- **By modality:**
-  - Images: `<summary>`
-  - Videos: `<summary>`
-- **By difficulty:**
-  - Easy: `<summary>`
-  - Medium: `<summary>`
-  - Hard: `<summary>`
-- **Notable observations:**
-  - `<important win, regression, or ambiguity>`
+- **Notes:**
+  - Record any non-default tuning values in `docs/metrics/search_tuning_checklist.md`
+  - Summarize the most relevant by-type, by-modality, and by-difficulty observations
+  - Call out anything that still looks suspicious or ambiguous
 - **Decision:** `<accepted / tune further / revert>`
 
 ---

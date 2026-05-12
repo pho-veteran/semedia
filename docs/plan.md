@@ -47,10 +47,10 @@ Non-goals for this cycle:
 - Client-side sorting for date and size is not based on actual metadata
 - UI has no explanation of why a result matched
 
-### 2.5 Evaluation gap
-- Current tests verify API behavior, not retrieval quality
-- No judged query set exists
-- No offline metrics exist to compare algorithm revisions
+### 2.5 Evaluation baseline
+- A locked judged benchmark now exists
+- Future tuning should compare against `testing/evaluation/baselines/baseline-phase7.json`
+- Keep the corpus stable so metric deltas stay meaningful
 
 ## 3. Target System
 
@@ -94,7 +94,7 @@ The improved system will use a **multi-stage retrieval pipeline**:
 ### Work
 1. Inspect current pipeline outputs:
    - media captions
-n   - scene captions
+   - scene captions
    - scene boundaries
    - scene thumbnail quality
    - stored embeddings
@@ -175,28 +175,21 @@ n   - scene captions
 
 ---
 
-## Phase 4 — Upgrade Candidate Generation
+## Phase 4 — Improve Caption Quality
 
 ### Goals
-- Give ranking enough candidates to work with
-- Avoid early truncation errors
+- Improve caption generation quality and preserve slightly awkward but useful captions so retrieval has better text signals.
 
 ### Work
-1. Increase vector candidate pool size
-2. Increase keyword candidate pool size
-3. Merge into a larger unified candidate set
-4. Preserve component scores for downstream reranking
+1. Tune caption generation behavior
+2. Add caption cleanup and normalization
+3. Relax weak-caption filtering
+4. Refactor cleanup configuration
+5. Validate caption-quality behavior
 
-### Notes
-- Final `top_k` should not control candidate-generation breadth directly
-- Candidate set should be large enough to allow fusion + diversity without losing true positives too early
-
-### Deliverables
-- Unified candidate object containing vector and keyword components
-
-### Success criteria
-- More relevant items survive into reranking stage
-- Tail-relevant matches no longer disappear too early
+### Status
+- Complete
+- Accepted Phase 4 metrics are recorded in `docs/metrics/search_quality_history.md`.
 
 ---
 
@@ -250,7 +243,7 @@ Recommended decision:
 
 ### Status
 - Complete
-- Live judged-query evaluation improved to Precision@10 0.1000, Recall@10 0.9444, MRR 0.6214, NDCG@10 0.6695
+- Accepted Phase 5 metrics are recorded in `docs/metrics/search_quality_history.md`.
 - Full service tests and the smoke test passed
 
 ---
@@ -353,39 +346,12 @@ Replace filename-based sorting with real metadata fields.
 
 ## 5. File-Level Change Plan
 
-### Backend shared package
-Likely changes in:
-- `services/shared/semedia_shared/models.py`
-- `services/shared/semedia_shared/pipeline.py`
-- `services/shared/semedia_shared/video_service.py`
-- `services/shared/semedia_shared/caption_service.py`
-- `services/shared/semedia_shared/clip_service.py`
-- `services/shared/semedia_shared/search_service.py`
-- `services/shared/semedia_shared/config.py`
-
-### New backend modules
-Add:
-- `services/shared/semedia_shared/index_service.py`
-- `services/shared/semedia_shared/query_service.py`
-- `services/shared/semedia_shared/ranking_service.py`
-- optional `services/shared/semedia_shared/explanation_service.py`
-
-### Search API
-Likely changes in:
+Most of this roadmap is complete. Future retrieval work should stay concentrated in:
+- `services/shared/semedia_shared/`
 - `services/search_api/app/main.py`
-
-### Frontend
-Likely changes in:
-- `frontend/src/pages/SearchPage.tsx`
-- `frontend/src/components/SearchResultCard.tsx`
-- `frontend/src/types/api.ts`
-- `frontend/src/utils/format.ts`
-
-### Testing
-Add/update:
-- `testing/services/test_search_api.py`
-- `testing/evaluation/queries.json`
-- `testing/evaluation/evaluate_search.py`
+- `frontend/src/`
+- `testing/evaluation/`
+- `docs/metrics/`
 
 ## 6. Recommended Execution Order
 

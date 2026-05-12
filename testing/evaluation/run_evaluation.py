@@ -14,9 +14,12 @@ import urllib.request
 from pathlib import Path
 
 try:
+    from .benchmark_validation import validate_benchmark_artifacts
     from .evaluate_search import compare_reports, load_queries, run_evaluation
 except ImportError:
+    from benchmark_validation import validate_benchmark_artifacts
     from evaluate_search import compare_reports, load_queries, run_evaluation
+
 
 
 def search_text_via_api(base_url: str, query_text: str, top_k: int) -> list[dict]:
@@ -89,7 +92,10 @@ def main() -> int:
         print(f"Error: queries file not found: {queries_file}", file=sys.stderr)
         return 1
 
+    audit_log_file = Path(__file__).parent / "audit_log.json"
+
     print(f"Loading queries from {queries_file}")
+    validate_benchmark_artifacts(queries_file, audit_log_file)
     queries = load_queries(queries_file)
     judged_queries = [
         q

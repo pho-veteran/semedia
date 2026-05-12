@@ -835,7 +835,7 @@ def test_video_scene_results_use_stable_scene_keys(search_env, monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json()["results"][0]["scene_key"] == f"scene:{scene_id}"
+    assert response.json()["results"][0]["scene_key"] == f"scene:{video.original_filename}:{scene.scene_index}"
 
 
 def test_search_returns_service_unavailable_when_worker_embedding_fails(search_env, monkeypatch):

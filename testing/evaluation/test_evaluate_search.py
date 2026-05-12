@@ -11,22 +11,33 @@ from testing.evaluation.evaluate_search import (
     load_queries,
     run_evaluation,
 )
+from testing.evaluation.benchmark_validation import validate_scene_key
 
 
 def test_load_queries_reads_json_file(tmp_path):
     queries_file = tmp_path / "queries.json"
     queries_file.write_text(
         json.dumps(
-            [
-                {
-                    "query_id": "q001",
-                    "query_text": "cat",
-                    "query_type": "object",
-                    "relevant_media_ids": [1, 2],
-                    "relevant_scene_ids": [10, 11],
-                    "notes": "Test query",
-                }
-            ]
+            {
+                "judgment_policy": {
+                    "path": "docs/metrics/evaluation_benchmark_rubric.md",
+                    "version": "2026-05-11",
+                },
+                "queries": [
+                    {
+                        "query_id": "q001",
+                        "query_text": "cat",
+                        "query_type": "object",
+                        "judged": True,
+                        "relevant_media_ids": [1, 2],
+                        "relevant_scene_ids": ["scene:vid-cat-01.webm:1"],
+                        "media_type_target": "image",
+                        "difficulty": "easy",
+                        "tags": ["test"],
+                        "notes": "Test query",
+                    }
+                ],
+            }
         )
     )
 
@@ -36,7 +47,8 @@ def test_load_queries_reads_json_file(tmp_path):
     assert queries[0]["query_id"] == "q001"
     assert queries[0]["query_text"] == "cat"
     assert queries[0]["relevant_media_ids"] == [1, 2]
-    assert queries[0]["relevant_scene_ids"] == [10, 11]
+    assert queries[0]["relevant_scene_ids"] == ["scene:vid-cat-01.webm:1"]
+    assert queries[0]["judged"] is True
 
 
 def test_compute_metrics_calculates_precision_at_k():
@@ -146,32 +158,50 @@ def test_run_evaluation_skips_unjudged_queries_and_matches_scene_ids(tmp_path):
     queries_file = tmp_path / "queries.json"
     queries_file.write_text(
         json.dumps(
-            [
-                {
-                    "query_id": "q001",
-                    "query_text": "cat",
-                    "query_type": "object",
-                    "relevant_media_ids": [1],
-                    "relevant_scene_ids": [],
-                    "notes": "",
+            {
+                "judgment_policy": {
+                    "path": "docs/metrics/evaluation_benchmark_rubric.md",
+                    "version": "2026-05-11",
                 },
-                {
-                    "query_id": "q002",
-                    "query_text": "night scene",
-                    "query_type": "scene",
-                    "relevant_media_ids": [],
-                    "relevant_scene_ids": [2],
-                    "notes": "",
-                },
-                {
-                    "query_id": "q003",
-                    "query_text": "unused",
-                    "query_type": "scene",
-                    "relevant_media_ids": [],
-                    "relevant_scene_ids": [],
-                    "notes": "",
-                },
-            ]
+                "queries": [
+                    {
+                        "query_id": "q001",
+                        "query_text": "cat",
+                        "query_type": "object",
+                        "judged": True,
+                        "relevant_media_ids": [1],
+                        "relevant_scene_ids": [],
+                        "media_type_target": "image",
+                        "difficulty": "easy",
+                        "tags": ["positive"],
+                        "notes": "",
+                    },
+                    {
+                        "query_id": "q002",
+                        "query_text": "night scene",
+                        "query_type": "scene",
+                        "judged": True,
+                        "relevant_media_ids": [],
+                        "relevant_scene_ids": ["scene:vid-night-city-01.webm:2"],
+                        "media_type_target": "video",
+                        "difficulty": "medium",
+                        "tags": ["positive"],
+                        "notes": "",
+                    },
+                    {
+                        "query_id": "q003",
+                        "query_text": "unused",
+                        "query_type": "scene",
+                        "judged": False,
+                        "relevant_media_ids": [],
+                        "relevant_scene_ids": [],
+                        "media_type_target": "video",
+                        "difficulty": "easy",
+                        "tags": ["negative"],
+                        "notes": "",
+                    },
+                ],
+            }
         )
     )
 
@@ -179,7 +209,7 @@ def test_run_evaluation_skips_unjudged_queries_and_matches_scene_ids(tmp_path):
         if query_text == "cat":
             return [{"media_id": 1, "scene_id": None, "score": 99.0}]
         if query_text == "night scene":
-            return [{"media_id": 10, "scene_id": 2, "score": 88.0}]
+            return [{"media_id": 10, "scene_id": 2, "scene_key": "scene:vid-night-city-01.webm:2", "score": 88.0}]
         return [{"media_id": 999, "scene_id": None, "score": 10.0}]
 
     results = run_evaluation(queries_file, mock_search, k=10)
@@ -192,24 +222,38 @@ def test_run_evaluation_includes_per_query_results_when_requested(tmp_path):
     queries_file = tmp_path / "queries.json"
     queries_file.write_text(
         json.dumps(
-            [
-                {
-                    "query_id": "q001",
-                    "query_text": "cat",
-                    "query_type": "object",
-                    "relevant_media_ids": [1],
-                    "relevant_scene_ids": [],
-                    "notes": "",
+            {
+                "judgment_policy": {
+                    "path": "docs/metrics/evaluation_benchmark_rubric.md",
+                    "version": "2026-05-11",
                 },
-                {
-                    "query_id": "q002",
-                    "query_text": "dog",
-                    "query_type": "action",
-                    "relevant_media_ids": [2],
-                    "relevant_scene_ids": [],
-                    "notes": "",
-                },
-            ]
+                "queries": [
+                    {
+                        "query_id": "q001",
+                        "query_text": "cat",
+                        "query_type": "object",
+                        "judged": True,
+                        "relevant_media_ids": [1],
+                        "relevant_scene_ids": [],
+                        "media_type_target": "image",
+                        "difficulty": "easy",
+                        "tags": ["positive"],
+                        "notes": "",
+                    },
+                    {
+                        "query_id": "q002",
+                        "query_text": "dog",
+                        "query_type": "action",
+                        "judged": True,
+                        "relevant_media_ids": [2],
+                        "relevant_scene_ids": [],
+                        "media_type_target": "image",
+                        "difficulty": "easy",
+                        "tags": ["positive"],
+                        "notes": "",
+                    },
+                ],
+            }
         )
     )
 
@@ -399,7 +443,7 @@ def test_run_evaluation_includes_modality_and_difficulty_breakdowns(tmp_path):
                     "tags": ["positive", "video"],
                     "judged": True,
                     "relevant_media_ids": [2],
-                    "relevant_scene_ids": [7],
+                    "relevant_scene_ids": ["scene:vid-dog-agility-01.webm:0"],
                     "notes": "Manual review confirmed the running scene.",
                 },
             ]
@@ -409,7 +453,7 @@ def test_run_evaluation_includes_modality_and_difficulty_breakdowns(tmp_path):
     def mock_search(query_text, top_k):
         if query_text == "office desk":
             return [{"media_id": 1, "scene_id": None, "score": 0.9}]
-        return [{"media_id": 2, "scene_id": 7, "score": 0.8}]
+        return [{"media_id": 2, "scene_id": 7, "scene_key": "scene:vid-dog-agility-01.webm:0", "score": 0.8}]
 
     results = run_evaluation(
         queries_file,
@@ -588,25 +632,10 @@ def test_queries_dataset_ground_truth_matches_manifest_and_negative_queries_stay
             )
 
         for scene_id in relevant_scene_ids:
-            assert isinstance(scene_id, str), (
-                f"Query {query['query_id']} scene ids must use stable string keys"
-            )
-            assert scene_id.startswith("scene:"), (
-                f"Query {query['query_id']} scene id must start with scene:, got {scene_id}"
-            )
-            parts = scene_id.split(":")
-            assert len(parts) == 3, (
-                f"Query {query['query_id']} scene id must be scene:<filename>:<scene_index>, got {scene_id}"
-            )
-            _, filename, scene_index = parts
+            validate_scene_key(scene_id)
+            _, filename, _ = scene_id.split(":")
             assert filename in manifest_asset_tokens, (
                 f"Query {query['query_id']} references unknown scene filename {filename}"
-            )
-            assert filename.endswith((".webm", ".mp4", ".ogv")), (
-                f"Query {query['query_id']} scene id must reference a video filename"
-            )
-            assert scene_index.isdigit(), (
-                f"Query {query['query_id']} scene index must be numeric, got {scene_id}"
             )
 
         if relevant_media_ids:

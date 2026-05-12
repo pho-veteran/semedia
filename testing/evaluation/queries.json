@@ -1,2122 +1,2020 @@
-[
-  {
-    "query_id": "q001",
-    "query_text": "airplane",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      1
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "vehicle",
-      "aviation"
-    ],
-    "notes": "Manual review: the corpus includes a daylight airplane runway photo that directly matches this object query."
-  },
-  {
-    "query_id": "q002",
-    "query_text": "aircraft on runway",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      1
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "vehicle",
-      "aviation"
-    ],
-    "notes": "Manual review: the airplane photo is the only direct aircraft-on-runway object match in the locked corpus."
-  },
-  {
-    "query_id": "q003",
-    "query_text": "basketball",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      2
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "sports",
-      "ball"
-    ],
-    "notes": "Manual review: the corpus contains a basketball-focused sports image that directly matches this object query."
-  },
-  {
-    "query_id": "q004",
-    "query_text": "basketball ball",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      2
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "sports",
-      "ball"
-    ],
-    "notes": "Manual review: the basketball image remains relevant when the query is phrased around the ball itself."
-  },
-  {
-    "query_id": "q005",
-    "query_text": "bird",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      4
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "wildlife"
-    ],
-    "notes": "Manual review: the bird-focused wildlife photo is a direct object match for this query."
-  },
-  {
-    "query_id": "q006",
-    "query_text": "wild bird",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      4
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "wildlife"
-    ],
-    "notes": "Manual review: the bird image shows wildlife clearly enough to satisfy this object-oriented phrasing."
-  },
-  {
-    "query_id": "q007",
-    "query_text": "stack of books",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      5
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "books",
-      "indoor"
-    ],
-    "notes": "Manual review: the still life of stacked books is the direct object match for this query."
-  },
-  {
-    "query_id": "q008",
-    "query_text": "books",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      5
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "books",
-      "reading"
-    ],
-    "notes": "Manual review: the corpus has one image centered on books, so that media item is relevant here."
-  },
-  {
-    "query_id": "q009",
-    "query_text": "castle",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      7
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "architecture",
-      "historic"
-    ],
-    "notes": "Manual review: the historic castle exterior directly matches the requested object."
-  },
-  {
-    "query_id": "q010",
-    "query_text": "fortress",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      7
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "architecture",
-      "historic"
-    ],
-    "notes": "Manual review: the castle image is a reasonable fortress-style object match at the media level."
-  },
-  {
-    "query_id": "q011",
-    "query_text": "cat",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      8
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "pet"
-    ],
-    "notes": "Manual review: the domestic cat portrait directly satisfies this object query."
-  },
-  {
-    "query_id": "q012",
-    "query_text": "coffee cup",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      10
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "drink",
-      "cup"
-    ],
-    "notes": "Manual review: the coffee cup image is a direct object match."
-  },
-  {
-    "query_id": "q013",
-    "query_text": "coffee mug",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      10
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "drink",
-      "cup"
-    ],
-    "notes": "Manual review: the same coffee-cup media item remains relevant when the query uses mug wording."
-  },
-  {
-    "query_id": "q014",
-    "query_text": "dog",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      12
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "pet"
-    ],
-    "notes": "Manual review: the dog portrait image directly matches this object query."
-  },
-  {
-    "query_id": "q015",
-    "query_text": "fireworks",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      13
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "night",
-      "celebration"
-    ],
-    "notes": "Manual review: the fireworks display image is the only direct match for this visual object term."
-  },
-  {
-    "query_id": "q016",
-    "query_text": "flowers",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      14
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "plants"
-    ],
-    "notes": "Manual review: the blooming flower garden image directly matches the flowers object query."
-  },
-  {
-    "query_id": "q017",
-    "query_text": "fruit bowl",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      16
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "food",
-      "bowl"
-    ],
-    "notes": "Manual review: the still life of fruit in a bowl is the direct object match here."
-  },
-  {
-    "query_id": "q018",
-    "query_text": "bowl of fruit",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      16
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "food",
-      "bowl"
-    ],
-    "notes": "Manual review: the fruit-bowl media item remains relevant for this alternate object phrasing."
-  },
-  {
-    "query_id": "q019",
-    "query_text": "pizza",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      19
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "food",
-      "meal"
-    ],
-    "notes": "Manual review: the pizza image is a direct object-level match."
-  },
-  {
-    "query_id": "q020",
-    "query_text": "portrait face",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      20
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "person",
-      "portrait"
-    ],
-    "notes": "Manual review: the portrait image centers on a human face and is relevant at the media level."
-  },
-  {
-    "query_id": "q021",
-    "query_text": "red car",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      21
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "vehicle",
-      "color"
-    ],
-    "notes": "Manual review: the corpus includes a direct red-car photo matching both the object and color constraint."
-  },
-  {
-    "query_id": "q022",
-    "query_text": "sailboat",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      22
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "boat",
-      "water"
-    ],
-    "notes": "Manual review: the sailing-boat image is a direct object match for sailboat."
-  },
-  {
-    "query_id": "q023",
-    "query_text": "snow cabin",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      23
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "winter",
-      "cabin"
-    ],
-    "notes": "Manual review: the snowy cabin image clearly satisfies this object query."
-  },
-  {
-    "query_id": "q024",
-    "query_text": "tractor",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      25
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "vehicle",
-      "farm"
-    ],
-    "notes": "Manual review: the farm tractor photo is the direct object match for this query."
-  },
-  {
-    "query_id": "q025",
-    "query_text": "train",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      26,
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "transport",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the still train image and the train video were judged relevant at the media level for this object query."
-  },
-  {
-    "query_id": "q026",
-    "query_text": "waterfall",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      27,
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the waterfall image and the waterfall video directly match this object query."
-  },
-  {
-    "query_id": "q027",
-    "query_text": "windmill",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      28
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "rural",
-      "landmark"
-    ],
-    "notes": "Manual review: the windmill landscape image contains a clear windmill object match."
-  },
-  {
-    "query_id": "q028",
-    "query_text": "campfire",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "fire",
-      "video"
-    ],
-    "notes": "Manual review: the campfire video is directly relevant because the campfire itself is the primary visible object."
-  },
-  {
-    "query_id": "q029",
-    "query_text": "flower close-up video",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      33
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-flower-01.mp4:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "plant",
-      "video"
-    ],
-    "notes": "Manual review: the close-up flower video is the direct object match for this video-targeted query."
-  },
-  {
-    "query_id": "q030",
-    "query_text": "bird in flight",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "video"
-    ],
-    "notes": "Manual review: the birds video shows bird subjects clearly enough to count as an object-level video match."
-  },
-  {
-    "query_id": "q031",
-    "query_text": "dog agility dog",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "video"
-    ],
-    "notes": "Manual review: the dog in the agility video is clearly visible and relevant for this object query."
-  },
-  {
-    "query_id": "q032",
-    "query_text": "traffic",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "urban",
-      "vehicles"
-    ],
-    "notes": "Manual review: the city-traffic video is relevant because moving traffic is the core visual subject."
-  },
-  {
-    "query_id": "q033",
-    "query_text": "railway train video",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "transport",
-      "video"
-    ],
-    "notes": "Manual review: the train-passing video is directly relevant to this railway-train object query."
-  },
-  {
-    "query_id": "q034",
-    "query_text": "waterfall video",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "nature",
-      "video"
-    ],
-    "notes": "Manual review: the waterfall video directly matches the requested object in video form."
-  },
-  {
-    "query_id": "q035",
-    "query_text": "flower",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      14,
-      33
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-flower-01.mp4:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the flower-garden image and the close-up flower video were judged relevant at the media level."
-  },
-  {
-    "query_id": "q036",
-    "query_text": "bird",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      4,
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the bird photo and the birds video satisfy this general object query."
-  },
-  {
-    "query_id": "q037",
-    "query_text": "dog",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      12,
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "mixed-media"
-    ],
-    "notes": "Manual review: the dog portrait image and the dog-agility video were both judged relevant for this general dog query."
-  },
-  {
-    "query_id": "q038",
-    "query_text": "birds flying",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the birds video clearly depicts birds flying, so it is relevant at the media level."
-  },
-  {
-    "query_id": "q039",
-    "query_text": "flock in flight",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the same birds video shows a flock in active flight, matching this action query."
-  },
-  {
-    "query_id": "q040",
-    "query_text": "flying birds overhead",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the bird video remains relevant for this alternate phrasing of the same flight action."
-  },
-  {
-    "query_id": "q041",
-    "query_text": "birds in the air",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: airborne bird motion is clearly visible in the birds video, making it relevant here."
-  },
-  {
-    "query_id": "q042",
-    "query_text": "fire burning",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "fire",
-      "motion"
-    ],
-    "notes": "Manual review: the campfire video clearly shows active burning flames, which matches this action query. All 5 scenes show fire."
-  },
-  {
-    "query_id": "q043",
-    "query_text": "campfire flames flickering",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "fire",
-      "motion"
-    ],
-    "notes": "Manual review: flickering flame motion is visible throughout the campfire video. All 5 scenes show fire."
-  },
-  {
-    "query_id": "q044",
-    "query_text": "burning campfire",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "fire",
-      "motion"
-    ],
-    "notes": "Manual review: the campfire video is directly relevant because the fire is actively burning. All 5 scenes show fire."
-  },
-  {
-    "query_id": "q045",
-    "query_text": "flames moving at night",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "fire",
-      "night"
-    ],
-    "notes": "Manual review: the campfire video shows visible flame motion in a dark outdoor setting, satisfying this action query. All 5 scenes show fire."
-  },
-  {
-    "query_id": "q046",
-    "query_text": "cars driving through the city",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "urban",
-      "vehicles"
-    ],
-    "notes": "Manual review: the traffic video clearly depicts cars driving on a city street. Both detected scenes show moving traffic."
-  },
-  {
-    "query_id": "q047",
-    "query_text": "city traffic moving",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "urban",
-      "vehicles"
-    ],
-    "notes": "Manual review: moving city traffic is the defining action in this urban video. Both detected scenes show moving traffic."
-  },
-  {
-    "query_id": "q048",
-    "query_text": "vehicles on an urban street",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "urban",
-      "vehicles"
-    ],
-    "notes": "Manual review: the traffic clip remains relevant because it shows vehicles actively moving on a city street. Both detected scenes show moving traffic."
-  },
-  {
-    "query_id": "q049",
-    "query_text": "traffic flow",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "urban",
-      "vehicles"
-    ],
-    "notes": "Manual review: the city-traffic video is relevant for this motion-centric traffic-flow phrasing. Both detected scenes show moving traffic."
-  },
-  {
-    "query_id": "q050",
-    "query_text": "dog running",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the dog-agility video clearly shows a dog running in motion."
-  },
-  {
-    "query_id": "q051",
-    "query_text": "dog agility",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "sport"
-    ],
-    "notes": "Manual review: the dog-agility clip is a direct match for this action query."
-  },
-  {
-    "query_id": "q052",
-    "query_text": "dog jumping obstacle",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "sport"
-    ],
-    "notes": "Manual review: the agility video shows obstacle-course action, making it relevant for this query."
-  },
-  {
-    "query_id": "q053",
-    "query_text": "running dog",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the dog-agility clip remains a direct match when the action is phrased as running dog."
-  },
-  {
-    "query_id": "q054",
-    "query_text": "dog in motion",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "motion"
-    ],
-    "notes": "Manual review: the dog video is relevant because motion is the main visual cue throughout the clip."
-  },
-  {
-    "query_id": "q055",
-    "query_text": "flower video",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [
-      33
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-flower-01.mp4:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "plant",
-      "video"
-    ],
-    "notes": "Manual review: the close-up flower video is the direct object match for this video-targeted query."
-  },
-  {
-    "query_id": "q056",
-    "query_text": "train passing",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "transport",
-      "motion"
-    ],
-    "notes": "Manual review: the train video directly depicts a passing train, which matches this action query. Scene 1 shows the actual train."
-  },
-  {
-    "query_id": "q057",
-    "query_text": "moving train",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "transport",
-      "motion"
-    ],
-    "notes": "Manual review: the train clip is relevant because the train is visibly moving through the scene. Scene 1 shows the actual train."
-  },
-  {
-    "query_id": "q058",
-    "query_text": "train moving past",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "transport",
-      "motion"
-    ],
-    "notes": "Manual review: the passing-train video satisfies this alternate motion phrasing at the media level. Scene 1 shows the actual train."
-  },
-  {
-    "query_id": "q059",
-    "query_text": "railway motion",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "transport",
-      "motion"
-    ],
-    "notes": "Manual review: the train video is the only corpus item with clear railway motion, so it is relevant here. Scene 1 shows the actual train."
-  },
-  {
-    "query_id": "q060",
-    "query_text": "water flowing",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "motion"
-    ],
-    "notes": "Manual review: the waterfall video clearly depicts flowing water, directly matching this action query."
-  },
-  {
-    "query_id": "q061",
-    "query_text": "running waterfall",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "motion"
-    ],
-    "notes": "Manual review: the waterfall clip is relevant because the water is actively running throughout the video."
-  },
-  {
-    "query_id": "q062",
-    "query_text": "cascading water",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "nature",
-      "motion"
-    ],
-    "notes": "Manual review: visible cascading water makes the waterfall video a relevant action match."
-  },
-  {
-    "query_id": "q063",
-    "query_text": "waterfall in motion",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "nature",
-      "motion"
-    ],
-    "notes": "Manual review: the waterfall video is directly relevant for this motion-focused waterfall phrasing."
-  },
-  {
-    "query_id": "q064",
-    "query_text": "airport runway scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      1
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "aviation",
-      "outdoor"
-    ],
-    "notes": "Manual review: the airplane image also functions as the corpus runway-scene match for this scene query."
-  },
-  {
-    "query_id": "q065",
-    "query_text": "beach scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      3
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "coast",
-      "outdoor"
-    ],
-    "notes": "Manual review: the shoreline image is the direct beach-scene match in the locked corpus."
-  },
-  {
-    "query_id": "q066",
-    "query_text": "shoreline and water",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      3
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "coast",
-      "water"
-    ],
-    "notes": "Manual review: the beach image shows shoreline and water clearly enough to satisfy this scene query."
-  },
-  {
-    "query_id": "q067",
-    "query_text": "bridge over a river",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      6
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "bridge",
-      "water"
-    ],
-    "notes": "Manual review: the bridge-and-river landscape is the direct scene-level match here."
-  },
-  {
-    "query_id": "q068",
-    "query_text": "historic castle exterior",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      7
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "architecture",
-      "historic"
-    ],
-    "notes": "Manual review: the castle image is relevant as a full exterior scene, not just as an object."
-  },
-  {
-    "query_id": "q069",
-    "query_text": "city skyline",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      9
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "city",
-      "urban"
-    ],
-    "notes": "Manual review: the skyline photo is the direct city-scene match for this query."
-  },
-  {
-    "query_id": "q070",
-    "query_text": "urban skyline",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      9
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "city",
-      "urban"
-    ],
-    "notes": "Manual review: the same skyline image remains relevant for this alternate urban-scene phrasing."
-  },
-  {
-    "query_id": "q071",
-    "query_text": "desert dunes",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      11
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "desert",
-      "landscape"
-    ],
-    "notes": "Manual review: the sand-dune landscape directly matches this desert-scene query."
-  },
-  {
-    "query_id": "q072",
-    "query_text": "night fireworks display",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      13
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "night",
-      "celebration"
-    ],
-    "notes": "Manual review: the fireworks image is relevant as a complete nighttime celebration scene."
-  },
-  {
-    "query_id": "q073",
-    "query_text": "flower garden",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      14
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "garden",
-      "nature"
-    ],
-    "notes": "Manual review: the blooming garden image directly matches this scene query."
-  },
-  {
-    "query_id": "q074",
-    "query_text": "forest trail",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      15
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "forest",
-      "path"
-    ],
-    "notes": "Manual review: the tree-lined trail image is the direct scene-level match here."
-  },
-  {
-    "query_id": "q075",
-    "query_text": "woods path",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      15
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "forest",
-      "path"
-    ],
-    "notes": "Manual review: the forest-trail image remains relevant for this synonymous woods-path phrasing."
-  },
-  {
-    "query_id": "q076",
-    "query_text": "mountain lake landscape",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      17
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "mountain",
-      "lake"
-    ],
-    "notes": "Manual review: the alpine mountain-lake photo is the direct scene match for this query."
-  },
-  {
-    "query_id": "q077",
-    "query_text": "office workspace",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      18
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "office",
-      "indoor"
-    ],
-    "notes": "Manual review: the desk-and-work-items image directly matches this workspace scene query."
-  },
-  {
-    "query_id": "q078",
-    "query_text": "desk with work items",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      18
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "office",
-      "indoor"
-    ],
-    "notes": "Manual review: the office-desk image is relevant because it shows a full work surface scene."
-  },
-  {
-    "query_id": "q079",
-    "query_text": "portrait photo",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      20
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "person",
-      "portrait"
-    ],
-    "notes": "Manual review: the portrait image functions as the full scene match for this person-focused query."
-  },
-  {
-    "query_id": "q080",
-    "query_text": "sailboat on open water",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      22
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "boat",
-      "water"
-    ],
-    "notes": "Manual review: the sailboat image is relevant as an open-water scene, not just as an object."
-  },
-  {
-    "query_id": "q081",
-    "query_text": "snowy cabin scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      23
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "winter",
-      "outdoor"
-    ],
-    "notes": "Manual review: the cabin-in-snow image directly matches this winter scene query."
-  },
-  {
-    "query_id": "q082",
-    "query_text": "street market",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      24
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "market",
-      "urban"
-    ],
-    "notes": "Manual review: the market-stall photo is the direct scene match for this query."
-  },
-  {
-    "query_id": "q083",
-    "query_text": "busy market stalls",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      24
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "market",
-      "urban"
-    ],
-    "notes": "Manual review: the street-market image remains relevant for this busier scene phrasing."
-  },
-  {
-    "query_id": "q084",
-    "query_text": "railway scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      26
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "transport",
-      "outdoor"
-    ],
-    "notes": "Manual review: the train image serves as the still-scene match for a railway setting."
-  },
-  {
-    "query_id": "q085",
-    "query_text": "waterfall landscape",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      27
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "water"
-    ],
-    "notes": "Manual review: the waterfall image is directly relevant as a natural landscape scene."
-  },
-  {
-    "query_id": "q086",
-    "query_text": "rural windmill landscape",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      28
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "rural",
-      "landscape"
-    ],
-    "notes": "Manual review: the windmill photo is relevant as a full rural landscape scene."
-  },
-  {
-    "query_id": "q087",
-    "query_text": "campfire at night",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      30
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-campfire-01.webm:0",
-      "scene:vid-campfire-01.webm:1",
-      "scene:vid-campfire-01.webm:2",
-      "scene:vid-campfire-01.webm:3",
-      "scene:vid-campfire-01.webm:4"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "night",
-      "video"
-    ],
-    "notes": "Manual review: the campfire clip is relevant as a nighttime outdoor scene. All 5 detected scenes remain campfire-at-night content."
-  },
-  {
-    "query_id": "q088",
-    "query_text": "urban street traffic scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      31
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-city-traffic-01.webm:0",
-      "scene:vid-city-traffic-01.webm:1"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "urban",
-      "video"
-    ],
-    "notes": "Manual review: the traffic video is relevant as a complete city-street scene. Both detected scenes remain urban traffic content."
-  },
-  {
-    "query_id": "q089",
-    "query_text": "flower close-up nature video",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      33
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-flower-01.mp4:0"
-    ],
-    "media_type_target": "video",
-    "difficulty": "medium",
-    "tags": [
-      "nature",
-      "video"
-    ],
-    "notes": "Manual review: the flower clip is relevant as a close-up natural scene. The single detected scene covers the full clip."
-  },
-  {
-    "query_id": "q090",
-    "query_text": "waterfall scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      27,
-      35
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-waterfall-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "easy",
-    "tags": [
-      "nature",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the waterfall image and video were judged relevant for this general scene query."
-  },
-  {
-    "query_id": "q091",
-    "query_text": "railway motion scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      26,
-      34
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-train-passing-01.webm:1"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "medium",
-    "tags": [
-      "transport",
-      "mixed-media"
-    ],
-    "notes": "Manual review: the still train image and passing-train video were both judged relevant for a railway scene query."
-  },
-  {
-    "query_id": "q092",
-    "query_text": "bird wildlife scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      4,
-      29
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-birds-flying-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the bird photo and the birds video fit this wildlife-scene framing."
-  },
-  {
-    "query_id": "q093",
-    "query_text": "flower scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      14,
-      33
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-flower-01.mp4:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "medium",
-    "tags": [
-      "nature",
-      "mixed-media"
-    ],
-    "notes": "Manual review: both the flower-garden image and the close-up flower video were judged relevant scene matches."
-  },
-  {
-    "query_id": "q094",
-    "query_text": "dog scene",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      12,
-      32
-    ],
-    "relevant_scene_ids": [
-      "scene:vid-dog-agility-01.webm:0"
-    ],
-    "media_type_target": "mixed",
-    "difficulty": "medium",
-    "tags": [
-      "animal",
-      "mixed-media"
-    ],
-    "notes": "Manual review: the dog portrait image and dog-agility video both qualify as dog-centered scenes."
-  },
-  {
-    "query_id": "q095",
-    "query_text": "winter cabin in snow",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      23
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "winter",
-      "outdoor"
-    ],
-    "notes": "Manual review: the snowy cabin image directly matches this more descriptive winter scene query."
-  },
-  {
-    "query_id": "q096",
-    "query_text": "coastal beach landscape",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      3
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "coast",
-      "landscape"
-    ],
-    "notes": "Manual review: the beach photo remains relevant for this broader coastal-landscape phrasing."
-  },
-  {
-    "query_id": "q097",
-    "query_text": "alpine lake view",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [
-      17
-    ],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "medium",
-    "tags": [
-      "mountain",
-      "lake"
-    ],
-    "notes": "Manual review: the mountain-lake image is relevant as an alpine scenic view."
-  },
-  {
-    "query_id": "q098",
-    "query_text": "elephant",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no elephant content appears anywhere in the locked evaluation corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q099",
-    "query_text": "blue car",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains a car image, but not the requested blue variant, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q100",
-    "query_text": "black cat",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus has cat content, but not a black-cat-specific match, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q101",
-    "query_text": "green tractor",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes a tractor, but not the requested green tractor variant, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q102",
-    "query_text": "helicopter",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no helicopter content appears in the locked corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q103",
-    "query_text": "library shelf",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains books, but not a library-shelf view, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q104",
-    "query_text": "blue sailboat",
-    "query_type": "object",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes a sailboat, but not the requested blue sailboat variant, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q105",
-    "query_text": "cooking",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no cooking action appears anywhere in the locked evaluation corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q106",
-    "query_text": "swimming",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no swimming action appears anywhere in the locked evaluation corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q107",
-    "query_text": "airplane taking off",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes airplane imagery, but not a takeoff action, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q108",
-    "query_text": "dog sleeping",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "mixed",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains dog media, but not a sleeping-dog action match, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q109",
-    "query_text": "train parked at station",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes train media, but not the requested parked-at-station action state, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q110",
-    "query_text": "person typing on laptop",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains a workspace scene, but not the requested typing action, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q111",
-    "query_text": "sailing race",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes a sailboat image, but not a racing-sail action scene, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q112",
-    "query_text": "flower blooming time-lapse",
-    "query_type": "action",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "video",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains flower media, but not a blooming time-lapse action, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q113",
-    "query_text": "underwater coral reef",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no underwater coral-reef scene appears anywhere in the locked evaluation corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q114",
-    "query_text": "snowy city skyline",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains skyline and snow scenes separately, but not a snowy skyline scene, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q115",
-    "query_text": "kitchen interior",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative"
-    ],
-    "notes": "Manual review: no kitchen interior scene appears in the locked evaluation corpus, so this is an explicit negative query."
-  },
-  {
-    "query_id": "q116",
-    "query_text": "beach at sunset",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes a beach scene, but not the requested sunset beach variant, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q117",
-    "query_text": "forest waterfall",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "mixed",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains forest and waterfall scenes, but not a single forest-waterfall scene, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q118",
-    "query_text": "airport at night",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus includes an airport-style runway scene, but not one at night, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q119",
-    "query_text": "farmland at sunrise",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains rural content, but not the requested farmland-at-sunrise scene, so this is an explicit near-miss negative."
-  },
-  {
-    "query_id": "q120",
-    "query_text": "desert road with car",
-    "query_type": "scene",
-    "judged": true,
-    "relevant_media_ids": [],
-    "relevant_scene_ids": [],
-    "media_type_target": "image",
-    "difficulty": "hard",
-    "tags": [
-      "negative",
-      "near-miss"
-    ],
-    "notes": "Manual review: the corpus contains desert and car imagery separately, but not a desert-road-with-car scene, so this is an explicit near-miss negative."
-  }
-]
+{
+  "judgment_policy": {
+    "path": "docs/metrics/evaluation_benchmark_rubric.md",
+    "version": "2026-05-11"
+  },
+  "queries": [
+    {
+      "query_id": "q001",
+      "query_text": "airplane",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        1
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "vehicle",
+        "aviation"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q002",
+      "query_text": "aircraft on runway",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        1
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "vehicle",
+        "aviation"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q003",
+      "query_text": "basketball",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        2
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "sports",
+        "ball"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q004",
+      "query_text": "basketball ball",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        2
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "sports",
+        "ball"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q005",
+      "query_text": "bird",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        4
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "wildlife"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q006",
+      "query_text": "wild bird",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        4
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "wildlife"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q007",
+      "query_text": "stack of books",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        5
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "books",
+        "indoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q008",
+      "query_text": "books",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        5
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "books",
+        "reading"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q009",
+      "query_text": "castle",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        7
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "architecture",
+        "historic"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q010",
+      "query_text": "fortress",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        7
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "architecture",
+        "historic"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q011",
+      "query_text": "cat",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        8
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "pet"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q012",
+      "query_text": "coffee cup",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        10
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "drink",
+        "cup"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q013",
+      "query_text": "coffee mug",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        10
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "drink",
+        "cup"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q014",
+      "query_text": "dog",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        12
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "pet"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q015",
+      "query_text": "fireworks",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        13
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "night",
+        "celebration"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q016",
+      "query_text": "flowers",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        14
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "plants"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q017",
+      "query_text": "fruit bowl",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        16
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "food",
+        "bowl"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q018",
+      "query_text": "bowl of fruit",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        16
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "food",
+        "bowl"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q019",
+      "query_text": "pizza",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        19
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "food",
+        "meal"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q020",
+      "query_text": "portrait face",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        20
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "person",
+        "portrait"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q021",
+      "query_text": "red car",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        21
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "vehicle",
+        "color"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q022",
+      "query_text": "sailboat",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        22
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "boat",
+        "water"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q023",
+      "query_text": "snow cabin",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        23
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "winter",
+        "cabin"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q024",
+      "query_text": "tractor",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        25
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "vehicle",
+        "farm"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q025",
+      "query_text": "train",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        26
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "transport",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q026",
+      "query_text": "waterfall",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        27
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q027",
+      "query_text": "windmill",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        28
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "rural",
+        "landmark"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q028",
+      "query_text": "campfire",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "fire",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q029",
+      "query_text": "flower close-up video",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-flower-01.mp4:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "plant",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q030",
+      "query_text": "bird in flight",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q031",
+      "query_text": "dog agility dog",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q032",
+      "query_text": "traffic",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "urban",
+        "vehicles"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q033",
+      "query_text": "railway train video",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "transport",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q034",
+      "query_text": "waterfall video",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "nature",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q035",
+      "query_text": "flower",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        14
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-flower-01.mp4:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q036",
+      "query_text": "bird",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        4
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q037",
+      "query_text": "dog",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [
+        12
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q038",
+      "query_text": "birds flying",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q039",
+      "query_text": "flock in flight",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q040",
+      "query_text": "flying birds overhead",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q041",
+      "query_text": "birds in the air",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q042",
+      "query_text": "fire burning",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "fire",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q043",
+      "query_text": "campfire flames flickering",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "fire",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q044",
+      "query_text": "burning campfire",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "fire",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q045",
+      "query_text": "flames moving at night",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "fire",
+        "night"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q046",
+      "query_text": "cars driving through the city",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "urban",
+        "vehicles"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q047",
+      "query_text": "city traffic moving",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "urban",
+        "vehicles"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q048",
+      "query_text": "vehicles on an urban street",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "urban",
+        "vehicles"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q049",
+      "query_text": "traffic flow",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "urban",
+        "vehicles"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q050",
+      "query_text": "dog running",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q051",
+      "query_text": "dog agility",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "sport"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q052",
+      "query_text": "dog jumping obstacle",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "sport"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q053",
+      "query_text": "running dog",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q054",
+      "query_text": "dog in motion",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q055",
+      "query_text": "close-up flower motion",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-flower-01.mp4:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "plant",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q056",
+      "query_text": "train passing",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "transport",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q057",
+      "query_text": "moving train",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "transport",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q058",
+      "query_text": "train moving past",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "transport",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q059",
+      "query_text": "railway motion",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "transport",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q060",
+      "query_text": "water flowing",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q061",
+      "query_text": "running waterfall",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q062",
+      "query_text": "cascading water",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "nature",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q063",
+      "query_text": "waterfall in motion",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "nature",
+        "motion"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q064",
+      "query_text": "airport runway scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        1
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "aviation",
+        "outdoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q065",
+      "query_text": "beach scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        3
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "coast",
+        "outdoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q066",
+      "query_text": "shoreline and water",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        3
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "coast",
+        "water"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q067",
+      "query_text": "bridge over a river",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        6
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "bridge",
+        "water"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q068",
+      "query_text": "historic castle exterior",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        7
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "architecture",
+        "historic"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q069",
+      "query_text": "city skyline",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        9
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "city",
+        "urban"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q070",
+      "query_text": "urban skyline",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        9
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "city",
+        "urban"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q071",
+      "query_text": "desert dunes",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        11
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "desert",
+        "landscape"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q072",
+      "query_text": "night fireworks display",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        13
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "night",
+        "celebration"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q073",
+      "query_text": "flower garden",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        14
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "garden",
+        "nature"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q074",
+      "query_text": "forest trail",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        15
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "forest",
+        "path"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q075",
+      "query_text": "woods path",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        15
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "forest",
+        "path"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q076",
+      "query_text": "mountain lake landscape",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        17
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "mountain",
+        "lake"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q077",
+      "query_text": "office workspace",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        18
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "office",
+        "indoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q078",
+      "query_text": "desk with work items",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        18
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "office",
+        "indoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q079",
+      "query_text": "portrait photo",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        20
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "person",
+        "portrait"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q080",
+      "query_text": "sailboat on open water",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        22
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "boat",
+        "water"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q081",
+      "query_text": "snowy cabin scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        23
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "winter",
+        "outdoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q082",
+      "query_text": "street market",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        24
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "market",
+        "urban"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q083",
+      "query_text": "busy market stalls",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        24
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "market",
+        "urban"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q084",
+      "query_text": "railway scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        26
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "transport",
+        "outdoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q085",
+      "query_text": "waterfall landscape",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        27
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "water"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q086",
+      "query_text": "rural windmill landscape",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        28
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "rural",
+        "landscape"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q087",
+      "query_text": "campfire at night",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-campfire-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "night",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q088",
+      "query_text": "urban street traffic scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-city-traffic-01.webm:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "urban",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q089",
+      "query_text": "flower close-up nature video",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [
+        "scene:vid-flower-01.mp4:1"
+      ],
+      "media_type_target": "video",
+      "difficulty": "medium",
+      "tags": [
+        "nature",
+        "video"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q090",
+      "query_text": "waterfall scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        27
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-waterfall-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "easy",
+      "tags": [
+        "nature",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q091",
+      "query_text": "railway motion scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        26
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-train-passing-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "medium",
+      "tags": [
+        "transport",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q092",
+      "query_text": "bird wildlife scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        4
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-birds-flying-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q093",
+      "query_text": "flower scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        14
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-flower-01.mp4:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "medium",
+      "tags": [
+        "nature",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q094",
+      "query_text": "dog scene",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        12
+      ],
+      "relevant_scene_ids": [
+        "scene:vid-dog-agility-01.webm:1"
+      ],
+      "media_type_target": "mixed",
+      "difficulty": "medium",
+      "tags": [
+        "animal",
+        "mixed-media"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q095",
+      "query_text": "winter cabin in snow",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        23
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "winter",
+        "outdoor"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q096",
+      "query_text": "coastal beach landscape",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        3
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "coast",
+        "landscape"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q097",
+      "query_text": "alpine lake view",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [
+        17
+      ],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "medium",
+      "tags": [
+        "mountain",
+        "lake"
+      ],
+      "notes": "Manual review: direct match in the locked corpus."
+    },
+    {
+      "query_id": "q098",
+      "query_text": "elephant",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q099",
+      "query_text": "blue car",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q100",
+      "query_text": "black cat",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q101",
+      "query_text": "green tractor",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q102",
+      "query_text": "helicopter",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q103",
+      "query_text": "library shelf",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q104",
+      "query_text": "blue sailboat",
+      "query_type": "object",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q105",
+      "query_text": "cooking",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q106",
+      "query_text": "swimming",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q107",
+      "query_text": "airplane taking off",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q108",
+      "query_text": "dog sleeping",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "mixed",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q109",
+      "query_text": "train parked at station",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q110",
+      "query_text": "person typing on laptop",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q111",
+      "query_text": "sailing race",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q112",
+      "query_text": "flower blooming time-lapse",
+      "query_type": "action",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "video",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q113",
+      "query_text": "underwater coral reef",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q114",
+      "query_text": "snowy city skyline",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q115",
+      "query_text": "kitchen interior",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q116",
+      "query_text": "beach at sunset",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q117",
+      "query_text": "forest waterfall",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "mixed",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q118",
+      "query_text": "airport at night",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q119",
+      "query_text": "farmland at sunrise",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    },
+    {
+      "query_id": "q120",
+      "query_text": "desert road with car",
+      "query_type": "scene",
+      "judged": true,
+      "relevant_media_ids": [],
+      "relevant_scene_ids": [],
+      "media_type_target": "image",
+      "difficulty": "hard",
+      "tags": [
+        "negative",
+        "near-miss"
+      ],
+      "notes": "Manual review: no relevant asset exists in the locked corpus."
+    }
+  ]
+}

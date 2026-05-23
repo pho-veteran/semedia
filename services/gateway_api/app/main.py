@@ -16,7 +16,13 @@ from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.media_types import infer_media_type, validate_media_type
 from semedia_shared.models import MediaItem, ProcessingStatus
 from semedia_shared.serialization import media_detail, media_summary
-from semedia_shared.storage import delete_media_files, ensure_media_root, save_upload
+from semedia_shared.storage import (
+    delete_media_files,
+    delete_relative_path_if_exists,
+    delete_relative_paths_if_exist,
+    ensure_media_root,
+    save_upload,
+)
 
 settings = get_settings("gateway-api")
 configure_logging(settings)
@@ -87,6 +93,17 @@ def _trigger_worker_processing(media_id: int) -> None:
         session.close()
 
 
+def _persist_uploaded_media(session: Session, media: MediaItem) -> None:
+    session.add(media)
+    session.commit()
+    session.refresh(media)
+
+
+def _delete_media_row(session: Session, media: MediaItem) -> None:
+    session.delete(media)
+    session.commit()
+
+
 def _proxy_worker_runtime() -> dict:
     try:
         response = requests.get(f"{settings.media_worker_url}/internal/runtime", timeout=20)
@@ -114,9 +131,12 @@ def upload_media(
     media_type: str | None = Form(default=None),
     session: Session = Depends(get_db),
 ) -> dict:
-    inferred_type = infer_media_type(file.filename or "upload.bin", file.content_type or "")
-    if media_type:
-        validate_media_type(media_type, inferred_type, file.filename or "upload.bin")
+    try:
+        inferred_type = infer_media_type(file.filename or "upload.bin", file.content_type or "")
+        if media_type:
+            validate_media_type(media_type, inferred_type, file.filename or "upload.bin")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
     selected_media_type = media_type or inferred_type
 
     relative_path, file_size = save_upload(settings, file)
@@ -129,9 +149,12 @@ def upload_media(
         status=ProcessingStatus.PENDING,
         enqueued_at=datetime.now(timezone.utc),
     )
-    session.add(media)
-    session.commit()
-    session.refresh(media)
+    try:
+        _persist_uploaded_media(session, media)
+    except Exception:
+        session.rollback()
+        delete_relative_path_if_exists(settings, relative_path)
+        raise
     background_tasks.add_task(_trigger_worker_processing, media.id)
 
     media = session.execute(
@@ -184,9 +207,20 @@ def delete_media(media_id: int, session: Session = Depends(get_db)) -> None:
     ).scalar_one_or_none()
     if media is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Media not found.")
-    delete_media_files(settings, media)
-    session.delete(media)
-    session.commit()
+
+    paths_to_delete = [
+        media.file_path,
+        *[scene.keyframe_path for scene in media.scenes],
+        *[scene.thumbnail_path for scene in media.scenes],
+    ]
+    _delete_media_row(session, media)
+    delete_relative_paths_if_exist(settings, paths_to_delete)
+    try:
+        from semedia_shared.index_service import rebuild_keyword_index
+
+        rebuild_keyword_index(settings, session)
+    except Exception:
+        logger.exception("Keyword index rebuild failed after deleting media %s", media_id)
 
 
 @app.post("/api/v1/search/")

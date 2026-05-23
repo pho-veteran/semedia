@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, Index, Integer, LargeBinary, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import JSON
@@ -85,3 +85,15 @@ class VideoScene(Base):
         UniqueConstraint("media_id", "scene_index", name="uq_video_scenes_media_scene_index"),
         CheckConstraint("end_time >= start_time", name="ck_video_scenes_end_after_start"),
     )
+
+
+class KeywordIndexArtifact(Base):
+    __tablename__ = "keyword_index_artifacts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    artifact_key: Mapped[str] = mapped_column(String(64), unique=True, default="default")
+    format_version: Mapped[str] = mapped_column(String(16), default="v1")
+    document_count: Mapped[int] = mapped_column(Integer, default=0)
+    payload: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    built_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

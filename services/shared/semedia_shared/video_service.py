@@ -25,40 +25,18 @@ def get_video_duration(video_path: str) -> float:
     return round(float(frame_count / fps), 2)
 
 
-def _get_adaptive_threshold(duration: float, base_threshold: float) -> float:
-    """Calculate adaptive scene detection threshold based on video duration.
-
-    Args:
-        duration: Video duration in seconds
-        base_threshold: Base threshold from settings
-
-    Returns:
-        Adaptive threshold: 20.0 for short videos (<30s),
-                           35.0 for long videos (>10min),
-                           base_threshold otherwise
-    """
-    if duration < 30.0:
-        return 20.0
-    elif duration > 600.0:
-        return 35.0
-    else:
-        return base_threshold
-
-
 def detect_scenes(settings, video_path: str) -> list[SceneSpan]:
     from scenedetect import SceneManager, open_video
     from scenedetect.detectors import ContentDetector
 
-    duration = get_video_duration(video_path)
-    adaptive_threshold = _get_adaptive_threshold(duration, settings.scene_detection_threshold)
-
     video = open_video(video_path)
     scene_manager = SceneManager()
-    scene_manager.add_detector(ContentDetector(threshold=adaptive_threshold))
+    scene_manager.add_detector(ContentDetector(threshold=settings.scene_detection_threshold))
     scene_manager.detect_scenes(video)
     scenes = scene_manager.get_scene_list()
 
     if not scenes:
+        duration = get_video_duration(video_path)
         if duration <= 0:
             return []
         return [SceneSpan(scene_index=0, start_time=0.0, end_time=duration)]

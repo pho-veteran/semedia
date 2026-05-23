@@ -24,9 +24,17 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(new URL(path, API_BASE_URL), init)
+
+  const contentLength = response.headers.get('content-length')
   const contentType = response.headers.get('content-type') ?? ''
+  const hasBody = contentLength !== '0' && contentLength !== null
+    ? true
+    : contentType.includes('application/json') || contentType.includes('text/')
+
   const isJson = contentType.includes('application/json')
-  const body = isJson ? await response.json() : await response.text()
+  const body = hasBody && response.status !== 204
+    ? isJson ? await response.json() : await response.text()
+    : undefined
 
   if (!response.ok) {
     const message =

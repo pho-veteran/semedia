@@ -11,10 +11,9 @@ const badgeVariants = cva(
         secondary: "bg-secondary text-secondary-foreground",
         destructive: "bg-destructive text-destructive-foreground",
         outline: "border border-border text-foreground bg-transparent",
-        // Semantic status colors for upload status
         uploading: "bg-blue-500 text-white",
         processing: "bg-orange-500 text-white",
-        completed: "bg-green-500 text-white",
+        completed: "bg-green-100 text-green-700",
         failed: "bg-red-500 text-white",
       },
     },

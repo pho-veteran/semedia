@@ -1,5 +1,4 @@
-import { Activity, Cpu, Zap } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui'
+import { Activity, Cpu, Zap, WifiOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { RuntimeStatus } from '../types/api'
 
@@ -14,88 +13,85 @@ export function RuntimeBadge({ runtime, error, className, compact = false }: Run
   if (compact) {
     if (error) {
       return (
-        <div 
-          className={cn("flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/20", className)}
+        <div
+          className={cn("flex items-center justify-center w-9 h-9 rounded-xl bg-destructive/10", className)}
           title="Connection Error"
         >
-          <Activity className="h-4 w-4 text-destructive" />
+          <WifiOff className="h-4 w-4 text-destructive" />
         </div>
       )
     }
 
     if (!runtime) {
       return (
-        <div 
-          className={cn("flex items-center justify-center w-8 h-8 rounded-lg bg-muted", className)}
-          title="Connecting..."
+        <div
+          className={cn("flex items-center justify-center w-9 h-9 rounded-xl bg-muted", className)}
+          title="Connecting…"
         >
-          <Activity className="h-4 w-4 text-muted-foreground animate-pulse" />
+          <Activity className="h-4 w-4 text-muted-foreground animate-status-pulse" />
         </div>
       )
     }
 
     const isGPU = runtime.selected_device === 'cuda'
     const deviceName = runtime.gpu_name || 'CPU'
-    const displayTitle = isGPU ? `GPU: ${deviceName}` : 'CPU Mode'
 
     return (
-      <div 
+      <div
         className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-lg",
-          isGPU ? "bg-green-500/20" : "bg-yellow-500/20",
+          "flex items-center justify-center w-9 h-9 rounded-xl transition-colors",
+          isGPU ? "bg-emerald-500/10" : "bg-amber-500/10",
           className
         )}
-        title={displayTitle}
+        title={isGPU ? `GPU: ${deviceName}` : 'CPU Mode'}
       >
-        {isGPU ? (
-          <Zap className="h-4 w-4 text-green-600 dark:text-green-400" />
-        ) : (
-          <Cpu className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-        )}
+        {isGPU
+          ? <Zap className="h-4 w-4 text-emerald-500" />
+          : <Cpu className="h-4 w-4 text-amber-500" />
+        }
       </div>
     )
   }
 
-
   if (error) {
     return (
-      <Card className={cn("bg-destructive/10 border-destructive/20", className)}>
-        <CardContent className="p-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/20">
-              <Activity className="h-4 w-4 text-destructive" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
-                <span className="text-xs font-medium text-destructive">Connection Error</span>
-              </div>
-              <p className="text-xs text-muted-foreground truncate">{error}</p>
-            </div>
+      <div className={cn(
+        "flex items-center gap-2.5 rounded-xl px-3 py-2.5",
+        "bg-destructive/8 border border-destructive/15",
+        className
+      )}>
+        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-destructive/15 flex-shrink-0">
+          <WifiOff className="h-3.5 w-3.5 text-destructive" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+            <span className="text-xs font-semibold text-destructive">Connection Error</span>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{error}</p>
+        </div>
+      </div>
     )
   }
 
   if (!runtime) {
     return (
-      <Card className={cn("bg-muted/50", className)}>
-        <CardContent className="p-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              <Activity className="h-4 w-4 text-muted-foreground animate-pulse" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="h-2 w-2 rounded-full bg-gray-400 animate-pulse" />
-                <span className="text-xs font-medium text-muted-foreground">Connecting...</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Initializing runtime</p>
-            </div>
+      <div className={cn(
+        "flex items-center gap-2.5 rounded-xl px-3 py-2.5",
+        "bg-muted/50 border border-border/50",
+        className
+      )}>
+        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-muted flex-shrink-0">
+          <Activity className="h-3.5 w-3.5 text-muted-foreground animate-status-pulse" />
+        </div>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50 animate-status-pulse" />
+            <span className="text-xs font-semibold text-muted-foreground">Connecting…</span>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Initializing runtime</p>
+        </div>
+      </div>
     )
   }
 
@@ -104,41 +100,42 @@ export function RuntimeBadge({ runtime, error, className, compact = false }: Run
   const deviceCount = runtime.cuda_device_count || 0
 
   return (
-    <Card className={cn("bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20", className)}>
-      <CardContent className="p-3">
-        <div className="flex items-start gap-3">
-          <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg",
-            isGPU ? "bg-green-500/20" : "bg-yellow-500/20"
-          )}>
-            {isGPU ? (
-              <Zap className="h-4 w-4 text-green-600 dark:text-green-400" />
-            ) : (
-              <Cpu className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={cn(
-                "h-2 w-2 rounded-full",
-                isGPU ? "bg-green-500" : "bg-yellow-500"
-              )} />
-              <span className="text-xs font-medium">
-                {isGPU ? 'GPU Accelerated' : 'CPU Mode'}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground truncate" title={deviceName}>
-              {deviceName}
-            </p>
-            {isGPU && deviceCount > 0 && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {deviceCount} {deviceCount === 1 ? 'device' : 'devices'} available
-              </p>
-            )}
-          </div>
+    <div className={cn(
+      "flex items-center gap-2.5 rounded-xl px-3 py-2.5",
+      "border transition-colors",
+      isGPU
+        ? "bg-emerald-500/5 border-emerald-500/15"
+        : "bg-amber-500/5 border-amber-500/15",
+      className
+    )}>
+      <div className={cn(
+        "flex items-center justify-center h-7 w-7 rounded-lg flex-shrink-0",
+        isGPU ? "bg-emerald-500/15" : "bg-amber-500/15"
+      )}>
+        {isGPU
+          ? <Zap className="h-3.5 w-3.5 text-emerald-500" />
+          : <Cpu className="h-3.5 w-3.5 text-amber-500" />
+        }
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            isGPU ? "bg-emerald-500" : "bg-amber-500"
+          )} />
+          <span className="text-xs font-semibold text-foreground">
+            {isGPU ? 'GPU Accelerated' : 'CPU Mode'}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+        <p className="text-[11px] text-muted-foreground truncate mt-0.5" title={deviceName}>
+          {deviceName}
+        </p>
+        {isGPU && deviceCount > 0 && (
+          <p className="text-[11px] text-muted-foreground mt-0.5 num-tabular">
+            {deviceCount} device{deviceCount !== 1 ? 's' : ''} available
+          </p>
+        )}
+      </div>
+    </div>
   )
 }
-

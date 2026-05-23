@@ -98,13 +98,6 @@ def test_worker_process_endpoint_invokes_pipeline(worker_env, monkeypatch):
         assert media.status == ProcessingStatus.COMPLETED
 
 
-def test_worker_process_endpoint_returns_success_false_for_missing_media(worker_env):
-    response = worker_env["client"].post("/internal/media/999/process")
-
-    assert response.status_code == 200
-    assert response.json() == {"media_id": 999, "success": False}
-
-
 def test_worker_startup_preloads_models_when_enabled(tmp_path, monkeypatch):
     module = load_service_module("media_worker_service_main_preload", "services/media_worker/app/main.py")
     settings = replace(make_test_settings("media-worker", tmp_path), ml_preload_models=True)

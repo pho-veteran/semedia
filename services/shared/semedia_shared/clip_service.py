@@ -65,16 +65,14 @@ def encode_images(settings, image_paths: Iterable[str]) -> list[list[float]]:
         torch, Image, model_name, device, strict_cuda, processor, model, use_device_map = _load_clip_resources(settings)
         logger.info("Running CLIP image inference with %s on %s.", model_name, device)
         embeddings: list[list[float]] = []
-        batch_size = 8
         with torch.inference_mode():
-            for i in range(0, len(image_paths), batch_size):
-                batch_paths = image_paths[i : i + batch_size]
-                images = [Image.open(path).convert("RGB") for path in batch_paths]
-                inputs = build_image_inputs(processor, images)
+            for image_path in image_paths:
+                image = Image.open(image_path).convert("RGB")
+                inputs = build_image_inputs(processor, image)
                 if device != "cuda" or not use_device_map:
                     inputs = move_batch_to_device(inputs, device)
                 features = model.get_image_features(**inputs)
-                embeddings.extend(_normalize(features).cpu().tolist())
+                embeddings.append(_normalize(features).squeeze(0).cpu().tolist())
         return embeddings
     except Exception as exc:
         if strict_cuda and device == "cuda":

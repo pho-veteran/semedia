@@ -18,9 +18,17 @@ def scene_payload(settings, scene: VideoScene) -> dict:
 
 
 def media_summary(settings, media: MediaItem) -> dict:
+    # For videos with processed scenes, use the first scene's thumbnail as the poster
+    thumbnail = None
+    if media.media_type == "video" and media.scenes:
+        first_scene = min(media.scenes, key=lambda s: s.scene_index)
+        if first_scene.thumbnail_path:
+            thumbnail = media_url(settings, first_scene.thumbnail_path)
+
     return {
         "id": media.id,
         "file": media_url(settings, media.file_path),
+        "thumbnail": thumbnail,
         "original_filename": media.original_filename,
         "media_type": media.media_type,
         "mime_type": media.mime_type or "",

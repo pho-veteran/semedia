@@ -12,8 +12,7 @@ import {
 import { Search, CloudUpload, X } from 'lucide-react'
 import { searchMedia, searchMediaByImage } from '../api/client'
 import { SearchResultCard } from '../components/SearchResultCard'
-import { SearchResultGroup } from '../components/SearchResultGroup'
-import {
+import { 
   Card, 
   CardContent, 
   CardHeader, 
@@ -33,15 +32,12 @@ import {
 } from '../components/ui'
 import type { SearchResult } from '../types/api'
 import { getErrorMessage } from '../utils/format'
-import { buildSearchRenderEntries } from '../utils/searchResults'
 import { cn } from '../lib/utils'
 
 interface SearchPageProps {
   onOpenMedia: (mediaId: number, startTime: number | null) => void
   searchInputRef?: React.RefObject<HTMLInputElement>
 }
-
-const TEXT_SEARCH_DEBOUNCE_MS = 600
 
 export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
   // Search state
@@ -59,7 +55,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [typeFilter, setTypeFilter] = useState('all')
-  const [scoreFilter, setScoreFilter] = useState('0.0')
+  const [scoreFilter, setScoreFilter] = useState('0.5')
   const [sortBy, setSortBy] = useState('relevance')
   const debounceTimerRef = useRef<number | null>(null)
 
@@ -105,19 +101,17 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
         case 'relevance':
           return b.score - a.score
         case 'date':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          return b.original_filename.localeCompare(a.original_filename)
         case 'size':
-          return b.file_size - a.file_size
+          return a.original_filename.localeCompare(b.original_filename)
         default:
           return b.score - a.score
       }
     })
 
-  const renderEntries = buildSearchRenderEntries(filteredAndSortedResults)
-
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (renderEntries.length === 0) return
+      if (filteredAndSortedResults.length === 0) return
       
       const activeElement = document.activeElement
       const isTyping = activeElement?.tagName === 'INPUT' || 
@@ -128,29 +122,17 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
 
       if (event.key === 'ArrowDown') {
         event.preventDefault()
-        setFocusedResultIndex((prev) =>
-          prev < renderEntries.length - 1 ? prev + 1 : prev
+        setFocusedResultIndex((prev) => 
+          prev < filteredAndSortedResults.length - 1 ? prev + 1 : prev
         )
       } else if (event.key === 'ArrowUp') {
         event.preventDefault()
         setFocusedResultIndex((prev) => (prev > 0 ? prev - 1 : -1))
       } else if (event.key === 'Enter' && focusedResultIndex >= 0) {
-        if (
-          activeElement instanceof HTMLElement &&
-          activeElement !== document.body &&
-          activeElement !== document.documentElement
-        ) {
-          return
-        }
-
         event.preventDefault()
-        const entry = renderEntries[focusedResultIndex]
-        if (entry) {
-          if (entry.kind === 'single') {
-            onOpenMedia(entry.item.media_id, entry.item.start_time)
-          } else {
-            onOpenMedia(entry.mediaId, entry.lead.start_time)
-          }
+        const result = filteredAndSortedResults[focusedResultIndex]
+        if (result) {
+          onOpenMedia(result.media_id, result.start_time)
         }
       }
     }
@@ -159,7 +141,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [renderEntries, focusedResultIndex, onOpenMedia])
+  }, [filteredAndSortedResults, focusedResultIndex, onOpenMedia])
 
   useEffect(() => {
     setFocusedResultIndex(-1)
@@ -188,7 +170,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       if (searchQuery.trim()) {
         handleTextSearch(searchQuery.trim())
       }
-    }, TEXT_SEARCH_DEBOUNCE_MS)
+    }, 300)
   }, [])
 
   const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -292,11 +274,11 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       remove: () => setTypeFilter('all')
     })
   }
-  if (scoreFilter !== '0.0') {
+  if (scoreFilter !== '0.5') {
     activeFilters.push({
       key: 'score',
       label: `Score: ≥${scoreFilter}`,
-      remove: () => setScoreFilter('0.0')
+      remove: () => setScoreFilter('0.5')
     })
   }
   if (sortBy !== 'relevance') {
@@ -462,7 +444,6 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
             </Select>
             
             <Select value={scoreFilter} onValueChange={setScoreFilter}>
-              <SimpleSelectItem value="0.0">≥ 0.0</SimpleSelectItem>
               <SimpleSelectItem value="0.5">≥ 0.5</SimpleSelectItem>
               <SimpleSelectItem value="0.7">≥ 0.7</SimpleSelectItem>
               <SimpleSelectItem value="0.9">≥ 0.9</SimpleSelectItem>
@@ -532,7 +513,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       )}
 
       {/* Empty State - No results */}
-      {searchedLabel && !loading && renderEntries.length === 0 && !error && (
+      {searchedLabel && !loading && filteredAndSortedResults.length === 0 && !error && (
         <EmptyState
           variant="no-results"
           title="No results found"
@@ -541,7 +522,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       )}
 
       {/* Search Results */}
-      {renderEntries.length > 0 && !loading && (
+      {filteredAndSortedResults.length > 0 && !loading && (
         <section aria-label="Search results">
           <div className="space-y-6">
           {/* Results Summary */}
@@ -550,46 +531,23 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
               {searchedMode === 'image' ? 'Image Results' : 'Text Results'}
             </p>
             <h2 className="text-lg font-semibold">
-              {renderEntries.length} result{renderEntries.length === 1 ? '' : 's'} for {emptyStateLabel}
+              {filteredAndSortedResults.length} result{filteredAndSortedResults.length === 1 ? '' : 's'} for {emptyStateLabel}
             </h2>
-            <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
-              <p className="text-sm font-medium text-foreground">How to read these result badges</p>
-              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                <p><span className="font-medium text-foreground">Semantic</span> shows visual or embedding similarity between your query and the media.</p>
-                <p><span className="font-medium text-foreground">Caption</span> shows how strongly the generated caption text matches your query terms.</p>
-                <p><span className="font-medium text-foreground">Boost +x%</span> means reranking promoted that result after combining semantic and caption signals.</p>
-                <p><span className="font-medium text-foreground">Exact phrase</span> means the query text appears directly inside the caption.</p>
-                <p><span className="font-medium text-foreground">Rich caption</span> means the caption contains more descriptive detail, which can help text search.</p>
-              </div>
-            </div>
           </div>
 
           {/* Results Grid with Staggered Animation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {renderEntries.map((entry, index) => (
+            {filteredAndSortedResults.map((item, index) => (
               <div
-                key={entry.kind === 'single'
-                  ? `${entry.item.result_type}-${entry.item.media_id}-${entry.item.start_time ?? 'image'}`
-                  : `video-group-${entry.mediaId}-${entry.lead.start_time ?? 'lead'}`}
+                key={`${item.result_type}-${item.media_id}-${item.start_time ?? 'image'}`}
                 className="animate-in fade-in-0 duration-150"
                 style={{ animationDelay: `${index * 30}ms` }}
               >
-                {entry.kind === 'single' ? (
-                  <SearchResultCard
-                    item={entry.item}
-                    onOpenMedia={onOpenMedia}
-                    isFocused={index === focusedResultIndex}
-                  />
-                ) : (
-                  <SearchResultGroup
-                    mediaId={entry.mediaId}
-                    lead={entry.lead}
-                    previews={entry.previews}
-                    hidden={entry.hidden}
-                    onOpenMedia={onOpenMedia}
-                    isFocused={index === focusedResultIndex}
-                  />
-                )}
+                <SearchResultCard
+                  item={item}
+                  onOpenMedia={onOpenMedia}
+                  isFocused={index === focusedResultIndex}
+                />
               </div>
             ))}
           </div>

@@ -123,7 +123,7 @@ export function formatScore(score: number): string {
     return '0%'
   }
 
-  return `${Math.round(score * 100)}%`
+  return `${Math.round(score)}%`
 }
 
 export function toAbsoluteUrl(value: string | null | undefined): string {

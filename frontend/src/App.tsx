@@ -125,18 +125,15 @@ function App() {
     }
   }, [])
 
-  // Register global keyboard shortcuts
   useKeyboardShortcuts({
     shortcuts: [
       {
         key: KEYBOARD_SHORTCUTS.FOCUS_SEARCH,
         description: 'Focus search input',
         handler: () => {
-          // Navigate to search page if not already there
           if (route.page !== 'search') {
             navigate({ page: 'search' })
           }
-          // Focus will be handled by SearchPage component
           searchInputRef.current?.focus()
         },
       },
@@ -144,11 +141,9 @@ function App() {
         key: KEYBOARD_SHORTCUTS.OPEN_UPLOAD,
         description: 'Open upload dialog',
         handler: () => {
-          // Navigate to dashboard
           if (route.page !== 'dashboard') {
             navigate({ page: 'dashboard' })
           }
-          // Focus on upload dropzone
           const dropzone = document.querySelector('[data-upload-dropzone]') as HTMLElement
           if (dropzone) {
             dropzone.focus()
@@ -169,7 +164,6 @@ function App() {
   const navigate = (nextRoute: AppRoute) => {
     const nextHash = routeToHash(nextRoute)
     
-    // Save previous page before navigating to media detail
     if (nextRoute.page === 'media' && route.page !== 'media') {
       setPreviousPage(route.page)
     }
@@ -330,7 +324,6 @@ function App() {
     for (const file of files) {
       const uploadId = crypto.randomUUID()
       
-      // Create preview URL for images and videos
       const previewUrl = URL.createObjectURL(file)
       const mediaType = file.type.startsWith('image/') ? 'image' : 'video'
       
@@ -419,7 +412,11 @@ function App() {
   }
 
   const handleDeletedFromDetail = async (mediaId: number) => {
-    await handleDeleteMedia(mediaId)
+    setUploads((currentUploads) => currentUploads.filter((item) => item.mediaId !== mediaId))
+    try {
+      await refreshMediaList()
+    } catch {
+    }
     navigate({ page: previousPage })
   }
 
@@ -444,7 +441,6 @@ function App() {
       return
     }
 
-    // Reset the upload status to uploading
     setUploads((currentUploads) =>
       currentUploads.map((item) =>
         item.id === uploadId
@@ -458,11 +454,8 @@ function App() {
       ),
     )
 
-    // Note: In a real implementation, we would need to store the original file
-    // and re-upload it. For now, we'll just show a message that retry is not fully implemented.
     toast.error('Retry functionality requires storing original files - not fully implemented yet')
     
-    // Reset back to failed after a short delay
     setTimeout(() => {
       setUploads((currentUploads) =>
         currentUploads.map((item) =>

@@ -50,17 +50,6 @@ def delete_path_if_exists(path: Path) -> None:
         path.unlink()
 
 
-def delete_relative_path_if_exists(settings, relative_path: str | None) -> None:
-    if not relative_path:
-        return
-    delete_path_if_exists(resolve_media_path(settings, relative_path))
-
-
-def delete_relative_paths_if_exist(settings, relative_paths: list[str | None]) -> None:
-    for relative_path in relative_paths:
-        delete_relative_path_if_exists(settings, relative_path)
-
-
 def delete_media_files(settings, media: MediaItem) -> None:
     for scene in list(media.scenes):
         if scene.keyframe_path:

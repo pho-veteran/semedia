@@ -55,11 +55,10 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [typeFilter, setTypeFilter] = useState('all')
-  const [scoreFilter, setScoreFilter] = useState('0.5')
+  const [scoreFilter, setScoreFilter] = useState('0.0')
   const [sortBy, setSortBy] = useState('relevance')
   const debounceTimerRef = useRef<number | null>(null)
 
-  // Recent searches from localStorage
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('recentSearches')
@@ -274,11 +273,11 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
       remove: () => setTypeFilter('all')
     })
   }
-  if (scoreFilter !== '0.5') {
+  if (scoreFilter !== '0.0') {
     activeFilters.push({
       key: 'score',
       label: `Score: ≥${scoreFilter}`,
-      remove: () => setScoreFilter('0.5')
+      remove: () => setScoreFilter('0.0')
     })
   }
   if (sortBy !== 'relevance') {
@@ -444,6 +443,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
             </Select>
             
             <Select value={scoreFilter} onValueChange={setScoreFilter}>
+              <SimpleSelectItem value="0.0">≥ 0.0</SimpleSelectItem>
               <SimpleSelectItem value="0.5">≥ 0.5</SimpleSelectItem>
               <SimpleSelectItem value="0.7">≥ 0.7</SimpleSelectItem>
               <SimpleSelectItem value="0.9">≥ 0.9</SimpleSelectItem>
@@ -492,7 +492,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
         </div>
       )}
 
-      {/* Loading State */}
+
       {loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -503,7 +503,6 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
         </div>
       )}
 
-      {/* Empty State - No search performed */}
       {!searchedLabel && !loading && (
         <EmptyState
           variant="no-search"
@@ -512,7 +511,6 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
         />
       )}
 
-      {/* Empty State - No results */}
       {searchedLabel && !loading && filteredAndSortedResults.length === 0 && !error && (
         <EmptyState
           variant="no-results"

@@ -1,0 +1,3298 @@
+{
+  "report": {
+    "mean_precision@10": 0.046666666666666634,
+    "mean_recall@10": 0.42916666666666664,
+    "mean_mrr": 0.3108763227513228,
+    "mean_ndcg@10": 0.33093193032488843,
+    "num_queries": 120,
+    "per_query": [
+      {
+        "query_id": "q001",
+        "query_text": "airplane",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "vehicle",
+          "aviation"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "media:23",
+          "media:1",
+          "scene:1",
+          "scene:14",
+          "media:4",
+          "scene:11",
+          "scene:13",
+          "scene:25",
+          "scene:9",
+          "media:17"
+        ]
+      },
+      {
+        "query_id": "q002",
+        "query_text": "aircraft on runway",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "vehicle",
+          "aviation"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:1",
+          "media:23",
+          "scene:14",
+          "scene:12",
+          "scene:1",
+          "scene:26",
+          "media:4",
+          "scene:9",
+          "media:12",
+          "media:22"
+        ]
+      },
+      {
+        "query_id": "q003",
+        "query_text": "basketball",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "sports",
+          "ball"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:2",
+          "scene:14",
+          "scene:1",
+          "scene:11",
+          "scene:5",
+          "scene:3",
+          "scene:12",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q004",
+        "query_text": "basketball ball",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "sports",
+          "ball"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:2",
+          "scene:14",
+          "scene:5",
+          "scene:11",
+          "scene:3",
+          "scene:1",
+          "scene:12",
+          "scene:26",
+          "scene:18"
+        ]
+      },
+      {
+        "query_id": "q005",
+        "query_text": "bird",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "wildlife"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:4",
+          "scene:1",
+          "scene:11",
+          "scene:14",
+          "media:1",
+          "media:23",
+          "scene:12",
+          "scene:5",
+          "scene:26",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q006",
+        "query_text": "wild bird",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "wildlife"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:4",
+          "scene:11",
+          "scene:1",
+          "scene:14",
+          "media:1",
+          "scene:12",
+          "media:23",
+          "scene:5",
+          "scene:26",
+          "scene:6"
+        ]
+      },
+      {
+        "query_id": "q007",
+        "query_text": "stack of books",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "books",
+          "indoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:5",
+          "scene:5",
+          "scene:3",
+          "scene:14",
+          "scene:11",
+          "scene:13",
+          "scene:25",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q008",
+        "query_text": "books",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "books",
+          "reading"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:5",
+          "scene:5",
+          "scene:3",
+          "media:23",
+          "scene:14",
+          "scene:13",
+          "scene:25",
+          "scene:20",
+          "scene:18"
+        ]
+      },
+      {
+        "query_id": "q009",
+        "query_text": "castle",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "architecture",
+          "historic"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.14285714285714285,
+        "ndcg@k": 0.3333333333333333,
+        "retrieved_ids": [
+          "scene:14",
+          "scene:11",
+          "scene:1",
+          "media:23",
+          "media:27",
+          "scene:5",
+          "media:7",
+          "scene:12",
+          "scene:26",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q010",
+        "query_text": "fortress",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "architecture",
+          "historic"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.1111111111111111,
+        "ndcg@k": 0.3010299956639812,
+        "retrieved_ids": [
+          "scene:14",
+          "scene:11",
+          "scene:1",
+          "media:23",
+          "media:13",
+          "scene:5",
+          "scene:13",
+          "scene:25",
+          "media:7",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q011",
+        "query_text": "cat",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "pet"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:8",
+          "scene:11",
+          "scene:12",
+          "scene:14",
+          "scene:5",
+          "scene:1",
+          "scene:26",
+          "scene:6",
+          "scene:16"
+        ]
+      },
+      {
+        "query_id": "q012",
+        "query_text": "coffee cup",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "drink",
+          "cup"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:10",
+          "scene:14",
+          "media:4",
+          "scene:1",
+          "scene:12",
+          "media:22",
+          "media:3",
+          "media:1",
+          "scene:26",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q013",
+        "query_text": "coffee mug",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "drink",
+          "cup"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:10",
+          "scene:14",
+          "media:1",
+          "media:4",
+          "media:17",
+          "media:22",
+          "scene:1",
+          "scene:12",
+          "scene:26",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q014",
+        "query_text": "dog",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "pet"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "scene:9",
+          "media:12",
+          "scene:11",
+          "scene:14",
+          "scene:5",
+          "media:8",
+          "scene:12",
+          "scene:26",
+          "scene:6",
+          "scene:16"
+        ]
+      },
+      {
+        "query_id": "q015",
+        "query_text": "fireworks",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "night",
+          "celebration"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "scene:14",
+          "media:13",
+          "scene:5",
+          "scene:3",
+          "scene:1",
+          "scene:12",
+          "scene:18",
+          "scene:26",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q016",
+        "query_text": "flowers",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "plants"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg@k": 0.5,
+        "retrieved_ids": [
+          "media:25",
+          "media:12",
+          "media:14",
+          "scene:10",
+          "scene:11",
+          "scene:1",
+          "media:4",
+          "media:13",
+          "scene:12",
+          "media:20"
+        ]
+      },
+      {
+        "query_id": "q017",
+        "query_text": "fruit bowl",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "food",
+          "bowl"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:16",
+          "scene:11",
+          "media:10",
+          "scene:14",
+          "scene:1",
+          "media:24",
+          "scene:12",
+          "media:14",
+          "scene:26",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q018",
+        "query_text": "bowl of fruit",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "food",
+          "bowl"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:16",
+          "scene:11",
+          "media:12",
+          "media:10",
+          "scene:1",
+          "scene:5",
+          "scene:12",
+          "media:14",
+          "media:24",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q019",
+        "query_text": "pizza",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "food",
+          "meal"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:19",
+          "scene:5",
+          "scene:3",
+          "scene:14",
+          "media:12",
+          "scene:12",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q020",
+        "query_text": "portrait face",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "person",
+          "portrait"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "media:8",
+          "media:20",
+          "media:4",
+          "scene:1",
+          "media:1",
+          "scene:11",
+          "media:10",
+          "scene:12",
+          "scene:13",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q021",
+        "query_text": "red car",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "vehicle",
+          "color"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.25,
+        "ndcg@k": 0.43067655807339306,
+        "retrieved_ids": [
+          "scene:7",
+          "media:14",
+          "scene:10",
+          "media:21",
+          "media:26",
+          "scene:12",
+          "scene:8",
+          "scene:14",
+          "scene:26",
+          "media:13"
+        ]
+      },
+      {
+        "query_id": "q022",
+        "query_text": "sailboat",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "boat",
+          "water"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "media:3",
+          "media:22",
+          "media:27",
+          "media:17",
+          "scene:14",
+          "scene:1",
+          "media:10",
+          "media:14",
+          "scene:12",
+          "media:7"
+        ]
+      },
+      {
+        "query_id": "q023",
+        "query_text": "snow cabin",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "winter",
+          "cabin"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:12",
+          "scene:14",
+          "media:17",
+          "scene:5",
+          "scene:3",
+          "scene:11",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q024",
+        "query_text": "tractor",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "vehicle",
+          "farm"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.25,
+        "ndcg@k": 0.43067655807339306,
+        "retrieved_ids": [
+          "scene:14",
+          "scene:12",
+          "scene:11",
+          "media:25",
+          "scene:1",
+          "scene:26",
+          "scene:5",
+          "scene:9",
+          "media:14",
+          "scene:6"
+        ]
+      },
+      {
+        "query_id": "q025",
+        "query_text": "train",
+        "query_type": "object",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "transport",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg@k": 0.3065735963827292,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "media:26",
+          "scene:27",
+          "media:23",
+          "scene:11",
+          "scene:1",
+          "media:22",
+          "scene:5",
+          "scene:6"
+        ]
+      },
+      {
+        "query_id": "q026",
+        "query_text": "waterfall",
+        "query_type": "object",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "mixed-media"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "media:17",
+          "media:23",
+          "media:3",
+          "media:22",
+          "scene:1",
+          "scene:12",
+          "scene:26",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q027",
+        "query_text": "windmill",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "rural",
+          "landmark"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:28",
+          "scene:14",
+          "scene:12",
+          "scene:11",
+          "scene:9",
+          "scene:1",
+          "media:23",
+          "media:27",
+          "media:22",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q028",
+        "query_text": "campfire",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "fire",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:2",
+          "scene:3",
+          "scene:19",
+          "scene:20",
+          "scene:14",
+          "media:13",
+          "media:27",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q029",
+        "query_text": "flower close-up video",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "plant",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:10",
+          "scene:11",
+          "media:14",
+          "scene:14",
+          "media:12",
+          "media:4",
+          "scene:5",
+          "scene:12",
+          "scene:26",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q030",
+        "query_text": "bird in flight",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:4",
+          "scene:1",
+          "scene:11",
+          "media:1",
+          "media:23",
+          "scene:14",
+          "scene:9",
+          "scene:12",
+          "media:22",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q031",
+        "query_text": "dog agility dog",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "media:12",
+          "scene:12",
+          "scene:14",
+          "scene:1",
+          "scene:5",
+          "media:8",
+          "media:1",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q032",
+        "query_text": "traffic",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "urban",
+          "vehicles"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:1",
+          "scene:14",
+          "scene:12",
+          "scene:11",
+          "scene:7",
+          "media:23",
+          "media:4",
+          "scene:26",
+          "media:1"
+        ]
+      },
+      {
+        "query_id": "q033",
+        "query_text": "railway train video",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "transport",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "scene:27",
+          "scene:11",
+          "media:26",
+          "scene:5",
+          "media:23",
+          "scene:1",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q034",
+        "query_text": "waterfall video",
+        "query_type": "object",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "nature",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "media:23",
+          "scene:5",
+          "scene:12",
+          "scene:3",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q035",
+        "query_text": "flower",
+        "query_type": "object",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.3333333333333333,
+        "ndcg@k": 0.3065735963827292,
+        "retrieved_ids": [
+          "scene:10",
+          "media:25",
+          "media:14",
+          "media:12",
+          "scene:11",
+          "media:4",
+          "media:10",
+          "scene:1",
+          "scene:12",
+          "media:20"
+        ]
+      },
+      {
+        "query_id": "q036",
+        "query_text": "bird",
+        "query_type": "object",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 1.0,
+        "ndcg@k": 0.6131471927654584,
+        "retrieved_ids": [
+          "media:4",
+          "scene:1",
+          "scene:11",
+          "scene:14",
+          "media:1",
+          "media:23",
+          "scene:12",
+          "scene:5",
+          "scene:26",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q037",
+        "query_text": "dog",
+        "query_type": "object",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.5,
+        "ndcg@k": 0.38685280723454163,
+        "retrieved_ids": [
+          "scene:9",
+          "media:12",
+          "scene:11",
+          "scene:14",
+          "scene:5",
+          "media:8",
+          "scene:12",
+          "scene:26",
+          "scene:6",
+          "scene:16"
+        ]
+      },
+      {
+        "query_id": "q038",
+        "query_text": "birds flying",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:1",
+          "media:4",
+          "media:1",
+          "scene:11",
+          "scene:14",
+          "media:23",
+          "scene:9",
+          "scene:12",
+          "media:13",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q039",
+        "query_text": "flock in flight",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:1",
+          "media:4",
+          "scene:11",
+          "media:23",
+          "scene:14",
+          "media:1",
+          "scene:9",
+          "media:22",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q040",
+        "query_text": "flying birds overhead",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:1",
+          "media:4",
+          "media:1",
+          "scene:14",
+          "scene:11",
+          "media:23",
+          "scene:12",
+          "media:6",
+          "scene:9",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q041",
+        "query_text": "birds in the air",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:1",
+          "media:4",
+          "scene:11",
+          "media:23",
+          "media:1",
+          "scene:14",
+          "media:13",
+          "scene:12",
+          "scene:5",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q042",
+        "query_text": "fire burning",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "fire",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:3",
+          "scene:5",
+          "scene:18",
+          "scene:20",
+          "scene:14",
+          "media:13",
+          "scene:11",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q043",
+        "query_text": "campfire flames flickering",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "fire",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:2",
+          "scene:3",
+          "scene:19",
+          "scene:20",
+          "scene:14",
+          "media:13",
+          "scene:12",
+          "scene:11",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q044",
+        "query_text": "burning campfire",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "fire",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:4",
+          "scene:3",
+          "scene:19",
+          "scene:20",
+          "scene:14",
+          "media:13",
+          "media:27",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q045",
+        "query_text": "flames moving at night",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "fire",
+          "night"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:5",
+          "scene:3",
+          "scene:7",
+          "scene:14",
+          "scene:18",
+          "scene:20",
+          "scene:12",
+          "scene:26",
+          "media:13",
+          "scene:8"
+        ]
+      },
+      {
+        "query_id": "q046",
+        "query_text": "cars driving through the city",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "urban",
+          "vehicles"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "media:9",
+          "scene:7",
+          "scene:13",
+          "scene:12",
+          "media:6",
+          "scene:27",
+          "scene:1",
+          "scene:11",
+          "media:26"
+        ]
+      },
+      {
+        "query_id": "q047",
+        "query_text": "city traffic moving",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "urban",
+          "vehicles"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:9",
+          "scene:8",
+          "scene:1",
+          "scene:14",
+          "scene:7",
+          "scene:12",
+          "scene:26",
+          "media:1",
+          "scene:11",
+          "media:4"
+        ]
+      },
+      {
+        "query_id": "q048",
+        "query_text": "vehicles on an urban street",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "urban",
+          "vehicles"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:7",
+          "media:6",
+          "scene:12",
+          "scene:1",
+          "scene:14",
+          "scene:26",
+          "media:9",
+          "media:11",
+          "media:26"
+        ]
+      },
+      {
+        "query_id": "q049",
+        "query_text": "traffic flow",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "urban",
+          "vehicles"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:1",
+          "scene:14",
+          "scene:12",
+          "scene:11",
+          "media:6",
+          "scene:26",
+          "media:4",
+          "media:23",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q050",
+        "query_text": "dog running",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "media:12",
+          "scene:26",
+          "scene:1",
+          "scene:5",
+          "scene:7",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q051",
+        "query_text": "dog agility",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "sport"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "media:12",
+          "scene:1",
+          "scene:14",
+          "scene:12",
+          "media:1",
+          "media:15",
+          "media:8",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q052",
+        "query_text": "dog jumping obstacle",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "sport"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "scene:14",
+          "scene:1",
+          "media:12",
+          "scene:12",
+          "scene:5",
+          "scene:4",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q053",
+        "query_text": "running dog",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "scene:12",
+          "scene:14",
+          "media:12",
+          "scene:1",
+          "scene:26",
+          "scene:5",
+          "scene:7",
+          "scene:6"
+        ]
+      },
+      {
+        "query_id": "q054",
+        "query_text": "dog in motion",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "media:12",
+          "scene:26",
+          "scene:1",
+          "scene:5",
+          "scene:3",
+          "scene:18"
+        ]
+      },
+      {
+        "query_id": "q055",
+        "query_text": "close-up flower motion",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "plant",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:10",
+          "media:4",
+          "scene:11",
+          "media:14",
+          "scene:1",
+          "scene:14",
+          "media:13",
+          "media:12",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q056",
+        "query_text": "train passing",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "transport",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "scene:27",
+          "scene:11",
+          "scene:1",
+          "media:26",
+          "media:23",
+          "media:1",
+          "media:27",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q057",
+        "query_text": "moving train",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "transport",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "scene:27",
+          "scene:11",
+          "scene:1",
+          "media:26",
+          "media:23",
+          "scene:8",
+          "media:4",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q058",
+        "query_text": "train moving past",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "transport",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "scene:27",
+          "scene:11",
+          "scene:1",
+          "media:26",
+          "media:23",
+          "scene:8",
+          "media:1",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q059",
+        "query_text": "railway motion",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "transport",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:12",
+          "scene:13",
+          "scene:27",
+          "scene:11",
+          "media:26",
+          "scene:1",
+          "media:4",
+          "scene:8",
+          "media:10",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q060",
+        "query_text": "water flowing",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:17",
+          "media:22",
+          "media:3",
+          "media:14",
+          "scene:11",
+          "scene:14",
+          "media:23",
+          "scene:12",
+          "scene:26",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q061",
+        "query_text": "running waterfall",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "scene:9",
+          "media:23",
+          "scene:26",
+          "scene:1",
+          "media:15",
+          "media:17",
+          "media:22"
+        ]
+      },
+      {
+        "query_id": "q062",
+        "query_text": "cascading water",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "nature",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:17",
+          "media:22",
+          "media:3",
+          "scene:11",
+          "media:14",
+          "media:23",
+          "scene:14",
+          "scene:12",
+          "scene:26",
+          "media:7"
+        ]
+      },
+      {
+        "query_id": "q063",
+        "query_text": "waterfall in motion",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "nature",
+          "motion"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "media:23",
+          "media:17",
+          "media:4",
+          "scene:12",
+          "media:3",
+          "scene:26",
+          "scene:1",
+          "media:22"
+        ]
+      },
+      {
+        "query_id": "q064",
+        "query_text": "airport runway scene",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "aviation",
+          "outdoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "media:23",
+          "media:1",
+          "scene:14",
+          "scene:9",
+          "scene:12",
+          "scene:26",
+          "scene:1",
+          "scene:5",
+          "media:4",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q065",
+        "query_text": "beach scene",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "coast",
+          "outdoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:3",
+          "scene:14",
+          "media:22",
+          "media:11",
+          "scene:1",
+          "scene:5",
+          "media:27",
+          "scene:3",
+          "scene:12",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q066",
+        "query_text": "shoreline and water",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "coast",
+          "water"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.25,
+        "ndcg@k": 0.43067655807339306,
+        "retrieved_ids": [
+          "media:22",
+          "media:27",
+          "media:17",
+          "media:3",
+          "scene:11",
+          "scene:14",
+          "scene:1",
+          "media:23",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q067",
+        "query_text": "bridge over a river",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "bridge",
+          "water"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "media:17",
+          "media:15",
+          "media:27",
+          "media:23",
+          "scene:1",
+          "media:22",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q068",
+        "query_text": "historic castle exterior",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "architecture",
+          "historic"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.16666666666666666,
+        "ndcg@k": 0.3562071871080222,
+        "retrieved_ids": [
+          "scene:14",
+          "scene:11",
+          "media:13",
+          "scene:5",
+          "media:27",
+          "media:7",
+          "scene:13",
+          "scene:25",
+          "media:14",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q069",
+        "query_text": "city skyline",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "city",
+          "urban"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:9",
+          "scene:14",
+          "scene:1",
+          "media:23",
+          "media:1",
+          "media:17",
+          "media:13",
+          "media:22",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q070",
+        "query_text": "urban skyline",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "city",
+          "urban"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:9",
+          "scene:14",
+          "scene:1",
+          "media:23",
+          "scene:12",
+          "media:6",
+          "media:1",
+          "scene:26",
+          "media:26",
+          "media:7"
+        ]
+      },
+      {
+        "query_id": "q071",
+        "query_text": "desert dunes",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "desert",
+          "landscape"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:11",
+          "scene:14",
+          "scene:1",
+          "media:23",
+          "media:3",
+          "scene:5",
+          "media:6",
+          "scene:13",
+          "scene:25",
+          "scene:4"
+        ]
+      },
+      {
+        "query_id": "q072",
+        "query_text": "night fireworks display",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "night",
+          "celebration"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:13",
+          "scene:5",
+          "scene:3",
+          "scene:14",
+          "scene:12",
+          "scene:1",
+          "scene:26",
+          "scene:18",
+          "scene:20",
+          "scene:8"
+        ]
+      },
+      {
+        "query_id": "q073",
+        "query_text": "flower garden",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "garden",
+          "nature"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.2,
+        "ndcg@k": 0.38685280723454163,
+        "retrieved_ids": [
+          "scene:10",
+          "media:12",
+          "scene:11",
+          "media:25",
+          "media:14",
+          "scene:1",
+          "scene:9",
+          "media:13",
+          "scene:12",
+          "scene:13"
+        ]
+      },
+      {
+        "query_id": "q074",
+        "query_text": "forest trail",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "forest",
+          "path"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:15",
+          "scene:11",
+          "scene:14",
+          "scene:3",
+          "media:27",
+          "scene:5",
+          "scene:12",
+          "scene:26",
+          "scene:20",
+          "scene:18"
+        ]
+      },
+      {
+        "query_id": "q075",
+        "query_text": "woods path",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "forest",
+          "path"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:15",
+          "scene:3",
+          "scene:5",
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "scene:20",
+          "scene:18",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q076",
+        "query_text": "mountain lake landscape",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "mountain",
+          "lake"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:17",
+          "media:27",
+          "scene:14",
+          "media:22",
+          "scene:11",
+          "media:23",
+          "media:15",
+          "media:3",
+          "scene:1",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q077",
+        "query_text": "office workspace",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "office",
+          "indoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.5,
+        "ndcg@k": 0.6309297535714575,
+        "retrieved_ids": [
+          "scene:11",
+          "media:18",
+          "media:27",
+          "media:22",
+          "media:17",
+          "scene:5",
+          "media:11",
+          "scene:1",
+          "scene:13",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q078",
+        "query_text": "desk with work items",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "office",
+          "indoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:18",
+          "media:5",
+          "scene:1",
+          "scene:14",
+          "media:10",
+          "media:22",
+          "scene:12",
+          "media:13",
+          "media:26",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q079",
+        "query_text": "portrait photo",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "person",
+          "portrait"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.125,
+        "ndcg@k": 0.31546487678572877,
+        "retrieved_ids": [
+          "media:8",
+          "media:12",
+          "media:4",
+          "media:22",
+          "media:10",
+          "media:1",
+          "scene:14",
+          "media:20",
+          "media:14",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q080",
+        "query_text": "sailboat on open water",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "boat",
+          "water"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:22",
+          "media:27",
+          "media:3",
+          "media:17",
+          "media:14",
+          "scene:14",
+          "media:23",
+          "scene:12",
+          "media:7",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q081",
+        "query_text": "snowy cabin scene",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "winter",
+          "outdoor"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:3",
+          "scene:14",
+          "scene:12",
+          "media:17",
+          "scene:5",
+          "media:27",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q082",
+        "query_text": "street market",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "market",
+          "urban"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.1,
+        "ndcg@k": 0.2890648263178879,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:7",
+          "scene:1",
+          "media:6",
+          "media:10",
+          "media:16",
+          "scene:14",
+          "scene:12",
+          "scene:26",
+          "media:24"
+        ]
+      },
+      {
+        "query_id": "q083",
+        "query_text": "busy market stalls",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "market",
+          "urban"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.2,
+        "ndcg@k": 0.38685280723454163,
+        "retrieved_ids": [
+          "scene:1",
+          "scene:11",
+          "scene:8",
+          "media:10",
+          "media:24",
+          "scene:14",
+          "media:13",
+          "scene:9",
+          "scene:13",
+          "scene:25"
+        ]
+      },
+      {
+        "query_id": "q084",
+        "query_text": "railway scene",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "transport",
+          "outdoor"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.25,
+        "ndcg@k": 0.43067655807339306,
+        "retrieved_ids": [
+          "scene:12",
+          "scene:13",
+          "scene:27",
+          "media:26",
+          "scene:1",
+          "media:15",
+          "media:25",
+          "media:27",
+          "media:10",
+          "media:22"
+        ]
+      },
+      {
+        "query_id": "q085",
+        "query_text": "waterfall landscape",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "water"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 0.25,
+        "ndcg@k": 0.43067655807339306,
+        "retrieved_ids": [
+          "scene:11",
+          "media:17",
+          "scene:14",
+          "media:27",
+          "media:23",
+          "media:22",
+          "media:3",
+          "media:15",
+          "scene:12",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q086",
+        "query_text": "rural windmill landscape",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "rural",
+          "landscape"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:28",
+          "scene:14",
+          "scene:1",
+          "scene:12",
+          "media:25",
+          "media:27",
+          "media:17",
+          "media:23",
+          "media:15",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q087",
+        "query_text": "campfire at night",
+        "query_type": "scene",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "night",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:4",
+          "scene:3",
+          "scene:19",
+          "scene:20",
+          "scene:14",
+          "scene:12",
+          "media:13",
+          "scene:26",
+          "media:17",
+          "scene:8"
+        ]
+      },
+      {
+        "query_id": "q088",
+        "query_text": "urban street traffic scene",
+        "query_type": "scene",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "urban",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:7",
+          "scene:12",
+          "media:6",
+          "scene:1",
+          "scene:13",
+          "scene:27",
+          "media:9",
+          "media:10",
+          "media:26"
+        ]
+      },
+      {
+        "query_id": "q089",
+        "query_text": "flower close-up nature video",
+        "query_type": "scene",
+        "media_type_target": "video",
+        "difficulty": "medium",
+        "tags": [
+          "nature",
+          "video"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:10",
+          "media:14",
+          "scene:11",
+          "media:4",
+          "scene:14",
+          "scene:5",
+          "media:23",
+          "scene:12",
+          "scene:2",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q090",
+        "query_text": "waterfall scene",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "easy",
+        "tags": [
+          "nature",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.14285714285714285,
+        "ndcg@k": 0.20438239758848611,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "media:17",
+          "media:3",
+          "media:23",
+          "media:22",
+          "media:27",
+          "scene:12",
+          "media:14",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q091",
+        "query_text": "railway motion scene",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "medium",
+        "tags": [
+          "transport",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.16666666666666666,
+        "ndcg@k": 0.21840743681816419,
+        "retrieved_ids": [
+          "scene:12",
+          "scene:13",
+          "scene:27",
+          "scene:1",
+          "scene:11",
+          "media:26",
+          "media:13",
+          "scene:9",
+          "media:10",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q092",
+        "query_text": "bird wildlife scene",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 1.0,
+        "ndcg@k": 0.6131471927654584,
+        "retrieved_ids": [
+          "media:4",
+          "scene:11",
+          "scene:1",
+          "scene:14",
+          "media:17",
+          "media:27",
+          "media:15",
+          "scene:5",
+          "media:23",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q093",
+        "query_text": "flower scene",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "medium",
+        "tags": [
+          "nature",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.2,
+        "ndcg@k": 0.23719771276929622,
+        "retrieved_ids": [
+          "scene:10",
+          "media:25",
+          "media:12",
+          "scene:11",
+          "media:14",
+          "scene:1",
+          "scene:14",
+          "media:13",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q094",
+        "query_text": "dog scene",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "medium",
+        "tags": [
+          "animal",
+          "mixed-media"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 0.5,
+        "mrr": 0.5,
+        "ndcg@k": 0.38685280723454163,
+        "retrieved_ids": [
+          "scene:9",
+          "media:12",
+          "scene:11",
+          "scene:14",
+          "scene:1",
+          "scene:5",
+          "scene:12",
+          "scene:26",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q095",
+        "query_text": "winter cabin in snow",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "winter",
+          "outdoor"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:14",
+          "scene:12",
+          "media:17",
+          "scene:5",
+          "scene:3",
+          "media:27",
+          "scene:26",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q096",
+        "query_text": "coastal beach landscape",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "coast",
+          "landscape"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:3",
+          "media:22",
+          "scene:14",
+          "media:17",
+          "media:27",
+          "media:11",
+          "scene:1",
+          "scene:11",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q097",
+        "query_text": "alpine lake view",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "medium",
+        "tags": [
+          "mountain",
+          "lake"
+        ],
+        "precision@k": 0.1,
+        "recall@k": 1.0,
+        "mrr": 1.0,
+        "ndcg@k": 1.0,
+        "retrieved_ids": [
+          "media:17",
+          "media:23",
+          "media:27",
+          "scene:11",
+          "scene:14",
+          "media:15",
+          "media:22",
+          "scene:1",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q098",
+        "query_text": "elephant",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "media:10",
+          "scene:14",
+          "media:23",
+          "scene:5",
+          "scene:1",
+          "media:1",
+          "scene:12",
+          "scene:26",
+          "scene:6"
+        ]
+      },
+      {
+        "query_id": "q099",
+        "query_text": "blue car",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:21",
+          "scene:7",
+          "media:17",
+          "media:26",
+          "scene:12",
+          "scene:8",
+          "scene:14",
+          "scene:26",
+          "scene:1",
+          "media:22"
+        ]
+      },
+      {
+        "query_id": "q100",
+        "query_text": "black cat",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:8",
+          "scene:14",
+          "scene:12",
+          "scene:11",
+          "scene:1",
+          "scene:26",
+          "scene:5",
+          "scene:3",
+          "media:20",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q101",
+        "query_text": "green tractor",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:14",
+          "media:25",
+          "scene:12",
+          "scene:11",
+          "scene:9",
+          "media:28",
+          "scene:26",
+          "scene:8",
+          "scene:1",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q102",
+        "query_text": "helicopter",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:1",
+          "scene:14",
+          "scene:12",
+          "media:23",
+          "scene:11",
+          "media:4",
+          "media:1",
+          "media:27",
+          "media:6",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q103",
+        "query_text": "library shelf",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:5",
+          "media:8",
+          "media:10",
+          "media:27",
+          "media:22",
+          "scene:14",
+          "media:4",
+          "media:17",
+          "scene:13",
+          "scene:25"
+        ]
+      },
+      {
+        "query_id": "q104",
+        "query_text": "blue sailboat",
+        "query_type": "object",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:17",
+          "media:22",
+          "media:27",
+          "media:3",
+          "scene:14",
+          "scene:1",
+          "media:23",
+          "scene:12",
+          "media:7",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q105",
+        "query_text": "cooking",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:5",
+          "scene:3",
+          "scene:14",
+          "media:16",
+          "scene:11",
+          "scene:18",
+          "scene:20",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q106",
+        "query_text": "swimming",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "media:3",
+          "media:22",
+          "scene:14",
+          "media:4",
+          "media:17",
+          "scene:1",
+          "scene:12",
+          "scene:26",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q107",
+        "query_text": "airplane taking off",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:23",
+          "media:1",
+          "scene:14",
+          "media:4",
+          "scene:11",
+          "scene:1",
+          "scene:12",
+          "scene:26",
+          "scene:9",
+          "media:27"
+        ]
+      },
+      {
+        "query_id": "q108",
+        "query_text": "dog sleeping",
+        "query_type": "action",
+        "media_type_target": "mixed",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:9",
+          "scene:11",
+          "scene:14",
+          "media:12",
+          "scene:5",
+          "scene:12",
+          "scene:26",
+          "scene:6",
+          "scene:16"
+        ]
+      },
+      {
+        "query_id": "q109",
+        "query_text": "train parked at station",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:13",
+          "scene:12",
+          "media:26",
+          "scene:27",
+          "scene:1",
+          "scene:8",
+          "media:1",
+          "scene:11",
+          "media:23",
+          "scene:7"
+        ]
+      },
+      {
+        "query_id": "q110",
+        "query_text": "person typing on laptop",
+        "query_type": "action",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:18",
+          "scene:11",
+          "media:23",
+          "media:1",
+          "scene:14",
+          "media:4",
+          "scene:13",
+          "scene:1",
+          "scene:25",
+          "media:20"
+        ]
+      },
+      {
+        "query_id": "q111",
+        "query_text": "sailing race",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:22",
+          "media:3",
+          "scene:14",
+          "scene:9",
+          "media:17",
+          "scene:1",
+          "media:27",
+          "media:12",
+          "scene:13",
+          "scene:25"
+        ]
+      },
+      {
+        "query_id": "q112",
+        "query_text": "flower blooming time-lapse",
+        "query_type": "action",
+        "media_type_target": "video",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:10",
+          "scene:11",
+          "scene:14",
+          "scene:12",
+          "media:14",
+          "media:25",
+          "scene:5",
+          "scene:1",
+          "scene:26",
+          "scene:2"
+        ]
+      },
+      {
+        "query_id": "q113",
+        "query_text": "underwater coral reef",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "media:3",
+          "media:22",
+          "scene:14",
+          "media:17",
+          "scene:1",
+          "media:23",
+          "scene:12",
+          "scene:26",
+          "media:14"
+        ]
+      },
+      {
+        "query_id": "q114",
+        "query_text": "snowy city skyline",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:9",
+          "scene:14",
+          "scene:12",
+          "scene:1",
+          "media:23",
+          "media:1",
+          "media:17",
+          "media:13",
+          "scene:26",
+          "media:7"
+        ]
+      },
+      {
+        "query_id": "q115",
+        "query_text": "kitchen interior",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:13",
+          "media:10",
+          "media:26",
+          "media:16",
+          "scene:5",
+          "media:24",
+          "scene:13",
+          "scene:4",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q116",
+        "query_text": "beach at sunset",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:3",
+          "scene:14",
+          "media:17",
+          "media:11",
+          "media:22",
+          "scene:1",
+          "scene:5",
+          "media:27",
+          "scene:12",
+          "scene:26"
+        ]
+      },
+      {
+        "query_id": "q117",
+        "query_text": "forest waterfall",
+        "query_type": "scene",
+        "media_type_target": "mixed",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:11",
+          "scene:14",
+          "media:17",
+          "scene:3",
+          "media:23",
+          "media:15",
+          "scene:5",
+          "scene:12",
+          "scene:18",
+          "scene:20"
+        ]
+      },
+      {
+        "query_id": "q118",
+        "query_text": "airport at night",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:8",
+          "scene:5",
+          "scene:7",
+          "scene:14",
+          "scene:13",
+          "media:23",
+          "scene:25",
+          "media:1",
+          "scene:1",
+          "media:13"
+        ]
+      },
+      {
+        "query_id": "q119",
+        "query_text": "farmland at sunrise",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "scene:14",
+          "media:25",
+          "scene:1",
+          "media:28",
+          "media:17",
+          "media:3",
+          "media:23",
+          "media:11",
+          "media:27",
+          "scene:12"
+        ]
+      },
+      {
+        "query_id": "q120",
+        "query_text": "desert road with car",
+        "query_type": "scene",
+        "media_type_target": "image",
+        "difficulty": "hard",
+        "tags": [
+          "negative",
+          "near-miss"
+        ],
+        "precision@k": 0.0,
+        "recall@k": 0.0,
+        "mrr": 0.0,
+        "ndcg@k": 0.0,
+        "retrieved_ids": [
+          "media:11",
+          "media:15",
+          "scene:7",
+          "scene:14",
+          "scene:12",
+          "media:6",
+          "scene:26",
+          "scene:8",
+          "scene:5",
+          "media:25"
+        ]
+      }
+    ],
+    "by_type": {
+      "object": {
+        "mean_precision@10": 0.06363636363636366,
+        "mean_recall@10": 0.5909090909090909,
+        "mean_mrr": 0.44895382395382394,
+        "mean_ndcg@10": 0.4718980092219738,
+        "num_queries": 44
+      },
+      "action": {
+        "mean_precision@10": 0.0,
+        "mean_recall@10": 0.0,
+        "mean_mrr": 0.0,
+        "mean_ndcg@10": 0.0,
+        "num_queries": 34
+      },
+      "scene": {
+        "mean_precision@10": 0.0666666666666667,
+        "mean_recall@10": 0.6071428571428571,
+        "mean_mrr": 0.4178854875283446,
+        "mean_ndcg@10": 0.45115045793380404,
+        "num_queries": 42
+      }
+    },
+    "by_modality": {
+      "image": {
+        "mean_precision@10": 0.0712121212121212,
+        "mean_recall@10": 0.7121212121212122,
+        "mean_mrr": 0.5019540644540644,
+        "mean_ndcg@10": 0.5521014681673516,
+        "num_queries": 66
+      },
+      "mixed": {
+        "mean_precision@10": 0.075,
+        "mean_recall@10": 0.375,
+        "mean_mrr": 0.34801587301587295,
+        "mean_ndcg@10": 0.2727612283284504,
+        "num_queries": 12
+      },
+      "video": {
+        "mean_precision@10": 0.0,
+        "mean_recall@10": 0.0,
+        "mean_mrr": 0.0,
+        "mean_ndcg@10": 0.0,
+        "num_queries": 42
+      }
+    },
+    "by_difficulty": {
+      "easy": {
+        "mean_precision@10": 0.06521739130434785,
+        "mean_recall@10": 0.5978260869565217,
+        "mean_mrr": 0.43121118012422366,
+        "mean_ndcg@10": 0.4596202009944722,
+        "num_queries": 46
+      },
+      "medium": {
+        "mean_precision@10": 0.05416666666666669,
+        "mean_recall@10": 0.5,
+        "mean_mrr": 0.3639467592592592,
+        "mean_ndcg@10": 0.386860466525852,
+        "num_queries": 48
+      },
+      "hard": {
+        "mean_precision@10": 0.0,
+        "mean_recall@10": 0.0,
+        "mean_mrr": 0.0,
+        "mean_ndcg@10": 0.0,
+        "num_queries": 26
+      }
+    },
+    "negative_queries": {
+      "num_queries": 23,
+      "false_positive_rate": 1.0,
+      "mean_false_positives_per_query": 9.869565217391305
+    }
+  }
+}

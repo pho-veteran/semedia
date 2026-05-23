@@ -4,6 +4,7 @@ import sys
 from dataclasses import replace
 from types import SimpleNamespace
 
+from semedia_shared.config import get_settings
 from semedia_shared.runtime import get_inference_device, get_requested_device, get_runtime_diagnostics
 
 from .conftest import make_test_settings
@@ -51,3 +52,13 @@ def test_auto_device_falls_back_to_cpu_when_cuda_is_unavailable(tmp_path, monkey
     assert diagnostics["selected_device"] == "cpu"
     assert diagnostics["cuda_available"] is False
     assert diagnostics["gpu_name"] == ""
+
+
+def test_get_settings_uses_live_model_defaults(monkeypatch):
+    monkeypatch.delenv("CLIP_MODEL_NAME", raising=False)
+    monkeypatch.delenv("CAPTION_MODEL_NAME", raising=False)
+
+    settings = get_settings("media-worker")
+
+    assert settings.clip_model_name == "openai/clip-vit-base-patch16"
+    assert settings.caption_model_name == "Salesforce/blip-image-captioning-large"

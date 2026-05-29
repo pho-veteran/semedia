@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** Phase 7 complete (locked benchmark, baseline report, metrics history, and tuning checklist complete; Phase 7 remains the accepted baseline)
+**Status:** Phase 7 complete (accepted baseline). Phase 12 (accuracy audit remediation) documented and pending implementation — see `docs/implementations/accuracy-audit-2026-05-29.md`
 
 ## Phase 1 — Audit and Baseline
 
@@ -319,10 +319,37 @@
 
 ---
 
+## Phase 12 — Accuracy Audit Remediation
+
+**Goal:** Fix retrieval correctness/measurement issues, then upgrade model and representation, based on the 2026-05-29 audit. Full detail, root causes, and validation in `docs/implementations/accuracy-audit-2026-05-29.md`.
+
+**Workflow:** One change at a time; re-run `run_evaluation.py --compare-to baselines/baseline-phase7.json`; record accepted runs in `docs/metrics/search_quality_history.md` (per `docs/metrics/search_tuning_checklist.md`).
+
+### Tasks
+- [ ] 12.A1 Verify eval can credit video/scene hits (runtime `scene:{filename}:{index}` vs `relevant_scene_ids`) — confirm which 0.0 slices are real `[P0]`
+- [ ] 12.A2 Add configurable relevance score threshold (`search_min_score`) in `search_service.py` / `config.py` — fixes negative FP rate + precision `[P0]`
+- [ ] 12.A3 Fix fusion score-scale mismatch in `ranking_service.rank_candidates` (per-query normalization or Reciprocal Rank Fusion) `[P0]`
+- [ ] 12.A4 Record metric-interpretation caveats (P@10 cap; prefer Recall/MRR/NDCG) in `docs/metrics/evaluation_benchmark_rubric.md` `[P1]`
+- [ ] 12.B1 Upgrade CLIP model (`CLIP_MODEL_NAME` → ViT-L/14 or SigLIP); re-embed + re-seed corpus `[P1]`
+- [ ] 12.B2 Add CLIP text prompt templating/ensembling in `clip_service.encode_text` `[P1]`
+- [ ] 12.B3 Multi-frame scene representation (sample N frames, mean-pool) in `video_service.py` / `pipeline.py` `[P1]`
+- [ ] 12.B4 Enrich keyword index (BM25 over tags / richer captions) in `index_service.py` — overlaps Phase 10.1 / 11.2 `[P2]`
+- [ ] 12.C1 Replace additive rerank boosts with a cross-encoder over top-K in `ranking_service.py` `[P2]`
+- [ ] 12.C2 Fix caption pollution: stop indexing `"(scene N)"` disambiguation text (`pipeline._process_video`) `[P2]`
+
+**Success Criteria:**
+- Negative false-positive rate drops well below `1.0` with no Recall@10/MRR/NDCG@10 regression on positive queries
+- Video/Action slices are confirmed real and (where applicable) rise above `0`
+- Each accepted change is evidenced against `baseline-phase7` and documented in the metrics history
+
+**Order:** A1 → A2 → A3 → re-baseline → B1 + B2 → B3 → B4 → C1/C2
+
+---
+
 ## Notes
 
-- **Current Phase:** Phase 7 baseline remains current
-- **Next Phase:** Revisit future retrieval experiments only if new measured evidence justifies them
+- **Current Phase:** Phase 12 — accuracy audit remediation (documented, pending implementation)
+- **Next Phase:** Implement Phase 12 Tier 1 (A1 → A2 → A3) and re-baseline before model upgrades
 - **Blocked Tasks:** None currently
 - **Risks:** See `Semedia/docs/plan.md` section 7
 
@@ -340,3 +367,4 @@
   - 6.4 Complete — real metadata-based sorting
 - **Phase 7:** Complete (2026-05-02) — locked benchmark corpus, judged dataset, baseline report, metrics history, and tuning checklist documented
 - **Phase 8+:** Reverted / not active
+- **Phase 12:** Documented (2026-05-29) — accuracy audit and remediation plan recorded in `docs/implementations/accuracy-audit-2026-05-29.md`; implementation pending

@@ -11,3 +11,5 @@ storage/
 /.cocoindex_code/
 # Claude
 /.claude/
+# Codegraph
+/.codegraph/

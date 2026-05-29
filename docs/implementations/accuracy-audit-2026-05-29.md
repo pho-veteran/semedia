@@ -25,7 +25,60 @@ Query time (`ranking_service.rank_candidates`): `fusion = 0.7·vector + 0.3·key
 
 P@10 `0.0467`, R@10 `0.4292`, MRR `0.3109`, NDCG@10 `0.3309`, negative FP rate `1.0000`; Actions / Videos / Hard slices all `0.0000`.
 
-Two of these alarms are measurement/calibration artifacts, not pure model failure. Fix measurement first (A1, A4) so model tuning is judged against trustworthy numbers.
+Two of these alarms are measurement/calibration artifacts, not pure model failure — and the headline itself is depressed by negatives mixed into the means. Fix the evaluation framework first (**Tier 0: E1–E3**), then A1/A4, so model tuning is judged against trustworthy numbers.
+
+---
+
+## Tier 0 — Evaluation framework capability (prerequisite)
+
+**Verdict: partially capable.** Strengths: evaluation runs against the **live stack** over HTTP (`run_evaluation.search_text_via_api` → `/api/v1/search/`, not a mock), the corpus is locked (`asset_manifest.json` + manifest-lock test), structural validation is strong (`benchmark_validation`: schema, enums, `scene_key` format, no unmanifested/missing assets), and there are type/modality/difficulty/negative slices plus a regression gate.
+
+**But the current numbers are not trustworthy yet**, and several retrieval paths are unmeasured. Fix E1–E3 before trusting any A/B/C metric. Dataset facts (measured): 120 queries, 35 assets, 34 action, 26 hard, ~23 negative.
+
+### E1 — Negatives are folded into the headline means `[priority: P0] [status: TODO]`
+- **Finding:** ~23 of 120 judged queries are negatives (`judged: true`, empty `relevant_media_ids`/`relevant_scene_ids`). They are averaged into P/R/MRR/NDCG, each forced to `0`, so ~19% of the headline is structural zeros — positive-query performance is materially higher than the `R@10 0.43 / MRR 0.31` headline.
+- **Fix:** Compute P/R/MRR/NDCG over **positive** queries only; negatives feed only the negative-FP summary.
+- **Location:** `evaluate_search.run_evaluation` mean aggregation.
+- **Validation:** Positive-only means rise; negative count no longer affects them.
+
+### E2 — "Hard" slice is dominated by negatives `[priority: P0] [status: TODO]`
+- **Finding:** The ~23 negatives are all tagged `difficulty: hard`, so the hard slice (26) is ~88% negatives. Its uniform `0.0` measures abstention, **not** hard-but-answerable retrieval — the slice is currently meaningless for its stated purpose.
+- **Fix:** Separate the negative tag from difficulty; ensure each difficulty slice contains positive queries.
+- **Location:** `queries.json` + slice summarization.
+- **Validation:** Hard slice contains positive queries and reports non-trivial metrics.
+
+### E3 — Negative metric is not threshold/relevance aware `[priority: P0] [status: TODO]`
+- **Finding:** `summarize_negative_queries` counts *any* returned id as a false positive, so the rate is pinned at `1.0` regardless of result quality (uninformative until A2 lands).
+- **Fix:** After A2, count only results **above threshold** as false positives; also report the score distribution of negatives' top hit.
+- **Location:** `summarize_negative_queries` (depends on A2).
+- **Validation:** Rate becomes sensitive to the threshold and to ranking quality.
+
+### E4 — The image (by-image) search path is never evaluated `[priority: P1] [status: TODO]`
+- **Finding:** `run_evaluation` only calls text search; `search_image` / `/api/v1/search/by-image/` has zero benchmark coverage.
+- **Fix:** Add image-query cases and a by-image `search_fn`.
+- **Location:** `run_evaluation.py`, `queries.json`.
+- **Validation:** Image-query metrics are reported.
+
+### E5 — Scene credit is fragile across re-seeding `[priority: P1] [status: TODO]`
+- **Finding:** `relevant_scene_ids` encode a `scene_index` from one detection run. The tuning checklist instructs re-seeding after scene-threshold changes, which silently shifts indices and breaks previously-correct labels.
+- **Fix:** Credit at media level, or pin scene indexing, or re-validate labels after every re-seed. Ties to A1.
+- **Location:** `_result_identifier` / seed flow.
+- **Validation:** Changing scene threshold + re-seed does not invalidate video credit.
+
+### E6 — Low statistical power; noisy regression gate `[priority: P1] [status: TODO]`
+- **Finding:** 35 assets, many queries with a single relevant item, thin slices; the 5% relative regression gate has no variance/CI and will be noisy. (Minor: MRR scans the full retrieved list, not `@k` — benign while `top_k=10`.)
+- **Fix:** Expand corpus/queries where feasible; emit per-slice query counts; treat sub-5% deltas as noise, not signal.
+- **Validation:** Reports include slice `num_queries`; gate documented as indicative.
+
+### E7 — Judgment governance unused `[priority: P2] [status: TODO]`
+- **Finding:** `audit_log.json` is empty, so the reviewer sign-off / problematic-caption blockers the validator supports are inert. Single annotator, binary relevance, no pooling — unlabeled-but-relevant items are scored as false positives.
+- **Fix:** Populate the audit log or drop the unused layer; consider graded relevance / pooling.
+- **Validation:** Either the governance layer is exercised or removed; judging method documented.
+
+### E8 — Verify the documented run command reaches the gateway `[priority: P2] [status: TODO]`
+- **Finding:** `run_evaluation` defaults to `--base-url http://127.0.0.1:8000`, but the tuning checklist invokes it inside the `service-tests` container without `--base-url`; seeding uses `http://gateway-api:8000`. Confirm the default resolves to the gateway from inside that container.
+- **Fix:** Require/document an explicit `--base-url` in the checklist commands.
+- **Validation:** Documented command provably hits the running gateway.
 
 ---
 
@@ -59,12 +112,6 @@ Two of these alarms are measurement/calibration artifacts, not pure model failur
 ---
 
 ## Tier 2 — Model & representation (real semantic gains)
-
-### B1 — Upgrade the CLIP model `[priority: P1] [status: TODO]`
-- **Finding:** Default `openai/clip-vit-base-patch16` is the weakest supported retrieval backbone.
-- **Fix:** Move to `openai/clip-vit-large-patch14` (or a LAION/SigLIP checkpoint). Biggest single-knob semantic gain; loader + README already support large variants.
-- **Location:** `CLIP_MODEL_NAME` env / `config.py`. Requires corpus re-embed + re-seed; mind VRAM.
-- **Validation:** R@10 / NDCG improve; document VRAM/latency cost.
 
 ### B2 — CLIP text prompt templating/ensembling `[priority: P1] [status: TODO]`
 - **Finding:** Bare query strings (`"castle"`) are embedded directly.
@@ -109,5 +156,17 @@ Two of these alarms are measurement/calibration artifacts, not pure model failur
 
 ## Suggested order
 
-A1 (verify) → A2 (threshold) → A3 (fusion/RRF) → re-baseline → B1 + B2 → B3 → B4 → C1/C2.
+E1 → E2 (trustworthy metrics) → A1 (verify scene credit) → A2 (threshold) → E3 (threshold-aware negatives) → A3 (fusion/RRF) → re-baseline → E4 (image eval) → B2 → B3 → B4 → C1/C2.
 One change at a time; `--compare-to baseline-phase7.json`; record accepted runs in `docs/metrics/search_quality_history.md`.
+
+---
+
+## Review addenda (2026-05-30)
+
+A read-only subagent review confirmed both headline claims against code: `evaluate_search.run_evaluation` averages negatives (judged, empty relevant lists) into the means, and `search_service._normalize_scores` only clamps so `ranking_service.rank_candidates` fuses un-rescaled CLIP cosine with TF-IDF. Plan adjustments:
+
+- **Ordering:** E3 depends on A2 (needs the threshold) — sequence E3 **after** A2.
+- **A1+:** also check the `search_max_per_media=2` diversity cap isn't dropping relevant video scenes — an alternate cause of video-recall zeros, independent of the scene-key mismatch.
+- **A2+:** apply the score floor **after** diversity so `search_candidate_multiplier` doesn't starve the pool below `limit`.
+- **E1+:** cap MRR at k (`compute_metrics` scans the full retrieved list — benign at `top_k=10`, latent bug otherwise).
+- **Defer:** B4, C1, and E7 are low-leverage for a 35-asset corpus; revisit after E1+A2+A3 re-baseline.

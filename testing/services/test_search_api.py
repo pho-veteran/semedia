@@ -1231,7 +1231,7 @@ def test_search_text_returns_component_scores_and_explanation(search_env, monkey
     assert response.status_code == 200
     result = response.json()["results"][0]
     assert result["media_id"] == image.id
-    assert result["vector_score"] == 0.3
+    assert result["vector_score"] == 0.6  # calibrated CLIP cosine (raw 0.30 -> 0.60)
     assert result["keyword_score"] == 1.0
     assert result["explanation"] == {
         "match_type": "caption",

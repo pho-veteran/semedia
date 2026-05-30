@@ -603,7 +603,8 @@ def test_run_evaluation_includes_explicitly_judged_queries_with_no_relevant_item
 
     results = run_evaluation(queries_file, mock_search, k=10)
 
-    assert results["num_queries"] == 1
+    assert results["num_queries"] == 0  # negatives excluded from the positive means
+    assert results["num_negative_queries"] == 1  # but still recognized as a judged negative
     assert results["mean_precision@10"] == 0.0
     assert results["mean_recall@10"] == 0.0
     assert results["mean_mrr"] == 0.0
@@ -746,3 +747,103 @@ def test_asset_manifest_entries_reference_real_files_and_required_metadata():
         assert item["categories"], item["asset_id"]
         assert item["description"].strip(), item["asset_id"]
         assert item["source"].strip(), item["asset_id"]
+
+
+
+def test_compute_metrics_caps_mrr_at_k():
+    relevant_ids = {"media:99"}
+    retrieved_ids = [f"media:{i}" for i in range(11)] + ["media:99"]  # first relevant at rank 12
+
+    metrics = compute_metrics(relevant_ids, retrieved_ids, k=10)
+
+    assert metrics["mrr"] == 0.0
+
+
+def test_run_evaluation_excludes_negatives_from_means_and_slices(tmp_path):
+    queries_file = tmp_path / "queries.json"
+    queries_file.write_text(
+        json.dumps(
+            [
+                {
+                    "query_id": "q1",
+                    "query_text": "cat",
+                    "query_type": "object",
+                    "media_type_target": "image",
+                    "difficulty": "easy",
+                    "tags": ["positive"],
+                    "judged": True,
+                    "relevant_media_ids": [1],
+                    "relevant_scene_ids": [],
+                    "notes": "",
+                },
+                {
+                    "query_id": "q2",
+                    "query_text": "elephant",
+                    "query_type": "object",
+                    "media_type_target": "image",
+                    "difficulty": "hard",
+                    "tags": ["negative"],
+                    "judged": True,
+                    "relevant_media_ids": [],
+                    "relevant_scene_ids": [],
+                    "notes": "",
+                },
+            ]
+        )
+    )
+
+    def mock_search(query_text, top_k):
+        if query_text == "cat":
+            return [{"media_id": 1, "scene_id": None, "score": 0.9}]
+        return [{"media_id": 7, "scene_id": None, "score": 0.9}]
+
+    results = run_evaluation(
+        queries_file,
+        mock_search,
+        k=10,
+        include_by_difficulty=True,
+        include_negative_summary=True,
+    )
+
+    assert results["num_queries"] == 1  # positives only
+    assert results["num_negative_queries"] == 1
+    assert results["mean_recall@10"] == 1.0  # negative no longer drags the mean
+    assert "hard" not in results["by_difficulty"]  # negative-only 'hard' excluded from slices
+    assert results["by_difficulty"]["easy"]["num_queries"] == 1
+    assert results["negative_queries"]["num_queries"] == 1
+    assert results["negative_queries"]["false_positive_rate"] == 1.0
+
+
+def test_negative_summary_is_threshold_aware(tmp_path):
+    queries_file = tmp_path / "queries.json"
+    queries_file.write_text(
+        json.dumps(
+            [
+                {
+                    "query_id": "q1",
+                    "query_text": "elephant",
+                    "query_type": "object",
+                    "media_type_target": "image",
+                    "difficulty": "hard",
+                    "tags": ["negative"],
+                    "judged": True,
+                    "relevant_media_ids": [],
+                    "relevant_scene_ids": [],
+                    "notes": "",
+                }
+            ]
+        )
+    )
+
+    def mock_search(query_text, top_k):
+        return [{"media_id": 5, "scene_id": None, "score": 0.3}]  # weak, low-confidence hit
+
+    base = run_evaluation(queries_file, mock_search, k=10, include_negative_summary=True)
+    assert base["negative_queries"]["false_positive_rate"] == 1.0  # any returned hit counts
+
+    thresholded = run_evaluation(
+        queries_file, mock_search, k=10, include_negative_summary=True, negative_score_threshold=0.5
+    )
+    assert thresholded["negative_queries"]["false_positive_rate"] == 0.0  # 0.3 < 0.5
+    assert thresholded["negative_queries"]["mean_false_positives_per_query"] == 0.0
+    assert thresholded["negative_queries"]["score_threshold"] == 0.5

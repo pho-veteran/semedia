@@ -19,6 +19,8 @@ For every parameter change:
 
 **Golden rule:** Change one parameter at a time. Bundled changes make it impossible to isolate what worked.
 
+> **Note:** The evaluation script must target the gateway (`http://127.0.0.1:8000`). Always pass `--base-url http://127.0.0.1:8000` explicitly — omitting it inside the service-tests container will NOT reach the gateway.
+
 ## Parameter Categories
 
 ### 1. Fusion Weights
@@ -39,6 +41,7 @@ For every parameter change:
    ```bash
    docker compose --profile test run --rm service-tests \
      python testing/evaluation/run_evaluation.py \
+     --base-url http://127.0.0.1:8000 \
      --queries testing/evaluation/queries.json \
      --output testing/evaluation/baselines/current.json
    ```
@@ -60,6 +63,7 @@ For every parameter change:
    ```bash
    docker compose --profile test run --rm service-tests \
      python testing/evaluation/run_evaluation.py \
+     --base-url http://127.0.0.1:8000 \
      --queries testing/evaluation/queries.json \
      --output testing/evaluation/baselines/tuned.json \
      --compare-to testing/evaluation/baselines/current.json
@@ -214,6 +218,39 @@ For every parameter change:
 - Increasing the cap hurts when one video has many near-duplicate scenes that crowd out other media
 - Caption deduplication remains a separate control
 
+### 5. Relevance Floor (Phase 12)
+
+**What it controls:** Minimum combined score for a result to be returned. Results below this threshold are filtered out before the response is sent.
+
+**Current default:**
+- `SEARCH_MIN_SCORE=0.2`
+
+**Where to change:**
+- Environment variable in `docker-compose.yml` or `.env`
+- Default in `services/shared/semedia_shared/config.py`
+
+**Tuning guidance:**
+- Start at `~0.2` and adjust based on false-positive rate on negative queries
+- Raising the floor reduces false positives but may hurt recall for weak-signal queries
+- Always evaluate against the locked benchmark after changes
+
+### 6. CLIP Cosine Calibration Band (Phase 12)
+
+**What it controls:** The floor and ceiling used to normalize raw CLIP cosine similarities into the 0–1 scoring range.
+
+**Current defaults:**
+- `_CLIP_SIM_FLOOR = 0.18`
+- `_CLIP_SIM_CEIL = 0.38`
+
+**Where to change:**
+- Constants in `services/shared/semedia_shared/search_service.py` (`_calibrate_clip_similarity`)
+
+**Tuning guidance:**
+- These values define the linear mapping: cosine ≤ floor → 0.0, cosine ≥ ceil → 1.0
+- Must be tuned empirically on the locked benchmark — inspect raw cosine distributions from evaluation runs
+- Widening the band (lower floor or higher ceil) compresses scores; narrowing it spreads them out
+- Changes here interact with `SEARCH_MIN_SCORE` — re-evaluate both together
+
 ## Evaluation Commands Reference
 
 ### Run evaluation and save report
@@ -221,6 +258,7 @@ For every parameter change:
 ```bash
 docker compose --profile test run --rm service-tests \
   python testing/evaluation/run_evaluation.py \
+  --base-url http://127.0.0.1:8000 \
   --queries testing/evaluation/queries.json \
   --output testing/evaluation/baselines/report-YYYY-MM-DD.json
 ```
@@ -230,6 +268,7 @@ docker compose --profile test run --rm service-tests \
 ```bash
 docker compose --profile test run --rm service-tests \
   python testing/evaluation/run_evaluation.py \
+  --base-url http://127.0.0.1:8000 \
   --queries testing/evaluation/queries.json \
   --output testing/evaluation/baselines/report-YYYY-MM-DD.json \
   --compare-to testing/evaluation/baselines/baseline-phase7.json

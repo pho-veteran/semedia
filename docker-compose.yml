@@ -58,6 +58,7 @@ services:
       SEARCH_VECTOR_WEIGHT: ${SEARCH_VECTOR_WEIGHT:-0.7}
       SEARCH_KEYWORD_WEIGHT: ${SEARCH_KEYWORD_WEIGHT:-0.3}
       SEARCH_MAX_RESULTS: ${SEARCH_MAX_RESULTS:-20}
+      SEARCH_MIN_SCORE: ${SEARCH_MIN_SCORE:-0.0}
     depends_on:
       db:
         condition: service_healthy

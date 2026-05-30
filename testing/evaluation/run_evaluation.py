@@ -36,6 +36,44 @@ def search_text_via_api(base_url: str, query_text: str, top_k: int) -> list[dict
         return payload["results"]
 
 
+def search_image_via_api(base_url: str, image_path: str, top_k: int) -> list[dict]:
+    """Execute by-image search against Semedia API and return results."""
+    from uuid import uuid4
+    import mimetypes
+
+    file_path = Path(image_path)
+    boundary = f"----SemediaBoundary{uuid4().hex}"
+    content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+    file_bytes = file_path.read_bytes()
+
+    parts = [
+        f"--{boundary}\r\n".encode("utf-8"),
+        (
+            f'Content-Disposition: form-data; name="file"; filename="{file_path.name}"\r\n'
+            f"Content-Type: {content_type}\r\n\r\n"
+        ).encode("utf-8"),
+        file_bytes,
+        b"\r\n",
+        f"--{boundary}\r\n".encode("utf-8"),
+        (
+            f'Content-Disposition: form-data; name="top_k"\r\n\r\n'
+            f"{top_k}\r\n"
+        ).encode("utf-8"),
+        f"--{boundary}--\r\n".encode("utf-8"),
+    ]
+    body = b"".join(parts)
+
+    request = urllib.request.Request(
+        f"{base_url}/api/v1/search/by-image/",
+        data=body,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+        return payload["results"]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run offline evaluation against live Semedia instance.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000", help="Base URL of gateway API")
@@ -50,6 +88,11 @@ def main() -> int:
         type=float,
         default=0.05,
         help="Relative metric drop that should be flagged as a regression",
+    )
+    parser.add_argument(
+        "--by-image-queries",
+        default=None,
+        help="Path to a JSON file mapping image filenames (under assets/) to expected relevant IDs for by-image evaluation",
     )
     args = parser.parse_args()
 
@@ -148,6 +191,20 @@ def main() -> int:
         print(f"Mean false positives/query: {negatives['mean_false_positives_per_query']:.4f}")
 
     payload = {"report": results}
+
+    if args.by_image_queries:
+        by_image_file = Path(args.by_image_queries)
+        if not by_image_file.exists():
+            print(f"Error: by-image queries file not found: {by_image_file}", file=sys.stderr)
+            return 1
+        by_image_spec = json.loads(by_image_file.read_text())
+        assets_dir = by_image_file.parent / "assets"
+        print(f"\nRunning by-image evaluation ({len(by_image_spec)} queries)")
+        for entry in by_image_spec:
+            image_file = assets_dir / entry["filename"]
+            results_list = search_image_via_api(args.base_url, str(image_file), args.top_k)
+            print(f"  [{entry['filename']}] returned {len(results_list)} results")
+        payload["by_image"] = {"num_queries": len(by_image_spec)}
 
     if args.compare_to:
         baseline_payload = json.loads(Path(args.compare_to).read_text())

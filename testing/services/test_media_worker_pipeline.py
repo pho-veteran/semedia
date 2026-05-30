@@ -95,19 +95,22 @@ def test_process_media_video_uses_single_frame_extraction(tmp_path, monkeypatch)
         return str(keyframe), str(thumbnail)
 
     monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
+    monkeypatch.setattr(pipeline_module, "extract_scene_sample_frames", lambda settings, path, media_id, scene: [])
+
+    _embed_call_count = [0]
+    _embed_results = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+
+    def fake_encode_images(settings, paths):
+        idx = _embed_call_count[0]
+        _embed_call_count[0] += 1
+        return [_embed_results[idx]]
+
     monkeypatch.setattr(
         pipeline_module,
         "generate_captions",
         lambda settings, paths: ["scene 0 caption", "scene 1 caption"]
     )
-    monkeypatch.setattr(
-        pipeline_module,
-        "encode_images",
-        lambda settings, paths: [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-        ]
-    )
+    monkeypatch.setattr(pipeline_module, "encode_images", fake_encode_images)
 
     with session_factory() as session:
         media = MediaItem(
@@ -311,20 +314,22 @@ def test_process_video_flags_duplicate_adjacent_captions(tmp_path, monkeypatch, 
         return str(keyframe), str(thumbnail)
 
     monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
+    monkeypatch.setattr(pipeline_module, "extract_scene_sample_frames", lambda settings, path, media_id, scene: [])
+
+    _embed_call_count = [0]
+    _embed_results = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+
+    def fake_encode_images(settings, paths):
+        idx = _embed_call_count[0]
+        _embed_call_count[0] += 1
+        return [_embed_results[idx]]
+
     monkeypatch.setattr(
         pipeline_module,
         "generate_captions",
         lambda settings, paths: ["A person walking.", "A person walking.", "A person sitting."],
     )
-    monkeypatch.setattr(
-        pipeline_module,
-        "encode_images",
-        lambda settings, paths: [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ],
-    )
+    monkeypatch.setattr(pipeline_module, "encode_images", fake_encode_images)
 
     with session_factory() as session:
         media = MediaItem(
@@ -349,7 +354,7 @@ def test_process_video_flags_duplicate_adjacent_captions(tmp_path, monkeypatch, 
         assert media.status == ProcessingStatus.COMPLETED
         assert len(scenes) == 3
         assert scenes[0].caption == "A person walking."
-        assert scenes[1].caption == "A person walking. (scene 2)"
+        assert scenes[1].caption == "A person walking."
         assert scenes[2].caption == "A person sitting."
 
     assert "Adjacent scenes 0 and 1 have identical captions" in caplog.text
@@ -431,6 +436,16 @@ def test_process_media_video_rebuilds_keyword_index_with_new_scenes(tmp_path, mo
         return str(keyframe), str(thumbnail)
 
     monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
+    monkeypatch.setattr(pipeline_module, "extract_scene_sample_frames", lambda settings, path, media_id, scene: [])
+
+    _embed_call_count = [0]
+    _embed_results = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+
+    def fake_encode_images(settings, paths):
+        idx = _embed_call_count[0]
+        _embed_call_count[0] += 1
+        return [_embed_results[idx]]
+
     monkeypatch.setattr(
         pipeline_module,
         "generate_captions",
@@ -440,15 +455,7 @@ def test_process_media_video_rebuilds_keyword_index_with_new_scenes(tmp_path, mo
             "There is a dog laying on the floor with its mouth open.",
         ],
     )
-    monkeypatch.setattr(
-        pipeline_module,
-        "encode_images",
-        lambda settings, paths: [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ],
-    )
+    monkeypatch.setattr(pipeline_module, "encode_images", fake_encode_images)
 
     with session_factory() as session:
         media = MediaItem(
@@ -507,8 +514,9 @@ def test_process_media_video_preserves_existing_scenes_when_caption_count_is_sho
         return str(keyframe), str(thumbnail)
 
     monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
+    monkeypatch.setattr(pipeline_module, "extract_scene_sample_frames", lambda settings, path, media_id, scene: [])
     monkeypatch.setattr(pipeline_module, "generate_captions", lambda settings, paths: ["only one caption"])
-    monkeypatch.setattr(pipeline_module, "encode_images", lambda settings, paths: [[1.0, 0.0], [0.0, 1.0]])
+    monkeypatch.setattr(pipeline_module, "encode_images", lambda settings, paths: [[1.0, 0.0]])
 
     with session_factory() as session:
         media = MediaItem(
@@ -579,8 +587,9 @@ def test_process_media_video_cleans_generated_files_when_replacement_fails(tmp_p
         return str(keyframe), str(thumbnail)
 
     monkeypatch.setattr(pipeline_module, "extract_scene_keyframe", fake_extract_single)
-    monkeypatch.setattr(pipeline_module, "generate_captions", lambda settings, paths: ["caption"])
-    monkeypatch.setattr(pipeline_module, "encode_images", lambda settings, paths: [])
+    monkeypatch.setattr(pipeline_module, "extract_scene_sample_frames", lambda settings, path, media_id, scene: [])
+    monkeypatch.setattr(pipeline_module, "generate_captions", lambda settings, paths: [])
+    monkeypatch.setattr(pipeline_module, "encode_images", lambda settings, paths: [[1.0, 0.0]])
 
     with session_factory() as session:
         media = MediaItem(
@@ -601,3 +610,47 @@ def test_process_media_video_cleans_generated_files_when_replacement_fails(tmp_p
     assert not (settings.media_root / f"keyframes/{media_id}/scene_0000.jpg").exists()
     assert not (settings.media_root / f"thumbnails/{media_id}/scene_0000.jpg").exists()
     engine.dispose()
+
+
+
+def test_compute_sample_frame_indices_basic():
+    """Torch-free unit test for the pure frame-index math helper."""
+    from semedia_shared.video_service import compute_sample_frame_indices
+
+    # 3 samples in a 0-10s scene at 30fps → evenly spaced at 2.5s, 5.0s, 7.5s
+    indices = compute_sample_frame_indices(0.0, 10.0, 30.0, 3)
+    assert len(indices) == 3
+    assert indices == [75, 150, 225]  # floor(2.5*30), floor(5.0*30), floor(7.5*30)
+
+
+def test_compute_sample_frame_indices_single():
+    from semedia_shared.video_service import compute_sample_frame_indices
+
+    # n=1 → midpoint
+    indices = compute_sample_frame_indices(2.0, 4.0, 24.0, 1)
+    assert len(indices) == 1
+    assert indices[0] == 72  # floor(3.0 * 24)
+
+
+def test_compute_sample_frame_indices_edge_cases():
+    from semedia_shared.video_service import compute_sample_frame_indices
+
+    # n=0 → empty
+    assert compute_sample_frame_indices(0.0, 10.0, 30.0, 0) == []
+    # fps=0 → empty
+    assert compute_sample_frame_indices(0.0, 10.0, 0.0, 3) == []
+    # end <= start → empty
+    assert compute_sample_frame_indices(5.0, 5.0, 30.0, 3) == []
+    assert compute_sample_frame_indices(5.0, 3.0, 30.0, 3) == []
+
+
+def test_compute_sample_frame_indices_offset_scene():
+    from semedia_shared.video_service import compute_sample_frame_indices
+
+    # Scene from 10s to 20s, 2 samples at 30fps → at 13.33s and 16.67s
+    indices = compute_sample_frame_indices(10.0, 20.0, 30.0, 2)
+    assert len(indices) == 2
+    # step = 10/(2+1) = 3.333...
+    # t0 = 10 + 3.333 = 13.333 → floor(13.333*30) = floor(400) = 400
+    # t1 = 10 + 6.667 = 16.667 → floor(16.667*30) = floor(500) = 500
+    assert indices == [400, 500]

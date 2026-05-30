@@ -11,7 +11,7 @@ from .clip_service import encode_images
 from .log import get_logger
 from .models import MediaItem, ProcessingStatus, VideoScene
 from .storage import delete_path_if_exists, relative_to_media_root
-from .video_service import detect_scenes, extract_scene_keyframe, get_video_duration
+from .video_service import detect_scenes, extract_scene_keyframe, extract_scene_sample_frames, get_video_duration
 
 logger = get_logger(__name__)
 
@@ -95,19 +95,38 @@ def _process_video(settings, session: Session, media: MediaItem) -> None:
             }
         )
 
+    extra_sample_paths: list[str] = []
     try:
         frame_paths = [payload["keyframe_path"] for payload in scene_payloads]
         captions = generate_captions(settings, frame_paths)
         for i in range(1, len(captions)):
             if captions[i] and captions[i] == captions[i - 1]:
                 logger.warning("Adjacent scenes %d and %d have identical captions: %s", i - 1, i, captions[i])
-                captions[i] = f"{captions[i]} (scene {i + 1})"
 
-        embeddings = encode_images(settings, frame_paths)
-        _validate_scene_outputs(scene_payloads, captions, embeddings)
+        # Multi-frame scene embedding: sample N frames per scene, mean-pool + L2-normalize
+        import numpy as np
+
+        scene_embeddings: list[list[float]] = []
+        for payload, scene in zip(scene_payloads, scenes):
+            sample_paths = extract_scene_sample_frames(settings, video_path, media.id, scene)
+            extra_sample_paths.extend(sample_paths)
+            if sample_paths:
+                sample_embeddings = encode_images(settings, sample_paths)
+                arr = np.array(sample_embeddings, dtype=np.float64)
+                mean_vec = arr.mean(axis=0)
+                norm = np.linalg.norm(mean_vec)
+                if norm > 0:
+                    mean_vec = mean_vec / norm
+                scene_embeddings.append(mean_vec.tolist())
+            else:
+                # Fallback: embed the single keyframe
+                single_emb = encode_images(settings, [payload["keyframe_path"]])
+                scene_embeddings.append(single_emb[0] if single_emb else [])
+
+        _validate_scene_outputs(scene_payloads, captions, scene_embeddings)
 
         created_scenes: list[VideoScene] = []
-        for payload, caption, embedding in zip(scene_payloads, captions, embeddings):
+        for payload, caption, embedding in zip(scene_payloads, captions, scene_embeddings):
             created_scenes.append(
                 VideoScene(
                     media_id=media.id,
@@ -132,8 +151,11 @@ def _process_video(settings, session: Session, media: MediaItem) -> None:
         session.commit()
     except Exception:
         session.rollback()
-        _cleanup_generated_scene_files(generated_paths)
+        _cleanup_generated_scene_files(generated_paths + extra_sample_paths)
         raise
+
+    # Clean up temporary sample frames after successful commit
+    _cleanup_generated_scene_files(extra_sample_paths)
 
 
 def _validate_scene_outputs(scene_payloads: list[dict], captions: list[str], embeddings: list[list[float]]) -> None:

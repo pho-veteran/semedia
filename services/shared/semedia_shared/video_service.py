@@ -96,3 +96,52 @@ def extract_scene_keyframe(settings, video_path: str, media_id: int, scene: Scen
     cv2.imwrite(str(keyframe_path), frame)
     cv2.imwrite(str(thumbnail_path), frame)
     return str(keyframe_path), str(thumbnail_path)
+
+
+def compute_sample_frame_indices(start_time: float, end_time: float, fps: float, n: int) -> list[int]:
+    """Compute N evenly-spaced frame indices within a scene span.
+
+    Pure helper with no I/O — suitable for unit testing without cv2.
+    """
+    if n <= 0 or fps <= 0 or end_time <= start_time:
+        return []
+    if n == 1:
+        mid = (start_time + end_time) / 2
+        return [int(math.floor(mid * fps))]
+    step = (end_time - start_time) / (n + 1)
+    return [int(math.floor((start_time + step * (i + 1)) * fps)) for i in range(n)]
+
+
+def extract_scene_sample_frames(settings, video_path: str, media_id: int, scene: SceneSpan) -> list[str]:
+    """Extract N sample frames evenly spaced within a scene span for embedding.
+
+    Returns a list of temporary image file paths. Caller is responsible for cleanup.
+    """
+    import cv2
+
+    n = settings.scene_frame_sample_count
+    if n <= 0:
+        return []
+
+    capture = cv2.VideoCapture(video_path)
+    fps = capture.get(cv2.CAP_PROP_FPS) or 0
+    frame_indices = compute_sample_frame_indices(scene.start_time, scene.end_time, fps, n)
+    if not frame_indices:
+        capture.release()
+        return []
+
+    sample_dir = settings.media_root / "samples" / str(media_id)
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    paths: list[str] = []
+    for idx, frame_number in enumerate(frame_indices):
+        capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+        ok, frame = capture.read()
+        if not ok:
+            continue
+        path = sample_dir / f"scene_{scene.scene_index:04d}_sample_{idx:02d}.jpg"
+        cv2.imwrite(str(path), frame)
+        paths.append(str(path))
+
+    capture.release()
+    return paths

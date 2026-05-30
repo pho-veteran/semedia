@@ -47,6 +47,7 @@ def make_test_settings(service_name: str, tmp_path: Path) -> Settings:
         search_max_results=20,
         search_max_per_media=2,
         search_candidate_multiplier=3,
+        scene_frame_sample_count=3,
         ml_device="cpu",
         ml_strict_cuda=False,
         ml_preload_models=False,

@@ -2,6 +2,39 @@
 
 This file records every accepted evaluation run after a search algorithm or benchmark change.
 
+## History
+
+### 2026-05-30 — phase12-accuracy-remediation
+- **Revision:** `phase12-accuracy-remediation`
+- **Corpus:** `eval-v1` (35 locked assets, re-seeded on GPU stack)
+- **Queries:** `queries-v1` (120 judged; 97 positive, 23 negative)
+- **What changed (code):**
+  - **Trustworthy metrics (E1/E2/E6 + MRR@k):** headline P/R/MRR/NDCG are now computed over **positive queries only**; negatives feed only the negative summary; `hard` slice no longer dominated by negatives; MRR capped at k.
+  - **A3 — fusion calibration:** fixed affine CLIP-cosine calibration (`_calibrate_clip_similarity`, band `0.15–0.40`) in `search_service._vector_results` so vector and TF-IDF scores fuse on a comparable scale; `_normalize_scores` kept clamp-only (absolute meaning preserved).
+  - **A2 — relevance floor:** `SEARCH_MIN_SCORE` (default `0.0`) applied after diversity; wired into `docker-compose.yml`.
+  - **B2** CLIP query prompt templating/ensembling; **B3** multi-frame scene embeddings (mean-pool of N=3 frames); **C2** removed the `(scene N)` caption pollution.
+  - **Deferred:** B4 (BM25 — risks A2/A3 absolute-score semantics) and C1 (cross-encoder).
+- **Metrics (accepted, `SEARCH_MIN_SCORE=0.0`, positive-only over 97 queries):**
+  - Precision@10: `0.0742`
+  - Recall@10: `0.6701`
+  - MRR: `0.5647`
+  - NDCG@10: `0.5738`
+  - Negative false positive rate: `1.0000` (mean `10.0` FPs/query at floor 0.0)
+- **By type:**
+  - Objects: `R@10 0.7568, MRR 0.6429, NDCG@10 0.6435` (37 q)
+  - Actions: `R@10 0.3077, MRR 0.3077, NDCG@10 0.3077` (26 q) — **up from 0.0** in phase7
+  - Scenes: `R@10 0.8529, MRR 0.6763, NDCG@10 0.7014` (34 q)
+- **`SEARCH_MIN_SCORE` tuning sweep (positives vs negatives):**
+  - `0.0`: R@10 `0.670`, neg rate `1.00`, mean FPs `10.0`
+  - `0.2`: R@10 `0.588`, neg rate `0.96`, mean FPs `6.0`
+  - `0.3`: R@10 `0.485`, neg rate `0.74`, mean FPs `1.7`
+  - The floor reliably cuts FP volume, but true positives and "near-miss" negatives (e.g. `blue car` vs the only car being red) overlap, so there is no clean cut on this corpus. Operators wanting fewer no-answer junk results can set `~0.15–0.2` accepting ~8% recall cost.
+- **A1 diagnostic (decisive):** residual video/action `0.0`s are a **scene-index labeling artifact (E5)**, not retrieval failure. e.g. `campfire` retrieves `scene:vid-campfire-01.webm:0` at rank 1 but the benchmark labels `:1`; `bird in flight` retrieves `…:0` but is labeled `:1`. Where the labeled index matches (traffic/train `:1`), those queries score `1.0`. **Fixing E5 (media-level credit or re-validated scene labels) will raise the measured Action/Video numbers; the underlying retrieval is already better than the metrics show.**
+- **Comparison vs `baseline-phase7`:** status `ok` (no regression flagged). NOTE: not directly comparable — phase7 means mixed negatives into the averages (E1 changed this), so part of the headline lift is definitional. The trustworthy figures above are the new reference.
+- **Decision:** `accepted` as the new baseline at `SEARCH_MIN_SCORE=0.0`. Next: implement **E5** to unlock accurate Action/Video measurement; then revisit the floor + CLIP band tuning.
+
+---
+
 ## Entry Template
 
 ### YYYY-MM-DD — Revision label

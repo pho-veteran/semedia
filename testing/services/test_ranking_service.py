@@ -324,3 +324,28 @@ def test_build_result_explanation_marks_image_results_as_visual(test_settings):
         "rich_caption": False,
         "rerank_boost": 0.0,
     }
+
+
+
+def _two_text_candidates():
+    return [
+        {"key": ("image", 1), "media_id": 1, "caption": "a dog", "original_filename": "dog.jpg", "vector_score": 0.9, "keyword_score": 0.0},
+        {"key": ("image", 2), "media_id": 2, "caption": "a cat", "original_filename": "cat.jpg", "vector_score": 0.1, "keyword_score": 0.0},
+    ]
+
+
+def test_rank_candidates_uses_reranker_scores_over_fusion(test_settings):
+    # Cross-encoder favors the low-vector "cat" candidate -> it must outrank the "dog".
+    def reranker(query, texts):
+        return [0.95 if "cat" in text else 0.05 for text in texts]
+
+    ranked = rank_candidates(test_settings, _two_text_candidates(), query_text="cat", query_mode="text", limit=10, reranker=reranker)
+
+    assert ranked[0]["media_id"] == 2
+    assert ranked[0]["score"] > ranked[1]["score"]
+
+
+def test_rank_candidates_falls_back_to_fusion_when_reranker_returns_none(test_settings):
+    ranked = rank_candidates(test_settings, _two_text_candidates(), query_text="cat", query_mode="text", limit=10, reranker=lambda query, texts: None)
+
+    assert ranked[0]["media_id"] == 1  # higher fusion score wins when rerank is unavailable

@@ -4,6 +4,24 @@ This file records every accepted evaluation run after a search algorithm or benc
 
 ## History
 
+### 2026-05-30 — phase12-e5-c1 (scene credit + cross-encoder rerank)
+
+**E5 — video-level scene credit (accepted, ON, harness-only).**
+- Before E5 (`phase12-accuracy-remediation`, per-scene-index credit): R@10 `0.670`, MRR `0.565`, NDCG@10 `0.574`; Action R@10 `0.308`.
+- After E5 (video-granularity credit): **P@10 `0.1103`, R@10 `0.9794`, MRR `0.8664`, NDCG@10 `0.8902`**.
+  - By type: Action `R@10 1.000 / MRR 1.000 / NDCG 1.000`; Object `R@10 0.973 / MRR 0.833`; Scene `R@10 0.971 / MRR 0.801`.
+- This is **measurement honesty, not a retrieval change.** `compute_metrics` now collapses `scene:<file>:<index>` to its parent video, so retrieving *any* scene of the correct video credits the labeled scene. The A1 diagnostic proved the right video was already returned at rank 1 but labeled with a different scene index. **Not comparable to pre-E5 numbers**; this is the new accepted baseline.
+
+**C1 — cross-encoder rerank (implemented, gated `SEARCH_RERANK_ENABLED`, default-OFF, NOT recommended on this corpus).**
+- Model `cross-encoder/ms-marco-MiniLM-L-6-v2` reranking merged candidates by (query, BLIP-caption) relevance, vs the E5 baseline (rerank off):
+  - R@10 `0.979 → 0.928`, MRR `0.866 → 0.762`, NDCG@10 `0.890 → 0.801`.
+  - Scenes hit hardest (R@10 `0.971 → 0.824`, MRR `0.801 → 0.663`); Action MRR `1.000 → 0.800`.
+- **Conclusion:** replacing the vector-dominant fusion score with a caption-only text→text cross-encoder discards CLIP's visual signal and reorders relevant items out of the top-10. An MS-MARCO passage reranker is a poor proxy for image relevance over weak BLIP captions. Kept **default-off**; do not enable with this model. Future: blend (`α·fusion + (1-α)·rerank`) and/or an image-text reranker rather than a hard replacement.
+
+**Decision:** accept **E5** as the new baseline (`SEARCH_MIN_SCORE=0.0`, rerank off). **C1** ships as an opt-in capability but stays disabled — measured to regress quality here.
+
+---
+
 ### 2026-05-30 — phase12-accuracy-remediation
 - **Revision:** `phase12-accuracy-remediation`
 - **Corpus:** `eval-v1` (35 locked assets, re-seeded on GPU stack)

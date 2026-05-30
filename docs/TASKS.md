@@ -1,7 +1,7 @@
 # Search Quality Improvement - Implementation Tasks
 
 **Project Start:** 2026-04-30  
-**Status:** **Phase 12 implemented + re-baselined (2026-05-30)** — accepted baseline `phase12-accuracy-remediation` in `docs/metrics/search_quality_history.md`. Remaining: E5 (scene-credit, confirmed needed by the A1 diagnostic); B4 + C1 deferred. Earlier phases (1–7 complete, 8 reverted, 9–11 optional) live in git history.
+**Status:** **Phase 12 implemented + re-baselined (2026-05-30)** — accepted baseline in `docs/metrics/search_quality_history.md` (`phase12-e5-c1`: E5 video-credit gives R@10 0.98 / MRR 0.87). E5 + C1 done (C1 measured to regress, kept default-off). Only B4 (BM25) deferred. Earlier phases (1–7 complete, 8 reverted, 9–11 optional) live in git history.
 
 ---
 
@@ -16,7 +16,7 @@
 - [x] 12.E2 Decouple `negative` from `difficulty: hard` so the hard slice measures answerable queries (`queries.json`) `[P0]`
 - [x] 12.E3 Make the negative metric threshold-aware (count only above-threshold hits as FPs; depends on A2) `[P0]`
 - [x] 12.E4 Add image (by-image) search coverage + a by-image `search_fn` (`run_evaluation.py`) `[P1]`
-- [ ] 12.E5 Stabilize scene credit across re-seeding (media-level credit / pinned indices / re-validate labels) — **confirmed needed by the A1 diagnostic (campfire/bird retrieve the right scene but labeled index differs)** `[P1]`
+- [x] 12.E5 Stabilize scene credit across re-seeding — **DONE: video-granularity credit in `compute_metrics` (any scene of the correct video). R@10 0.67→0.98, Action R@10 0.31→1.0 — measurement honesty; confirmed the A1 diagnostic** `[P1]`
 - [x] 12.E6 Emit per-slice query counts; treat sub-5% deltas as noise (35-asset corpus, thin slices) `[P1]`
 - [x] 12.E7 Populate or remove the unused judgment-governance layer (`audit_log.json` is empty) `[P2]`
 - [x] 12.E8 Require explicit `--base-url` in documented eval commands and verify it reaches the gateway `[P2]`
@@ -27,7 +27,7 @@
 - [x] 12.B2 Add CLIP text prompt templating/ensembling in `clip_service.encode_text` `[P1]`
 - [x] 12.B3 Multi-frame scene representation (sample N frames, mean-pool) in `video_service.py` / `pipeline.py` `[P1]`
 - [ ] 12.B4 Enrich keyword index (BM25 over tags / richer captions) in `index_service.py` `[P2]`
-- [ ] 12.C1 Replace additive rerank boosts with a cross-encoder over top-K in `ranking_service.py` `[P2]`
+- [x] 12.C1 Cross-encoder rerank over top-K (`ranking_service.py`, gated `SEARCH_RERANK_ENABLED`, default-off) — **DONE but NOT recommended: measured to regress MRR 0.87→0.76 / NDCG 0.89→0.80 (caption-only rerank discards the CLIP visual signal); kept disabled** `[P2]`
 - [x] 12.C2 Fix caption pollution: stop indexing `"(scene N)"` disambiguation text (`pipeline._process_video`) `[P2]`
 
 **Success Criteria:**
@@ -42,7 +42,7 @@
 
 ## Notes
 
-- **Current Phase:** Phase 12 — implemented and re-baselined (2026-05-30); accepted baseline recorded in `docs/metrics/search_quality_history.md`
-- **Next Step:** E5 (scene-credit fix — confirmed needed by the A1 diagnostic) to unlock accurate Action/Video measurement; B4 + C1 remain deferred
+- **Current Phase:** Phase 12 — complete (E1–E8, A1–A4, B2/B3, C2, E5, C1 done; B4 deferred); baseline `phase12-e5-c1` recorded in `docs/metrics/search_quality_history.md`
+- **Next Step:** optional — B4 (BM25), or revisit C1 as a blended/image-text reranker; otherwise Phase 12 is closed
 - **Execution environment:** The entire stack — build, run, evaluation, and tests — runs via **Docker Compose**; do not run services, the evaluation harness, or tests directly on the host. Use `docker compose` (stack: `docker compose up --build gateway-api search-api media-worker frontend`; tests: `docker compose --profile test run --rm --build service-tests`; evaluation/seeding: the `service-tests` profile per `docs/metrics/search_tuning_checklist.md`).
 - **Execution strategy:** Prefer fanning out subagents to handle independent tasks in parallel.

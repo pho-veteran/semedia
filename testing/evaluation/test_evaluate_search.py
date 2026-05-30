@@ -847,3 +847,24 @@ def test_negative_summary_is_threshold_aware(tmp_path):
     assert thresholded["negative_queries"]["false_positive_rate"] == 0.0  # 0.3 < 0.5
     assert thresholded["negative_queries"]["mean_false_positives_per_query"] == 0.0
     assert thresholded["negative_queries"]["score_threshold"] == 0.5
+
+
+
+def test_compute_metrics_credits_any_scene_of_the_correct_video():
+    # Runtime surfaced scene index 0; the benchmark labeled index 1. Same video -> credit (E5).
+    metrics = compute_metrics({"scene:vid-campfire-01.webm:1"}, ["scene:vid-campfire-01.webm:0", "media:7"], k=10)
+
+    assert metrics["recall@10"] == 1.0
+    assert metrics["mrr"] == 1.0
+
+
+def test_compute_metrics_counts_one_video_once_across_scenes():
+    # Two scenes of the same relevant video must not double-count.
+    metrics = compute_metrics(
+        {"scene:vid-campfire-01.webm:1"},
+        ["scene:vid-campfire-01.webm:0", "scene:vid-campfire-01.webm:3"],
+        k=10,
+    )
+
+    assert metrics["recall@10"] == 1.0
+    assert metrics["precision@10"] == 0.1

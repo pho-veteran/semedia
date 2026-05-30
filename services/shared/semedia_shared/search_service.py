@@ -159,14 +159,14 @@ def _keyword_results(settings, session: Session, query_text: str, top_k: int) ->
     return search_keyword(query_text, index_data, top_k)
 
 
-def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None) -> list[dict]:
+def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None, reranker=None) -> list[dict]:
     limit = top_k or settings.search_max_results
     candidate_multiplier = max(1, int(getattr(settings, "search_candidate_multiplier", 1)))
     candidate_limit = limit * candidate_multiplier
     vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, candidate_limit))
     keyword_results = _normalize_scores(_keyword_results(settings, session, query_text, candidate_limit))
     candidates = merge_candidates(vector_results, keyword_results)
-    ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit)
+    ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit, reranker=reranker)
     ranked = _filter_by_min_score(settings, ranked)
 
     return [

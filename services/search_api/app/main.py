@@ -94,6 +94,22 @@ def _embed_text(query_text: str) -> list[float]:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Media worker unavailable: {exc}") from exc
 
 
+def _rerank(query_text: str, texts: list[str]) -> list[float] | None:
+    if not texts:
+        return None
+    try:
+        response = requests.post(
+            f"{settings.media_worker_url}/internal/rerank",
+            json={"query": query_text, "texts": texts},
+            timeout=180,
+        )
+        response.raise_for_status()
+        return response.json().get("scores")
+    except Exception:
+        logger.exception("Rerank request failed; falling back to fusion ranking.")
+        return None
+
+
 def _embed_image(file: UploadFile) -> list[float]:
     try:
         file.file.seek(0)
@@ -136,7 +152,8 @@ def search(payload: dict, session: Session = Depends(get_db)) -> dict:
     top_k = _coerce_positive_top_k(payload.get("top_k"))
 
     query_embedding = _embed_text(query_text)
-    results = search_text(settings, session, query_text, query_embedding, top_k=top_k)
+    reranker = _rerank if settings.search_rerank_enabled else None
+    results = search_text(settings, session, query_text, query_embedding, top_k=top_k, reranker=reranker)
     return {"query_mode": "text", "query_text": query_text, "count": len(results), "results": results}
 
 

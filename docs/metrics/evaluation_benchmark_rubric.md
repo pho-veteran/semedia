@@ -30,6 +30,7 @@ This rubric governs the locked Semedia evaluation benchmark.
 - **Precision@10 is naturally low.** Most benchmark queries have only 1–2 relevant items, so the theoretical maximum P@10 is often 0.1–0.2. Do not treat low P@10 as a failure signal in isolation.
 - **Primary signals:** Prefer Recall@10, MRR, and NDCG@10 as the main quality indicators — they are not capped by the small relevant-set size.
 - **Headline means cover positive queries only.** Aggregate means (MRR, Recall@10, NDCG@10, P@10) are computed over positive queries exclusively. Negative-query performance (false-positive rate) is summarized separately in the report.
+- **Scene hits are judged at video granularity.** Runtime scene indices (`scene:<file>:<index>`) shift across re-seeding, so `compute_metrics` collapses any `scene:<file>:<index>` to its parent video before scoring: retrieving *any* scene of the correct video credits the labeled scene, and a single video counts once. This assumes each corpus video is single-subject (true for the locked corpus); revisit if multi-topic videos are added.
 
 ## Audit-log governance
 

@@ -27,8 +27,19 @@ def _dedupe_preserving_order(values: list[object]) -> list[object]:
     return deduped
 
 
+def _video_credit_key(identifier: object) -> object:
+    # Credit any scene of the correct parent video: scene:<file>:<index> -> scene:<file>.
+    # Runtime scene indices shift across re-seeding, so judge video hits at video granularity.
+    if isinstance(identifier, str) and identifier.startswith("scene:"):
+        parts = identifier.split(":")
+        if len(parts) == 3:
+            return f"scene:{parts[1]}"
+    return identifier
+
+
 def compute_metrics(relevant_ids: set[object], retrieved_ids: list[object], k: int = 10) -> dict[str, float]:
-    retrieved_ids = _dedupe_preserving_order(retrieved_ids)
+    relevant_ids = {_video_credit_key(item_id) for item_id in relevant_ids}
+    retrieved_ids = _dedupe_preserving_order([_video_credit_key(item_id) for item_id in retrieved_ids])
     top_k = retrieved_ids[:k]
     hits = sum(1 for item_id in top_k if item_id in relevant_ids)
 

@@ -85,7 +85,7 @@ def test_search_text_uses_candidate_breadth_before_final_limit(search_env, monke
         calls.append(("keyword", top_k))
         return []
 
-    def fake_rank_candidates(settings, candidates, *, query_text, query_mode, limit):
+    def fake_rank_candidates(settings, candidates, *, query_text, query_mode, limit, reranker=None):
         calls.append(("rank", limit))
         return ranked
 

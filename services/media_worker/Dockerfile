@@ -27,6 +27,9 @@ RUN python -m pip install --upgrade pip setuptools wheel && \
       pip install torch torchvision; \
     fi
 
+# Separate layer so adding the reranker dep does not bust the cached CUDA-torch install above.
+RUN pip install "sentence-transformers>=3,<4"
+
 COPY services/shared /app/services/shared
 COPY services/media_worker /app/services/media_worker
 

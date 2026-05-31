@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semedia — System Documentation</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1a1a2e; --sidebar-bg: #f4f6f8; --sidebar-border: #dde1e6;
+  --heading: #0f2b46; --link: #2563eb; --link-hover: #1d4ed8;
+  --code-bg: #f0f2f5; --code-fg: #1e293b; --table-border: #d1d5db;
+  --table-stripe: #f9fafb; --badge-bg: #e0f2fe; --badge-fg: #0369a1;
+  --card-bg: #f8fafc; --card-border: #e2e8f0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a; --fg: #e2e8f0; --sidebar-bg: #1e293b; --sidebar-border: #334155;
+    --heading: #93c5fd; --link: #60a5fa; --link-hover: #93c5fd;
+    --code-bg: #1e293b; --code-fg: #e2e8f0; --table-border: #475569;
+    --table-stripe: #1e293b; --badge-bg: #1e3a5f; --badge-fg: #7dd3fc;
+    --card-bg: #1e293b; --card-border: #334155;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--fg); line-height: 1.7; font-size: 15px;
+}
+.layout { display: flex; min-height: 100vh; }
+nav.sidebar {
+  position: sticky; top: 0; height: 100vh; width: 260px; min-width: 260px;
+  background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border);
+  overflow-y: auto; padding: 1.5rem 1rem; font-size: 13px;
+}
+nav.sidebar h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--heading); margin-bottom: 1rem; }
+nav.sidebar a {
+  display: block; padding: 0.35rem 0.6rem; margin-bottom: 2px; border-radius: 4px;
+  color: var(--fg); text-decoration: none; transition: background 0.15s;
+}
+nav.sidebar a:hover { background: var(--card-border); }
+main { flex: 1; max-width: 900px; padding: 2.5rem 3rem; }
+h1 { font-size: 2rem; color: var(--heading); margin-bottom: 0.5rem; }
+h2 { font-size: 1.5rem; color: var(--heading); margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--card-border); }
+h3 { font-size: 1.15rem; color: var(--heading); margin-top: 1.8rem; margin-bottom: 0.6rem; }
+p { margin-bottom: 1rem; }
+ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+li { margin-bottom: 0.3rem; }
+code {
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  background: var(--code-bg); color: var(--code-fg); padding: 0.15em 0.4em;
+  border-radius: 3px; font-size: 0.9em;
+}
+pre { background: var(--code-bg); padding: 1rem 1.2rem; border-radius: 6px; overflow-x: auto; margin-bottom: 1.2rem; }
+pre code { background: none; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 14px; }
+th, td { padding: 0.6rem 0.8rem; border: 1px solid var(--table-border); text-align: left; }
+th { background: var(--card-bg); font-weight: 600; }
+tr:nth-child(even) { background: var(--table-stripe); }
+.badge {
+  display: inline-block; background: var(--badge-bg); color: var(--badge-fg);
+  padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 1.5rem;
+}
+.diagram { margin: 1.5rem 0; text-align: center; }
+.diagram svg { max-width: 100%; height: auto; }
+.screenshot { margin: 1.5rem 0; text-align: center; }
+.screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--card-border); }
+@media (max-width: 900px) {
+  nav.sidebar { display: none; }
+  main { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+<h2>Contents</h2>
+<a href="#overview">1. Overview</a>
+<a href="#architecture">2. Architecture</a>
+<a href="#data-flows">3. Data Flows</a>
+<a href="#tech-stack">4. Tech Stack</a>
+<a href="#data-model">5. Data Model</a>
+<a href="#processing-pipeline">6. Processing Pipeline</a>
+<a href="#search-ranking">7. Search &amp; Ranking</a>
+<a href="#evaluation">8. Evaluation System</a>
+<a href="#configuration">9. Configuration</a>
+<a href="#run-operate">10. Run &amp; Operate</a>
+<a href="#testing">11. Testing</a>
+<a href="#limitations">12. Limitations &amp; Future</a>
+</nav>
+<main>
+<h1>Semedia System Documentation</h1>
+<span class="badge">Snapshot as of 2026-05-31</span>
+
+
+<!-- Section 1: Overview -->
+<section id="overview">
+<h2>1. Overview</h2>
+<p>Semedia is a local semantic media search system that enables natural-language search over images and videos. It runs as a self-contained Docker Compose stack of five services, combining CLIP visual-language embeddings with TF-IDF keyword search for hybrid retrieval and ranking.</p>
+
+<h3>Key Capabilities</h3>
+<ul>
+<li><strong>5 Docker services</strong> — gateway API, media worker (GPU), search API, PostgreSQL database, React frontend</li>
+<li><strong>Hybrid search</strong> — CLIP vector similarity fused with TF-IDF keyword matching for robust retrieval</li>
+<li><strong>Video understanding</strong> — automatic scene detection, per-scene captioning, multi-frame embeddings</li>
+<li><strong>React frontend</strong> — modern UI for upload, library browsing, and semantic search with real-time results</li>
+<li><strong>Evaluation framework</strong> — 120 judged queries with automated metric computation and baseline comparison</li>
+</ul>
+
+<h3>Design Principles</h3>
+<ul>
+<li><strong>Local-first</strong> — all processing happens on-device; no external API calls for inference</li>
+<li><strong>GPU-accelerated</strong> — CUDA-enabled PyTorch for fast captioning and embedding generation</li>
+<li><strong>Modular services</strong> — each service has a single responsibility and communicates via HTTP</li>
+<li><strong>Shared logic</strong> — common models, pipeline code, and search helpers live in a shared Python package</li>
+</ul>
+
+<div class="screenshot"><img src="assets/screenshot-dashboard.png" alt="Semedia dashboard screenshot"></div>
+</section>
+
+<!-- Section 2: Architecture -->
+<section id="architecture">
+<h2>2. Architecture</h2>
+<p>Semedia is composed of five Docker services communicating over an internal network, with a shared Python package providing common models and logic.</p>
+<p>The architecture follows a microservice pattern where each service owns a specific domain: the gateway handles external communication, the media worker owns GPU-intensive ML tasks, and the search API owns retrieval logic. This separation allows independent scaling and development of each concern.</p>
+
+<h3>Services</h3>
+<table>
+<tr><th>Service</th><th>Role</th><th>Stack</th></tr>
+<tr><td><code>frontend</code></td><td>User interface served via nginx</td><td>React 19, Vite 8, Tailwind CSS 4</td></tr>
+<tr><td><code>gateway-api</code></td><td>Public API, file serving, search proxy</td><td>FastAPI, Python 3.12</td></tr>
+<tr><td><code>media-worker</code></td><td>GPU-bound: scene detection, captioning, embeddings</td><td>PyTorch, BLIP-large, CLIP ViT-B/16</td></tr>
+<tr><td><code>search-api</code></td><td>Hybrid retrieval and ranking</td><td>FastAPI, scikit-learn</td></tr>
+<tr><td><code>db</code></td><td>Persistent storage</td><td>PostgreSQL 16</td></tr>
+</table>
+
+<h3>Shared Package: <code>semedia_shared</code></h3>
+<p>Contains SQLAlchemy models, processing pipeline logic, search/ranking helpers, keyword index management, and configuration utilities. Used by gateway-api, media-worker, and search-api.</p>
+<ul>
+<li><code>models</code> — SQLAlchemy ORM definitions for MediaItem, VideoScene, KeywordIndexArtifact, EvaluationRun</li>
+<li><code>pipeline</code> — Scene detection, captioning, embedding generation orchestration</li>
+<li><code>search</code> — Vector similarity, keyword matching, result merging</li>
+<li><code>ranking</code> — Fusion scoring, reranking bonuses, diversity enforcement</li>
+<li><code>index</code> — TF-IDF index build, serialization, and loading</li>
+<li><code>config</code> — Environment variable parsing and validation</li>
+</ul>
+
+<h3>Communication Patterns</h3>
+<ul>
+<li><strong>Frontend → Gateway</strong> — HTTP REST (upload, search, media serving, delete)</li>
+<li><strong>Gateway → Media Worker</strong> — Internal HTTP (process media, embed text/image)</li>
+<li><strong>Gateway → Search API</strong> — Internal HTTP (search proxy)</li>
+<li><strong>Search API → Media Worker</strong> — Internal HTTP (embed query text/image)</li>
+<li><strong>All services → DB</strong> — PostgreSQL via SQLAlchemy (connection pooling)</li>
+<li><strong>Frontend serving</strong> — nginx serves static React build, proxies <code>/api/</code> to gateway</li>
+</ul>
+
+<div class="diagram">
+<svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" style="max-width:720px;">
+  <!-- Frontend -->
+  <rect x="280" y="10" width="160" height="50" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">frontend</text>
+  <text x="360" y="54" text-anchor="middle" font-size="10" fill="#475569">React + nginx</text>
+  <!-- Gateway -->
+  <rect x="280" y="100" width="160" height="50" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="360" y="130" text-anchor="middle" font-size="13" font-weight="600" fill="#065f46">gateway-api</text>
+  <text x="360" y="144" text-anchor="middle" font-size="10" fill="#475569">FastAPI</text>
+  <!-- Arrow frontend -> gateway -->
+  <line x1="360" y1="60" x2="360" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Media Worker -->
+  <rect x="80" y="210" width="180" height="55" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="170" y="237" text-anchor="middle" font-size="13" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="170" y="253" text-anchor="middle" font-size="10" fill="#475569">PySceneDetect, BLIP, CLIP</text>
+  <!-- Search API -->
+  <rect x="460" y="210" width="180" height="55" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="550" y="237" text-anchor="middle" font-size="13" font-weight="600" fill="#3730a3">search-api</text>
+  <text x="550" y="253" text-anchor="middle" font-size="10" fill="#475569">Hybrid retrieval + ranking</text>
+  <!-- DB -->
+  <rect x="280" y="330" width="160" height="50" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="358" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">db</text>
+  <text x="360" y="372" text-anchor="middle" font-size="10" fill="#475569">PostgreSQL 16</text>
+  <!-- Shared package label -->
+  <rect x="230" y="390" width="260" height="25" rx="4" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4"/>
+  <text x="360" y="407" text-anchor="middle" font-size="10" fill="#64748b">semedia_shared (models, pipeline, search, config)</text>
+  <!-- Arrows -->
+  <line x1="320" y1="150" x2="200" y2="210" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="150" x2="520" y2="210" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="265" x2="200" y2="230" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrow)"/>
+  <text x="370" y="200" text-anchor="middle" font-size="9" fill="#64748b">/embed-text</text>
+  <line x1="170" y1="265" x2="330" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="265" x2="400" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="360" y1="150" x2="360" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4"/>
+  <!-- Arrow marker -->
+  <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker></defs>
+</svg>
+</div>
+</section>
+
+
+<!-- Section 3: Data Flows -->
+<section id="data-flows">
+<h2>3. Data Flows</h2>
+<p>Semedia has three primary data flows: upload/processing (write path), text search (read path), and image search (visual read path). Each flow traverses multiple services with clear responsibility boundaries.</p>
+
+<h3>a) Upload &amp; Processing Flow</h3>
+<p>When a user uploads media through the frontend, the file is received by the gateway API, persisted to disk and database, then processed synchronously by the media worker. The entire pipeline — scene detection, captioning, embedding, and indexing — completes before the upload response is returned. This synchronous design simplifies the architecture but means upload latency scales with file size and complexity (a multi-scene video takes longer than a single image).</p>
+<div class="diagram">
+<svg viewBox="0 0 760 110" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;">
+  <rect x="5" y="30" width="80" height="40" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="54" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Frontend</text>
+  <rect x="110" y="30" width="80" height="40" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="150" y="54" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="215" y="30" width="80" height="40" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="255" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#334155">Save File</text>
+  <text x="255" y="62" text-anchor="middle" font-size="9" fill="#475569">+ DB</text>
+  <rect x="320" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="360" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Scene</text>
+  <text x="360" y="62" text-anchor="middle" font-size="9" fill="#475569">Detect</text>
+  <rect x="425" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="465" y="54" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Caption</text>
+  <rect x="530" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="570" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">CLIP</text>
+  <text x="570" y="62" text-anchor="middle" font-size="9" fill="#475569">Embed</text>
+  <rect x="635" y="30" width="90" height="40" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="680" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#065f46">Index</text>
+  <text x="680" y="62" text-anchor="middle" font-size="9" fill="#475569">Rebuild ✓</text>
+  <!-- Arrows -->
+  <line x1="85" y1="50" x2="110" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="190" y1="50" x2="215" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="295" y1="50" x2="320" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="50" x2="425" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="505" y1="50" x2="530" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="610" y1="50" x2="635" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="380" y="95" text-anchor="middle" font-size="10" fill="#64748b">status → completed</text>
+</svg>
+</div>
+
+<h3>b) Text Search Flow</h3>
+<p>Text queries are embedded by the media worker via the <code>/embed-text</code> endpoint, producing a 512-d CLIP vector. The search API then executes two parallel retrieval channels: vector search (calibrated cosine similarity against all stored embeddings) and keyword search (TF-IDF cosine against the caption corpus). Results from both channels are merged, scored via weighted fusion, reranked with bonus signals, and filtered for diversity before returning to the frontend.</p>
+<div class="diagram">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;">
+  <!-- Top row: query path -->
+  <rect x="5" y="20" width="80" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Frontend</text>
+  <rect x="115" y="20" width="80" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="155" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="225" y="20" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="270" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Search API</text>
+  <rect x="350" y="20" width="100" height="36" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="400" y="36" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="400" y="48" text-anchor="middle" font-size="9" fill="#475569">/embed-text</text>
+  <!-- Arrows top row -->
+  <line x1="85" y1="38" x2="115" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="195" y1="38" x2="225" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="315" y1="38" x2="350" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Two channels -->
+  <rect x="225" y="85" width="110" height="36" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="280" y="101" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Vector Search</text>
+  <text x="280" y="113" text-anchor="middle" font-size="9" fill="#475569">calibrated cosine</text>
+  <rect x="365" y="85" width="110" height="36" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="420" y="101" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">Keyword Search</text>
+  <text x="420" y="113" text-anchor="middle" font-size="9" fill="#475569">TF-IDF cosine</text>
+  <!-- Merge + Rank -->
+  <rect x="290" y="145" width="120" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="350" y="161" text-anchor="middle" font-size="9" font-weight="600" fill="#065f46">Fusion + Rerank</text>
+  <text x="350" y="173" text-anchor="middle" font-size="9" fill="#475569">+ Diversity</text>
+  <!-- Results -->
+  <rect x="450" y="145" width="70" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="485" y="167" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Results</text>
+  <!-- Arrows -->
+  <line x1="270" y1="56" x2="270" y2="85" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="290" y1="56" x2="420" y2="85" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="280" y1="121" x2="320" y2="145" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="420" y1="121" x2="380" y2="145" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="410" y1="163" x2="450" y2="163" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+</svg>
+</div>
+
+<h3>c) Image Search Flow</h3>
+<p>Image queries are embedded via <code>/embed-image</code> on the media worker, then matched vector-only (no keyword channel) before ranking. This enables "find visually similar" functionality — users can upload or select a reference image and find media with similar visual content. Since there is no text query, the keyword channel is skipped entirely and the fusion weight is effectively 1.0 for the vector channel.</p>
+<div class="diagram">
+<svg viewBox="0 0 650 90" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+  <rect x="5" y="25" width="80" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Frontend</text>
+  <rect x="115" y="25" width="80" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="155" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="225" y="25" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="270" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Search API</text>
+  <rect x="345" y="25" width="100" height="36" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="395" y="40" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="395" y="52" text-anchor="middle" font-size="9" fill="#475569">/embed-image</text>
+  <rect x="475" y="25" width="90" height="36" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="520" y="40" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Vector-Only</text>
+  <text x="520" y="52" text-anchor="middle" font-size="9" fill="#475569">Search + Rank</text>
+  <rect x="595" y="25" width="50" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="620" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Results</text>
+  <line x1="85" y1="43" x2="115" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="195" y1="43" x2="225" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="315" y1="43" x2="345" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="445" y1="43" x2="475" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="565" y1="43" x2="595" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+</svg>
+</div>
+</section>
+
+
+<!-- Section 4: Tech Stack -->
+<section id="tech-stack">
+<h2>4. Tech Stack</h2>
+<p>Semedia is built on a modern Python + TypeScript stack optimized for local GPU-accelerated inference and fast frontend iteration.</p>
+
+<h3>Backend</h3>
+<table>
+<tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Language</td><td>Python 3.12</td><td>ML ecosystem, async support</td></tr>
+<tr><td>API Framework</td><td>FastAPI</td><td>High-performance async HTTP with auto-docs</td></tr>
+<tr><td>ORM</td><td>SQLAlchemy 2</td><td>Type-safe database access with async support</td></tr>
+<tr><td>Database</td><td>PostgreSQL 16</td><td>JSONB for embeddings, robust ACID storage</td></tr>
+<tr><td>ML Framework</td><td>PyTorch (CUDA)</td><td>GPU-accelerated model inference</td></tr>
+<tr><td>Vision/Language</td><td>Hugging Face Transformers</td><td>BLIP-large captioning, CLIP ViT-B/16 embeddings</td></tr>
+<tr><td>Text Retrieval</td><td>scikit-learn</td><td>TfidfVectorizer for keyword index</td></tr>
+<tr><td>Video Processing</td><td>PySceneDetect</td><td>Adaptive scene boundary detection</td></tr>
+</table>
+
+<h3>Frontend</h3>
+<table>
+<tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Framework</td><td>React 19</td><td>Component-based UI with concurrent features</td></tr>
+<tr><td>Language</td><td>TypeScript</td><td>Type safety and IDE support</td></tr>
+<tr><td>Build Tool</td><td>Vite 8</td><td>Fast HMR and optimized production builds</td></tr>
+<tr><td>Styling</td><td>Tailwind CSS 4</td><td>Utility-first CSS with design tokens</td></tr>
+<tr><td>Components</td><td>Radix UI</td><td>Accessible, unstyled primitives</td></tr>
+</table>
+
+<h3>Infrastructure</h3>
+<table>
+<tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Orchestration</td><td>Docker Compose</td><td>Multi-service local deployment</td></tr>
+<tr><td>GPU Runtime</td><td>NVIDIA Container Toolkit</td><td>GPU passthrough to containers</td></tr>
+<tr><td>Web Server</td><td>nginx</td><td>Frontend static file serving</td></tr>
+</table>
+</section>
+
+<!-- Section 5: Data Model -->
+<section id="data-model">
+<h2>5. Data Model</h2>
+<p>The database schema consists of four primary tables managed via SQLAlchemy models in the shared package. All models use auto-incrementing integer primary keys and are accessed through SQLAlchemy 2's async session interface.</p>
+<p>Embeddings are stored as JSONB arrays (list of floats) rather than a dedicated vector type, keeping the system simple and PostgreSQL-native without requiring extensions like pgvector. This trades query performance at scale for simplicity at demo scale.</p>
+
+<h3>MediaItem</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
+<tr><td>file_path</td><td>String</td><td>Relative path in MEDIA_ROOT</td></tr>
+<tr><td>original_filename</td><td>String</td><td>User-uploaded name</td></tr>
+<tr><td>media_type</td><td>String</td><td>"image" or "video"</td></tr>
+<tr><td>status</td><td>String</td><td>pending → processing → completed</td></tr>
+<tr><td>duration</td><td>Float</td><td>Video duration in seconds</td></tr>
+<tr><td>caption</td><td>Text</td><td>Generated caption</td></tr>
+<tr><td>embedding</td><td>JSONB</td><td>CLIP embedding vector</td></tr>
+<tr><td>index_key</td><td>String</td><td>Key into keyword index</td></tr>
+<tr><td>created_at / updated_at</td><td>DateTime</td><td>Timestamps</td></tr>
+</table>
+
+<h3>VideoScene</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
+<tr><td>media_id</td><td>Integer FK</td><td>→ MediaItem.id</td></tr>
+<tr><td>scene_index</td><td>Integer</td><td>0-based scene number</td></tr>
+<tr><td>start_time / end_time</td><td>Float</td><td>Seconds</td></tr>
+<tr><td>keyframe_path</td><td>String</td><td>Extracted keyframe image</td></tr>
+<tr><td>thumbnail_path</td><td>String</td><td>Smaller thumbnail</td></tr>
+<tr><td>caption</td><td>Text</td><td>Scene caption</td></tr>
+<tr><td>embedding</td><td>JSONB</td><td>Multi-frame mean-pooled CLIP embedding</td></tr>
+<tr><td>index_key</td><td>String</td><td>Key into keyword index</td></tr>
+</table>
+
+<h3>KeywordIndexArtifact</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
+<tr><td>artifact_key</td><td>String</td><td>Unique artifact identifier</td></tr>
+<tr><td>format_version</td><td>Integer</td><td>Serialization version</td></tr>
+<tr><td>document_count</td><td>Integer</td><td>Number of indexed documents</td></tr>
+<tr><td>payload</td><td>LargeBinary</td><td>Serialized TF-IDF matrix + vocab</td></tr>
+<tr><td>built_at</td><td>DateTime</td><td>Build timestamp</td></tr>
+</table>
+
+<h3>EvaluationRun</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
+<tr><td>created_at</td><td>DateTime</td><td>Run timestamp</td></tr>
+<tr><td>top_k</td><td>Integer</td><td>Retrieval depth (e.g., 10)</td></tr>
+<tr><td>compare_to</td><td>Integer FK</td><td>Previous run for comparison</td></tr>
+<tr><td>num_queries</td><td>Integer</td><td>Total queries evaluated</td></tr>
+<tr><td>summary</td><td>JSONB</td><td>Aggregate metrics</td></tr>
+<tr><td>results</td><td>JSONB</td><td>Per-query results</td></tr>
+</table>
+
+<h3>Entity-Relationship Diagram</h3>
+<div class="diagram">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+  <!-- MediaItem -->
+  <rect x="40" y="30" width="200" height="130" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="140" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">MediaItem</text>
+  <line x1="40" y1="58" x2="240" y2="58" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="50" y="74" font-size="10" fill="#334155">id (PK)</text>
+  <text x="50" y="88" font-size="10" fill="#334155">file_path, original_filename</text>
+  <text x="50" y="102" font-size="10" fill="#334155">media_type, status, duration</text>
+  <text x="50" y="116" font-size="10" fill="#334155">caption, embedding (JSONB)</text>
+  <text x="50" y="130" font-size="10" fill="#334155">index_key</text>
+  <text x="50" y="144" font-size="10" fill="#334155">created_at, updated_at</text>
+  <!-- VideoScene -->
+  <rect x="40" y="190" width="200" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="140" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">VideoScene</text>
+  <line x1="40" y1="218" x2="240" y2="218" stroke="#f59e0b" stroke-width="0.8"/>
+  <text x="50" y="234" font-size="10" fill="#334155">id (PK), media_id (FK)</text>
+  <text x="50" y="248" font-size="10" fill="#334155">scene_index, start/end_time</text>
+  <text x="50" y="262" font-size="10" fill="#334155">keyframe_path, thumbnail_path</text>
+  <text x="50" y="276" font-size="10" fill="#334155">caption, embedding, index_key</text>
+  <!-- FK arrow -->
+  <line x1="140" y1="160" x2="140" y2="190" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="155" y="178" font-size="9" fill="#64748b">1:N</text>
+  <!-- KeywordIndexArtifact -->
+  <rect x="300" y="30" width="180" height="90" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="390" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">KeywordIndexArtifact</text>
+  <line x1="300" y1="58" x2="480" y2="58" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="310" y="74" font-size="10" fill="#334155">id (PK), artifact_key</text>
+  <text x="310" y="88" font-size="10" fill="#334155">format_version, document_count</text>
+  <text x="310" y="102" font-size="10" fill="#334155">payload (LargeBinary), built_at</text>
+  <!-- EvaluationRun -->
+  <rect x="300" y="160" width="180" height="90" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="390" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">EvaluationRun</text>
+  <line x1="300" y1="188" x2="480" y2="188" stroke="#10b981" stroke-width="0.8"/>
+  <text x="310" y="204" font-size="10" fill="#334155">id (PK), created_at</text>
+  <text x="310" y="218" font-size="10" fill="#334155">top_k, compare_to (FK→self)</text>
+  <text x="310" y="232" font-size="10" fill="#334155">num_queries</text>
+  <text x="310" y="246" font-size="10" fill="#334155">summary (JSONB), results (JSONB)</text>
+  <!-- Self-ref arrow -->
+  <path d="M480,205 Q520,205 520,180 Q520,155 480,170" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="530" y="185" font-size="9" fill="#64748b">compare_to</text>
+</svg>
+</div>
+</section>
+
+
+<!-- Section 6: Processing Pipeline -->
+<section id="processing-pipeline">
+<h2>6. Processing Pipeline</h2>
+<p>The media worker processes each uploaded file through a deterministic pipeline. The entire pipeline runs synchronously within a single request to the media worker.</p>
+
+<h3>Step 1: File Storage</h3>
+<p>The uploaded file is saved to <code>MEDIA_ROOT</code> with a unique path derived from a UUID. A <code>MediaItem</code> record is created in the database with <code>status=processing</code>. The original filename is preserved for display purposes.</p>
+
+<h3>Step 2: Scene Detection (Video Only)</h3>
+<p>For video files, PySceneDetect runs adaptive content detection with a base threshold of 27.0. This splits the video into semantically distinct scenes based on visual content changes. For each detected scene:</p>
+<ul>
+<li>A representative keyframe is extracted at the scene midpoint</li>
+<li>A smaller thumbnail is generated for UI display</li>
+<li>N=3 frames are uniformly sampled across the scene duration for multi-frame embedding</li>
+<li>A <code>VideoScene</code> record is created linking back to the parent <code>MediaItem</code></li>
+</ul>
+
+<h3>Step 3: Captioning</h3>
+<p>BLIP-large (<code>Salesforce/blip-image-captioning-large</code>) generates a natural-language caption for each image or scene keyframe. The pipeline includes weak-caption filtering: if the generated caption is too short, too generic, or repetitive, it is discarded and regenerated with adjusted beam search parameters.</p>
+
+<h3>Step 4: CLIP Embedding</h3>
+<p><code>openai/clip-vit-base-patch16</code> encodes each image or keyframe into a 512-dimensional embedding vector stored as JSONB. For video scenes, the N=3 sampled frame embeddings are individually computed and then mean-pooled into a single representative scene embedding, capturing temporal variation within the scene.</p>
+
+<h3>Step 5: Keyword Index Rebuild</h3>
+<p>After processing, the TF-IDF keyword index is rebuilt from scratch using all captions in the database. Configuration:</p>
+<ul>
+<li>scikit-learn <code>TfidfVectorizer</code></li>
+<li>Unigrams + bigrams (ngram_range=(1,2))</li>
+<li>Maximum 10,000 features</li>
+<li>English stop words removed</li>
+<li>Serialized artifact stored in <code>KeywordIndexArtifact</code> table</li>
+</ul>
+
+<h3>Step 6: Completion</h3>
+<p>The <code>MediaItem.status</code> is set to <code>completed</code>. The item (and all its scenes, for video) is now fully searchable via both vector and keyword channels.</p>
+</section>
+
+<!-- Section 7: Search & Ranking -->
+<section id="search-ranking">
+<h2>7. Search &amp; Ranking</h2>
+
+<h3>Vector Channel</h3>
+<p>The query text is embedded via CLIP into the same 512-d space as stored media embeddings. Cosine similarity is computed between the query vector and every stored embedding (images + video scenes). Raw CLIP cosine scores typically fall in a narrow band — empirically [0.15, 0.40] for this corpus — so an <strong>affine calibration</strong> maps this band linearly to [0, 1]:</p>
+<pre><code>calibrated = (raw_cosine - 0.15) / (0.40 - 0.15)
+calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
+<p>This ensures the vector score uses the full [0, 1] range and is comparable in magnitude to the keyword score for fusion.</p>
+
+<h3>Keyword Channel</h3>
+<p>The query is vectorized using the same TF-IDF vocabulary as the stored caption corpus. Cosine similarity is computed between the query TF-IDF vector and each document (caption) vector in the index. This channel excels at exact term matches and specific named entities that CLIP may not capture well. The keyword score is naturally in [0, 1] and requires no calibration.</p>
+
+<h3>Fusion</h3>
+<p>The final base score combines both channels with empirically tuned weights:</p>
+<pre><code>score = 0.7 × vector_score + 0.3 × keyword_score</code></pre>
+<p>The 70/30 split reflects that CLIP embeddings capture semantic meaning more broadly (visual concepts, spatial relationships, abstract ideas), while TF-IDF excels at specific term matches that CLIP may miss. Items appearing in only one channel receive a zero contribution from the other.</p>
+
+<h3>Reranking Bonuses</h3>
+<p>After fusion, additive bonuses reward strong textual signals that indicate high relevance:</p>
+<ul>
+<li><strong>+0.08</strong> — exact query phrase found in caption (case-insensitive substring match). This strongly boosts items whose captions directly describe what the user searched for.</li>
+<li><strong>+0.02</strong> — rich caption (length &gt; 50 characters). Longer captions indicate more descriptive, higher-quality scene understanding, which correlates with better CLIP alignment.</li>
+</ul>
+<p>These bonuses are additive and can push the score above 1.0 before final clamping.</p>
+
+<h3>Diversity Enforcement</h3>
+<p>To prevent a single video from dominating results with many similar scenes:</p>
+<ul>
+<li><strong>Per-media cap</strong> — Maximum 2 scenes per media item appear in final results (configurable via <code>SEARCH_MAX_PER_MEDIA</code>)</li>
+<li><strong>Caption deduplication</strong> — Results with identical captions are collapsed to the highest-scoring instance</li>
+<li><strong>Ordering</strong> — After diversity filtering, results are re-sorted by final score descending</li>
+</ul>
+
+<h3>Final Score</h3>
+<p>After fusion, reranking bonuses, and diversity filtering, the final score is clamped to [0, 1]. Results below <code>SEARCH_MIN_SCORE</code> (default 0.0) are excluded. The response is limited to <code>SEARCH_MAX_RESULTS</code> (default 20) items.</p>
+<p>An optional cross-encoder rerank stage exists (controlled by <code>SEARCH_RERANK_ENABLED</code>) but is <strong>disabled by default</strong>. Empirical evaluation showed it regresses quality on this small corpus — likely because the cross-encoder's semantic similarity judgments don't align well with the narrow, specific queries in the evaluation set.</p>
+
+<h3>Scoring Pipeline Diagram</h3>
+<div class="diagram">
+<svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+  <!-- Query input -->
+  <rect x="10" y="20" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="55" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Query Text</text>
+  <!-- CLIP embed -->
+  <rect x="130" y="5" width="100" height="32" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="180" y="25" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">CLIP Embed</text>
+  <!-- TF-IDF -->
+  <rect x="130" y="50" width="100" height="32" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="180" y="70" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">TF-IDF Vec</text>
+  <!-- Arrows from query -->
+  <line x1="100" y1="32" x2="130" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="100" y1="44" x2="130" y2="66" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Vector search -->
+  <rect x="265" y="5" width="110" height="32" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="320" y="19" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Cosine Sim</text>
+  <text x="320" y="31" text-anchor="middle" font-size="8" fill="#475569">vs stored embeddings</text>
+  <!-- Keyword search -->
+  <rect x="265" y="50" width="110" height="32" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="320" y="64" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">TF-IDF Cosine</text>
+  <text x="320" y="76" text-anchor="middle" font-size="8" fill="#475569">vs caption corpus</text>
+  <!-- Arrows -->
+  <line x1="230" y1="21" x2="265" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="230" y1="66" x2="265" y2="66" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Calibration -->
+  <rect x="410" y="5" width="100" height="32" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="460" y="19" text-anchor="middle" font-size="9" font-weight="600" fill="#334155">Calibrate</text>
+  <text x="460" y="31" text-anchor="middle" font-size="8" fill="#475569">[0.15,0.40]→[0,1]</text>
+  <line x1="375" y1="21" x2="410" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Fusion -->
+  <rect x="310" y="110" width="130" height="40" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="375" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">Fusion</text>
+  <text x="375" y="143" text-anchor="middle" font-size="9" fill="#475569">0.7×vec + 0.3×kw</text>
+  <!-- Arrows to fusion -->
+  <line x1="460" y1="37" x2="400" y2="110" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="320" y1="82" x2="350" y2="110" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Rerank -->
+  <rect x="310" y="175" width="130" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="375" y="195" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">Rerank</text>
+  <text x="375" y="208" text-anchor="middle" font-size="8" fill="#475569">+0.08 phrase, +0.02 rich</text>
+  <line x1="375" y1="150" x2="375" y2="175" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Diversity -->
+  <rect x="310" y="240" width="130" height="32" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="375" y="260" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">Diversity</text>
+  <line x1="375" y1="215" x2="375" y2="240" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Output -->
+  <rect x="490" y="240" width="90" height="32" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="535" y="260" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Results</text>
+  <line x1="440" y1="256" x2="490" y2="256" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Annotations -->
+  <text x="500" y="200" font-size="8" fill="#94a3b8">max 2/media</text>
+  <text x="500" y="212" font-size="8" fill="#94a3b8">dedupe captions</text>
+  <text x="500" y="224" font-size="8" fill="#94a3b8">clamp [0,1]</text>
+</svg>
+</div>
+<div class="screenshot"><img src="assets/screenshot-search.png" alt="Semedia search interface screenshot"></div>
+</section>
+
+
+<!-- Section 8: Evaluation System -->
+<section id="evaluation">
+<h2>8. Evaluation System</h2>
+<p>Semedia includes a built-in evaluation framework for measuring retrieval quality against a locked corpus of judged queries.</p>
+
+<h3>Corpus &amp; Queries</h3>
+<ul>
+<li><strong>120 judged queries</strong> — 97 positive (expecting relevant results) + 23 negative (expecting no results)</li>
+<li><strong>35-asset locked corpus</strong> — 28 images + 7 videos sourced from Wikimedia Commons</li>
+<li>Video-granularity scene credit: a video scene matching the query counts as a hit</li>
+<li>Queries cover diverse categories: animals, landscapes, objects, actions, abstract concepts, colors, compositions</li>
+<li>Negative queries test specificity: queries for items not in the corpus should return empty or very low-confidence results</li>
+</ul>
+
+<h3>Metrics Explained</h3>
+<table>
+<tr><th>Metric</th><th>Description</th><th>Aggregation</th></tr>
+<tr><td>P@10</td><td>Fraction of top-10 results that are relevant</td><td>Positive-only mean</td></tr>
+<tr><td>R@10</td><td>Fraction of all relevant items found in top-10</td><td>Positive-only mean</td></tr>
+<tr><td>MRR</td><td>Reciprocal of the rank of the first relevant result</td><td>Positive-only mean</td></tr>
+<tr><td>NDCG@10</td><td>Normalized Discounted Cumulative Gain — rewards relevant items ranked higher</td><td>Positive-only mean</td></tr>
+</table>
+
+<h3>Current Snapshot (2026-05-31)</h3>
+<table>
+<tr><th>Metric</th><th>Value</th><th>Notes</th></tr>
+<tr><td>R@10</td><td><strong>99.0%</strong></td><td>Near-perfect recall — almost every relevant item is found in top 10</td></tr>
+<tr><td>MRR</td><td><strong>92.5%</strong></td><td>Relevant items typically appear at rank 1 or 2</td></tr>
+<tr><td>NDCG@10</td><td><strong>94.1%</strong></td><td>Strong ranking quality — relevant items are ranked near the top</td></tr>
+<tr><td>P@10</td><td><strong>11.1%</strong></td><td>Capped by ~1 relevant item per query in a 35-asset corpus (theoretical max ~10%)</td></tr>
+</table>
+<p>The high R@10 and MRR demonstrate that the hybrid search system reliably finds and ranks relevant content. The low P@10 is an artifact of corpus size, not a quality issue — with only ~1 relevant item per query, 9 of the 10 returned results are necessarily irrelevant.</p>
+
+<h3>Features</h3>
+<ul>
+<li>Negative-query false-positive tracking (queries that should return nothing)</li>
+<li>Run persistence in database via <code>EvaluationRun</code> table</li>
+<li>Baseline comparison between runs (delta reporting)</li>
+<li>Automated corpus seeding from <code>testing/smoke-assets/</code></li>
+</ul>
+
+<h3>Methodology</h3>
+<p>Each positive query has one or more expected relevant items identified by filename or scene. The evaluation runner executes each query against the live search API, collects the top-K results, and computes per-query metrics. Aggregate metrics are computed as the mean across all positive queries only (negative queries contribute only to false-positive tracking).</p>
+<p>Video queries receive scene-level credit: if any scene of the expected video appears in the results, the query is considered a hit for recall purposes. For ranking metrics (MRR, NDCG), the rank of the first matching scene is used.</p>
+
+<div class="screenshot"><img src="assets/screenshot-evaluation.png" alt="Evaluation results screenshot"></div>
+</section>
+
+<!-- Section 9: Configuration -->
+<section id="configuration">
+<h2>9. Configuration</h2>
+<p>Key environment variables controlling Semedia's behavior:</p>
+<table>
+<tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+<tr><td><code>DATABASE_URL</code></td><td>—</td><td>PostgreSQL connection string</td></tr>
+<tr><td><code>MEDIA_ROOT</code></td><td>—</td><td>Root directory for stored media files</td></tr>
+<tr><td><code>ML_DEVICE</code></td><td><code>auto</code></td><td>Compute device: auto, cuda, or cpu</td></tr>
+<tr><td><code>ML_STRICT_CUDA</code></td><td><code>0</code></td><td>Fail fast if CUDA unavailable (1=enabled)</td></tr>
+<tr><td><code>ML_PRELOAD_MODELS</code></td><td><code>0</code></td><td>Preload models at startup (1=enabled)</td></tr>
+<tr><td><code>CLIP_MODEL_NAME</code></td><td><code>openai/clip-vit-base-patch16</code></td><td>CLIP model identifier</td></tr>
+<tr><td><code>CAPTION_MODEL_NAME</code></td><td><code>Salesforce/blip-image-captioning-large</code></td><td>Captioning model identifier</td></tr>
+<tr><td><code>SCENE_DETECTION_THRESHOLD</code></td><td><code>27.0</code></td><td>PySceneDetect adaptive threshold</td></tr>
+<tr><td><code>SCENE_FRAME_SAMPLE_COUNT</code></td><td><code>3</code></td><td>Frames sampled per scene for embedding</td></tr>
+<tr><td><code>SEARCH_VECTOR_WEIGHT</code></td><td><code>0.7</code></td><td>Weight of vector channel in fusion</td></tr>
+<tr><td><code>SEARCH_KEYWORD_WEIGHT</code></td><td><code>0.3</code></td><td>Weight of keyword channel in fusion</td></tr>
+<tr><td><code>SEARCH_MAX_RESULTS</code></td><td><code>20</code></td><td>Maximum results returned</td></tr>
+<tr><td><code>SEARCH_MAX_PER_MEDIA</code></td><td><code>2</code></td><td>Max scenes per media in results</td></tr>
+<tr><td><code>SEARCH_MIN_SCORE</code></td><td><code>0.0</code></td><td>Minimum score threshold</td></tr>
+<tr><td><code>SEARCH_RERANK_ENABLED</code></td><td><code>0</code></td><td>Cross-encoder rerank (0=off, 1=on)</td></tr>
+<tr><td><code>LOG_LEVEL</code></td><td><code>INFO</code></td><td>Python logging level</td></tr>
+<tr><td><code>CORS_ALLOW_ALL_ORIGINS</code></td><td><code>0</code></td><td>Allow all CORS origins (1=enabled)</td></tr>
+</table>
+
+<h3>Configuration Notes</h3>
+<ul>
+<li><strong>Model selection</strong> — <code>CLIP_MODEL_NAME</code> and <code>CAPTION_MODEL_NAME</code> accept any Hugging Face model identifier. Changing models requires reprocessing all media to regenerate embeddings and captions.</li>
+<li><strong>Search tuning</strong> — The vector/keyword weights (0.7/0.3) were empirically tuned on the evaluation corpus. Adjusting these affects all search results immediately without reprocessing.</li>
+<li><strong>GPU configuration</strong> — Set <code>ML_STRICT_CUDA=1</code> in production to fail fast if the GPU is not accessible, rather than silently falling back to CPU (which would be extremely slow for BLIP-large).</li>
+<li><strong>Preloading</strong> — <code>ML_PRELOAD_MODELS=1</code> adds ~30-60s to startup but eliminates cold-start latency on the first request. Recommended for production.</li>
+<li><strong>Scene detection</strong> — Lower <code>SCENE_DETECTION_THRESHOLD</code> values produce more scenes (more sensitive to changes); higher values produce fewer, longer scenes.</li>
+</ul>
+</section>
+
+
+<!-- Section 10: Run & Operate -->
+<section id="run-operate">
+<h2>10. Run &amp; Operate</h2>
+
+<h3>Prerequisites</h3>
+<ul>
+<li>Docker and Docker Compose installed</li>
+<li>NVIDIA Container Toolkit (for GPU acceleration in media-worker)</li>
+<li>Host NVIDIA drivers exposing the GPU to containers</li>
+<li>Sufficient disk space for media storage and model weights (~3 GB for BLIP + CLIP)</li>
+</ul>
+
+<h3>Start the Stack</h3>
+<pre><code>docker compose up --build gateway-api frontend</code></pre>
+<p>This builds and starts all five services (db, media-worker, search-api, gateway-api, frontend). The media-worker will preload models on startup when <code>ML_PRELOAD_MODELS=1</code> is set (default in Docker Compose).</p>
+
+<h3>Verify Services</h3>
+<pre><code># Check all containers are running
+docker compose ps
+
+# Test gateway health
+curl http://127.0.0.1:8000/api/v1/runtime/
+
+# Test frontend
+curl -s http://127.0.0.1:8000/ | head -5</code></pre>
+
+<h3>Seed Evaluation Corpus</h3>
+<pre><code># From Semedia/ root — seeds the 35-asset locked corpus
+docker compose --profile test run --rm --build service-tests pytest testing/ -k "seed"</code></pre>
+
+<h3>Run Evaluation</h3>
+<pre><code># Execute all 120 judged queries and compute metrics
+docker compose --profile test run --rm --build service-tests pytest testing/ -k "evaluation"</code></pre>
+
+<h3>Smoke Tests</h3>
+<pre><code>python testing/smoke_stack.py</code></pre>
+<p>Validates frontend reachability, gateway health, image upload, video upload, search, and delete — end-to-end through Docker. Uses assets from <code>testing/smoke-assets/</code>.</p>
+
+<h3>Logs &amp; Debugging</h3>
+<pre><code># Follow logs for a specific service
+docker compose logs -f media-worker
+
+# Set verbose logging
+LOG_LEVEL=DEBUG docker compose up gateway-api</code></pre>
+</section>
+
+<!-- Section 11: Testing -->
+<section id="testing">
+<h2>11. Testing</h2>
+<p>Semedia uses a three-tier testing strategy covering unit/integration tests, evaluation benchmarks, and end-to-end smoke tests.</p>
+
+<h3>Service Tests (pytest)</h3>
+<ul>
+<li>Isolated SQLite database (no PostgreSQL dependency for fast local runs)</li>
+<li>CPU-only execution (no GPU required)</li>
+<li>Lighter/mock models for fast iteration</li>
+<li>Tests cover: model CRUD, pipeline logic, search ranking, index build/load, API endpoints</li>
+<li>Run via: <code>docker compose --profile test run --rm --build service-tests</code></li>
+</ul>
+<pre><code># Run all service tests
+docker compose --profile test run --rm --build service-tests
+
+# Run specific test file
+docker compose --profile test run --rm service-tests pytest testing/test_search.py -v</code></pre>
+
+<h3>Evaluation Benchmark Suite</h3>
+<ul>
+<li>Validates evaluation artifacts are present and well-formed (query definitions, expected results)</li>
+<li>Seeds the locked 35-asset corpus (28 images + 7 videos from Wikimedia Commons)</li>
+<li>Runs all 120 judged queries against the live search API and computes metrics</li>
+<li>Compares against stored baselines for regression detection</li>
+<li>Reports per-query failures and aggregate metric deltas</li>
+</ul>
+
+<h3>Smoke Tests (<code>smoke_stack.py</code>)</h3>
+<p>A Python script that exercises the full stack end-to-end through Docker:</p>
+<ul>
+<li>Frontend reachability (HTTP 200 from nginx)</li>
+<li>Gateway health and runtime endpoints</li>
+<li>Image upload → processing → status=completed</li>
+<li>Video upload → scene detection → processing → status=completed</li>
+<li>Text search returns relevant results</li>
+<li>Image search returns relevant results</li>
+<li>Media deletion removes item and associated files</li>
+</ul>
+<pre><code># Run smoke tests (requires stack to be running)
+python testing/smoke_stack.py</code></pre>
+</section>
+
+<!-- Section 12: Limitations & Future Work -->
+<section id="limitations">
+<h2>12. Limitations &amp; Future Work</h2>
+
+<h3>Current Limitations</h3>
+<table>
+<tr><th>Limitation</th><th>Impact</th><th>Mitigation Path</th></tr>
+<tr><td>P@10 capped by small corpus</td><td>With ~1 relevant item per query in 35 assets, precision cannot exceed ~10%</td><td>Larger corpus with multiple relevant items per query</td></tr>
+<tr><td>Cross-encoder rerank regresses</td><td>Disabled by default; measured to hurt quality on this specific corpus</td><td>Retune on larger corpus where semantic reranking adds value</td></tr>
+<tr><td>No distributed vector DB</td><td>Local cosine similarity over all embeddings; O(n) per query</td><td>pgvector, Qdrant, or Milvus for ANN indexing</td></tr>
+<tr><td>No Redis/Celery</td><td>Processing is synchronous; long videos block the request</td><td>Background task queue with progress tracking</td></tr>
+<tr><td>Single-GPU</td><td>No multi-GPU or distributed inference support</td><td>Model parallelism or request-level GPU scheduling</td></tr>
+<tr><td>Demo-scale corpus</td><td>35 assets (28 images + 7 videos) — not production volume</td><td>Stress testing with 10K+ assets</td></tr>
+<tr><td>No incremental indexing</td><td>TF-IDF index rebuilt from scratch on each upload</td><td>Incremental updates or append-only index</td></tr>
+<tr><td>English-only captions</td><td>BLIP generates English captions; search is English-biased</td><td>Multilingual captioning models</td></tr>
+</table>
+
+<h3>Future Directions</h3>
+<ul>
+<li>Asynchronous processing queue (Redis + Celery or similar) for non-blocking uploads</li>
+<li>Vector database integration (pgvector, Qdrant, or Milvus) for scalable approximate nearest-neighbor search</li>
+<li>Larger evaluation corpus to unlock meaningful P@10 measurement and stress-test ranking</li>
+<li>Multi-GPU and batch inference for higher throughput on large media libraries</li>
+<li>Cross-encoder reranking tuned for larger, more diverse corpora where it can demonstrate value</li>
+<li>User feedback loop for relevance learning and personalized ranking</li>
+<li>Incremental keyword index updates (avoid full rebuild on each upload)</li>
+<li>Thumbnail generation optimization and lazy loading in frontend</li>
+<li>Audio track analysis for video (speech-to-text, audio event detection)</li>
+<li>Thumbnail generation optimization and WebP format for smaller payloads</li>
+<li>Real-time processing progress via WebSocket or SSE</li>
+<li>Multi-language support for captions and search queries</li>
+</ul>
+
+<div class="screenshot"><img src="assets/screenshot-library.png" alt="Semedia library view screenshot"></div>
+</section>
+
+<footer style="margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--card-border); font-size:12px; color:#64748b; text-align:center;">
+<p>Semedia System Documentation — Generated 2026-05-31 — Self-contained HTML, no external dependencies</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

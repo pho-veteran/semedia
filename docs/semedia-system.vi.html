@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semedia — Tài liệu Hệ thống</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1a1a2e; --sidebar-bg: #f4f6f8; --sidebar-border: #dde1e6;
+  --heading: #0f2b46; --link: #2563eb; --link-hover: #1d4ed8;
+  --code-bg: #f0f2f5; --code-fg: #1e293b; --table-border: #d1d5db;
+  --table-stripe: #f9fafb; --badge-bg: #e0f2fe; --badge-fg: #0369a1;
+  --card-bg: #f8fafc; --card-border: #e2e8f0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a; --fg: #e2e8f0; --sidebar-bg: #1e293b; --sidebar-border: #334155;
+    --heading: #93c5fd; --link: #60a5fa; --link-hover: #93c5fd;
+    --code-bg: #1e293b; --code-fg: #e2e8f0; --table-border: #475569;
+    --table-stripe: #1e293b; --badge-bg: #1e3a5f; --badge-fg: #7dd3fc;
+    --card-bg: #1e293b; --card-border: #334155;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg); color: var(--fg); line-height: 1.7; font-size: 15px;
+}
+.layout { display: flex; min-height: 100vh; }
+nav.sidebar {
+  position: sticky; top: 0; height: 100vh; width: 260px; min-width: 260px;
+  background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border);
+  overflow-y: auto; padding: 1.5rem 1rem; font-size: 13px;
+}
+nav.sidebar h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--heading); margin-bottom: 1rem; }
+nav.sidebar a {
+  display: block; padding: 0.35rem 0.6rem; margin-bottom: 2px; border-radius: 4px;
+  color: var(--fg); text-decoration: none; transition: background 0.15s;
+}
+nav.sidebar a:hover { background: var(--card-border); }
+main { flex: 1; max-width: 900px; padding: 2.5rem 3rem; }
+h1 { font-size: 2rem; color: var(--heading); margin-bottom: 0.5rem; }
+h2 { font-size: 1.5rem; color: var(--heading); margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--card-border); }
+h3 { font-size: 1.15rem; color: var(--heading); margin-top: 1.8rem; margin-bottom: 0.6rem; }
+p { margin-bottom: 1rem; }
+ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+li { margin-bottom: 0.3rem; }
+code {
+  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+  background: var(--code-bg); color: var(--code-fg); padding: 0.15em 0.4em;
+  border-radius: 3px; font-size: 0.9em;
+}
+pre { background: var(--code-bg); padding: 1rem 1.2rem; border-radius: 6px; overflow-x: auto; margin-bottom: 1.2rem; }
+pre code { background: none; padding: 0; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 14px; }
+th, td { padding: 0.6rem 0.8rem; border: 1px solid var(--table-border); text-align: left; }
+th { background: var(--card-bg); font-weight: 600; }
+tr:nth-child(even) { background: var(--table-stripe); }
+.badge {
+  display: inline-block; background: var(--badge-bg); color: var(--badge-fg);
+  padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 1.5rem;
+}
+.diagram { margin: 1.5rem 0; text-align: center; }
+.diagram svg { max-width: 100%; height: auto; }
+.screenshot { margin: 1.5rem 0; text-align: center; }
+.screenshot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--card-border); }
+@media (max-width: 900px) {
+  nav.sidebar { display: none; }
+  main { padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+<h2>Mục lục</h2>
+<a href="#overview">1. Tổng quan</a>
+<a href="#architecture">2. Kiến trúc</a>
+<a href="#data-flows">3. Luồng dữ liệu</a>
+<a href="#tech-stack">4. Công nghệ</a>
+<a href="#data-model">5. Mô hình dữ liệu</a>
+<a href="#processing-pipeline">6. Pipeline xử lý</a>
+<a href="#search-ranking">7. Tìm kiếm &amp; Xếp hạng</a>
+<a href="#evaluation">8. Hệ thống đánh giá</a>
+<a href="#configuration">9. Cấu hình</a>
+<a href="#run-operate">10. Vận hành</a>
+<a href="#testing">11. Kiểm thử</a>
+<a href="#limitations">12. Hạn chế &amp; Hướng phát triển</a>
+</nav>
+<main>
+<h1>Tài liệu Hệ thống Semedia</h1>
+<span class="badge">Ảnh chụp ngày 31/05/2026</span>
+
+
+<!-- Section 1: Tổng quan -->
+<section id="overview">
+<h2>1. Tổng quan</h2>
+<p>Semedia là hệ thống tìm kiếm media ngữ nghĩa cục bộ, cho phép tìm kiếm bằng ngôn ngữ tự nhiên trên hình ảnh và video. Hệ thống chạy dưới dạng một Docker Compose stack khép kín gồm năm dịch vụ, kết hợp CLIP visual-language embeddings với TF-IDF keyword search để truy xuất và xếp hạng lai (hybrid).</p>
+
+<h3>Khả năng chính</h3>
+<ul>
+<li><strong>5 dịch vụ Docker</strong> — gateway API, media worker (GPU), search API, cơ sở dữ liệu PostgreSQL, giao diện React</li>
+<li><strong>Tìm kiếm lai</strong> — CLIP vector similarity kết hợp với TF-IDF keyword matching để truy xuất hiệu quả</li>
+<li><strong>Hiểu video</strong> — tự động phát hiện cảnh, tạo mô tả cho từng cảnh, embeddings đa khung hình</li>
+<li><strong>Giao diện React</strong> — UI hiện đại cho tải lên, duyệt thư viện, và tìm kiếm ngữ nghĩa với kết quả thời gian thực</li>
+<li><strong>Khung đánh giá</strong> — 120 truy vấn đã đánh giá với tính toán chỉ số tự động và so sánh baseline</li>
+</ul>
+
+<h3>Nguyên tắc thiết kế</h3>
+<ul>
+<li><strong>Ưu tiên cục bộ</strong> — toàn bộ xử lý diễn ra trên thiết bị; không gọi API bên ngoài cho suy luận</li>
+<li><strong>Tăng tốc GPU</strong> — PyTorch hỗ trợ CUDA cho việc tạo mô tả và embedding nhanh chóng</li>
+<li><strong>Dịch vụ module hóa</strong> — mỗi dịch vụ có một trách nhiệm duy nhất và giao tiếp qua HTTP</li>
+<li><strong>Logic dùng chung</strong> — các model, pipeline code, và search helpers chung nằm trong một gói Python chia sẻ</li>
+</ul>
+
+<div class="screenshot"><img src="assets/screenshot-dashboard.png" alt="Ảnh chụp bảng điều khiển Semedia"></div>
+</section>
+
+
+
+<!-- Section 2: Kiến trúc -->
+<section id="architecture">
+<h2>2. Kiến trúc</h2>
+<p>Semedia bao gồm năm dịch vụ Docker giao tiếp qua mạng nội bộ, với một gói Python dùng chung cung cấp các model và logic chung.</p>
+<p>Kiến trúc tuân theo mô hình microservice, trong đó mỗi dịch vụ sở hữu một miền cụ thể: gateway xử lý giao tiếp bên ngoài, media worker sở hữu các tác vụ ML nặng GPU, và search API sở hữu logic truy xuất. Sự phân tách này cho phép mở rộng và phát triển độc lập từng thành phần.</p>
+
+<h3>Các dịch vụ</h3>
+<table>
+<tr><th>Dịch vụ</th><th>Vai trò</th><th>Công nghệ</th></tr>
+<tr><td><code>frontend</code></td><td>Giao diện người dùng phục vụ qua nginx</td><td>React 19, Vite 8, Tailwind CSS 4</td></tr>
+<tr><td><code>gateway-api</code></td><td>API công khai, phục vụ file, proxy tìm kiếm</td><td>FastAPI, Python 3.12</td></tr>
+<tr><td><code>media-worker</code></td><td>Xử lý GPU: phát hiện cảnh, tạo mô tả, embeddings</td><td>PyTorch, BLIP-large, CLIP ViT-B/16</td></tr>
+<tr><td><code>search-api</code></td><td>Truy xuất lai và xếp hạng</td><td>FastAPI, scikit-learn</td></tr>
+<tr><td><code>db</code></td><td>Lưu trữ bền vững</td><td>PostgreSQL 16</td></tr>
+</table>
+
+<h3>Gói dùng chung: <code>semedia_shared</code></h3>
+<p>Chứa các SQLAlchemy models, logic pipeline xử lý, search/ranking helpers, quản lý keyword index, và tiện ích cấu hình. Được sử dụng bởi gateway-api, media-worker, và search-api.</p>
+<ul>
+<li><code>models</code> — Định nghĩa SQLAlchemy ORM cho MediaItem, VideoScene, KeywordIndexArtifact, EvaluationRun</li>
+<li><code>pipeline</code> — Điều phối phát hiện cảnh, tạo mô tả, sinh embedding</li>
+<li><code>search</code> — Vector similarity, keyword matching, hợp nhất kết quả</li>
+<li><code>ranking</code> — Fusion scoring, reranking bonuses, đảm bảo đa dạng</li>
+<li><code>index</code> — Xây dựng, tuần tự hóa, và tải TF-IDF index</li>
+<li><code>config</code> — Phân tích và xác thực biến môi trường</li>
+</ul>
+
+<h3>Mô hình giao tiếp</h3>
+<ul>
+<li><strong>Frontend → Gateway</strong> — HTTP REST (tải lên, tìm kiếm, phục vụ media, xóa)</li>
+<li><strong>Gateway → Media Worker</strong> — HTTP nội bộ (xử lý media, embed text/image)</li>
+<li><strong>Gateway → Search API</strong> — HTTP nội bộ (proxy tìm kiếm)</li>
+<li><strong>Search API → Media Worker</strong> — HTTP nội bộ (embed query text/image)</li>
+<li><strong>Tất cả dịch vụ → DB</strong> — PostgreSQL qua SQLAlchemy (connection pooling)</li>
+<li><strong>Phục vụ Frontend</strong> — nginx phục vụ static React build, proxy <code>/api/</code> đến gateway</li>
+</ul>
+
+<div class="diagram">
+<svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg" style="max-width:720px;">
+  <!-- Frontend -->
+  <rect x="280" y="10" width="160" height="50" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="360" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">frontend</text>
+  <text x="360" y="54" text-anchor="middle" font-size="10" fill="#475569">React + nginx</text>
+  <!-- Gateway -->
+  <rect x="280" y="100" width="160" height="50" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="360" y="130" text-anchor="middle" font-size="13" font-weight="600" fill="#065f46">gateway-api</text>
+  <text x="360" y="144" text-anchor="middle" font-size="10" fill="#475569">FastAPI</text>
+  <!-- Arrow frontend -> gateway -->
+  <line x1="360" y1="60" x2="360" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- Media Worker -->
+  <rect x="80" y="210" width="180" height="55" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="170" y="237" text-anchor="middle" font-size="13" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="170" y="253" text-anchor="middle" font-size="10" fill="#475569">PySceneDetect, BLIP, CLIP</text>
+  <!-- Search API -->
+  <rect x="460" y="210" width="180" height="55" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="550" y="237" text-anchor="middle" font-size="13" font-weight="600" fill="#3730a3">search-api</text>
+  <text x="550" y="253" text-anchor="middle" font-size="10" fill="#475569">Truy xuất lai + xếp hạng</text>
+  <!-- DB -->
+  <rect x="280" y="330" width="160" height="50" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="360" y="358" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">db</text>
+  <text x="360" y="372" text-anchor="middle" font-size="10" fill="#475569">PostgreSQL 16</text>
+  <!-- Shared package label -->
+  <rect x="230" y="390" width="260" height="25" rx="4" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4"/>
+  <text x="360" y="407" text-anchor="middle" font-size="10" fill="#64748b">semedia_shared (models, pipeline, search, config)</text>
+  <!-- Arrows -->
+  <line x1="320" y1="150" x2="200" y2="210" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="150" x2="520" y2="210" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="265" x2="200" y2="230" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4" marker-end="url(#arrow)"/>
+  <text x="370" y="200" text-anchor="middle" font-size="9" fill="#64748b">/embed-text</text>
+  <line x1="170" y1="265" x2="330" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="265" x2="400" y2="330" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="360" y1="150" x2="360" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4"/>
+  <!-- Arrow marker -->
+  <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker></defs>
+</svg>
+</div>
+</section>
+
+
+
+<!-- Section 3: Luồng dữ liệu -->
+<section id="data-flows">
+<h2>3. Luồng dữ liệu</h2>
+<p>Semedia có ba luồng dữ liệu chính: tải lên/xử lý (đường ghi), tìm kiếm văn bản (đường đọc), và tìm kiếm hình ảnh (đường đọc trực quan). Mỗi luồng đi qua nhiều dịch vụ với ranh giới trách nhiệm rõ ràng.</p>
+
+<h3>a) Luồng tải lên &amp; xử lý</h3>
+<p>Khi người dùng tải media lên qua giao diện, file được gateway API tiếp nhận, lưu vào đĩa và cơ sở dữ liệu, sau đó được media worker xử lý đồng bộ. Toàn bộ pipeline — phát hiện cảnh, tạo mô tả, embedding, và đánh chỉ mục — hoàn thành trước khi phản hồi tải lên được trả về. Thiết kế đồng bộ này đơn giản hóa kiến trúc nhưng đồng nghĩa với việc độ trễ tải lên tỷ lệ thuận với kích thước và độ phức tạp của file (video nhiều cảnh mất nhiều thời gian hơn một hình ảnh đơn).</p>
+<div class="diagram">
+<svg viewBox="0 0 760 110" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;">
+  <rect x="5" y="30" width="80" height="40" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="54" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Giao diện</text>
+  <rect x="110" y="30" width="80" height="40" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="150" y="54" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="215" y="30" width="80" height="40" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="255" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#334155">Lưu File</text>
+  <text x="255" y="62" text-anchor="middle" font-size="9" fill="#475569">+ DB</text>
+  <rect x="320" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="360" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Phát hiện</text>
+  <text x="360" y="62" text-anchor="middle" font-size="9" fill="#475569">cảnh</text>
+  <rect x="425" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="465" y="54" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Mô tả</text>
+  <rect x="530" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="570" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">CLIP</text>
+  <text x="570" y="62" text-anchor="middle" font-size="9" fill="#475569">Embed</text>
+  <rect x="635" y="30" width="90" height="40" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="680" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#065f46">Đánh chỉ</text>
+  <text x="680" y="62" text-anchor="middle" font-size="9" fill="#475569">mục ✓</text>
+  <!-- Arrows -->
+  <line x1="85" y1="50" x2="110" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="190" y1="50" x2="215" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="295" y1="50" x2="320" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="400" y1="50" x2="425" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="505" y1="50" x2="530" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="610" y1="50" x2="635" y2="50" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="380" y="95" text-anchor="middle" font-size="10" fill="#64748b">trạng thái → hoàn thành</text>
+</svg>
+</div>
+
+<h3>b) Luồng tìm kiếm văn bản</h3>
+<p>Truy vấn văn bản được media worker embed qua endpoint <code>/embed-text</code>, tạo ra vector CLIP 512 chiều. Search API sau đó thực thi hai kênh truy xuất song song: tìm kiếm vector (calibrated cosine similarity so với tất cả embeddings đã lưu) và tìm kiếm từ khóa (TF-IDF cosine so với kho mô tả). Kết quả từ cả hai kênh được hợp nhất, tính điểm qua weighted fusion, xếp hạng lại với tín hiệu bonus, và lọc đa dạng trước khi trả về giao diện.</p>
+<div class="diagram">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;">
+  <!-- Top row: query path -->
+  <rect x="5" y="20" width="80" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Giao diện</text>
+  <rect x="115" y="20" width="80" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="155" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="225" y="20" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="270" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Search API</text>
+  <rect x="350" y="20" width="100" height="36" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="400" y="36" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="400" y="48" text-anchor="middle" font-size="9" fill="#475569">/embed-text</text>
+  <!-- Arrows top row -->
+  <line x1="85" y1="38" x2="115" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="195" y1="38" x2="225" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="315" y1="38" x2="350" y2="38" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Two channels -->
+  <rect x="225" y="85" width="110" height="36" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="280" y="101" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Tìm kiếm Vector</text>
+  <text x="280" y="113" text-anchor="middle" font-size="9" fill="#475569">calibrated cosine</text>
+  <rect x="365" y="85" width="110" height="36" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="420" y="101" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">Tìm từ khóa</text>
+  <text x="420" y="113" text-anchor="middle" font-size="9" fill="#475569">TF-IDF cosine</text>
+  <!-- Merge + Rank -->
+  <rect x="290" y="145" width="120" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="350" y="161" text-anchor="middle" font-size="9" font-weight="600" fill="#065f46">Fusion + Xếp hạng</text>
+  <text x="350" y="173" text-anchor="middle" font-size="9" fill="#475569">+ Đa dạng</text>
+  <!-- Results -->
+  <rect x="450" y="145" width="70" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="485" y="167" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Kết quả</text>
+  <!-- Arrows -->
+  <line x1="270" y1="56" x2="270" y2="85" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="290" y1="56" x2="420" y2="85" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="280" y1="121" x2="320" y2="145" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="420" y1="121" x2="380" y2="145" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="410" y1="163" x2="450" y2="163" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+</svg>
+</div>
+
+<h3>c) Luồng tìm kiếm hình ảnh</h3>
+<p>Truy vấn hình ảnh được embed qua <code>/embed-image</code> trên media worker, sau đó chỉ khớp vector (không có kênh từ khóa) trước khi xếp hạng. Điều này cho phép chức năng "tìm hình ảnh tương tự" — người dùng có thể tải lên hoặc chọn một hình ảnh tham chiếu và tìm media có nội dung trực quan tương tự. Vì không có truy vấn văn bản, kênh từ khóa bị bỏ qua hoàn toàn và trọng số fusion thực tế là 1.0 cho kênh vector.</p>
+<div class="diagram">
+<svg viewBox="0 0 650 90" xmlns="http://www.w3.org/2000/svg" style="max-width:650px;">
+  <rect x="5" y="25" width="80" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="45" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Giao diện</text>
+  <rect x="115" y="25" width="80" height="36" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.2"/>
+  <text x="155" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
+  <rect x="225" y="25" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="270" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Search API</text>
+  <rect x="345" y="25" width="100" height="36" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="395" y="40" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">media-worker</text>
+  <text x="395" y="52" text-anchor="middle" font-size="9" fill="#475569">/embed-image</text>
+  <rect x="475" y="25" width="90" height="36" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="520" y="40" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Chỉ Vector</text>
+  <text x="520" y="52" text-anchor="middle" font-size="9" fill="#475569">Tìm + Xếp hạng</text>
+  <rect x="595" y="25" width="50" height="36" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="620" y="47" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Kết quả</text>
+  <line x1="85" y1="43" x2="115" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="195" y1="43" x2="225" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="315" y1="43" x2="345" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="445" y1="43" x2="475" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="565" y1="43" x2="595" y2="43" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+</svg>
+</div>
+</section>
+
+
+
+<!-- Section 4: Công nghệ -->
+<section id="tech-stack">
+<h2>4. Công nghệ</h2>
+<p>Semedia được xây dựng trên nền tảng Python + TypeScript hiện đại, tối ưu cho suy luận GPU cục bộ và phát triển frontend nhanh.</p>
+
+<h3>Backend</h3>
+<table>
+<tr><th>Thành phần</th><th>Công nghệ</th><th>Mục đích</th></tr>
+<tr><td>Ngôn ngữ</td><td>Python 3.12</td><td>Hệ sinh thái ML, hỗ trợ async</td></tr>
+<tr><td>API Framework</td><td>FastAPI</td><td>HTTP async hiệu suất cao với auto-docs</td></tr>
+<tr><td>ORM</td><td>SQLAlchemy 2</td><td>Truy cập CSDL type-safe với hỗ trợ async</td></tr>
+<tr><td>Cơ sở dữ liệu</td><td>PostgreSQL 16</td><td>JSONB cho embeddings, lưu trữ ACID mạnh mẽ</td></tr>
+<tr><td>ML Framework</td><td>PyTorch (CUDA)</td><td>Suy luận model tăng tốc GPU</td></tr>
+<tr><td>Vision/Language</td><td>Hugging Face Transformers</td><td>BLIP-large captioning, CLIP ViT-B/16 embeddings</td></tr>
+<tr><td>Truy xuất văn bản</td><td>scikit-learn</td><td>TfidfVectorizer cho keyword index</td></tr>
+<tr><td>Xử lý video</td><td>PySceneDetect</td><td>Phát hiện ranh giới cảnh thích ứng</td></tr>
+</table>
+
+<h3>Frontend</h3>
+<table>
+<tr><th>Thành phần</th><th>Công nghệ</th><th>Mục đích</th></tr>
+<tr><td>Framework</td><td>React 19</td><td>UI component-based với concurrent features</td></tr>
+<tr><td>Ngôn ngữ</td><td>TypeScript</td><td>Type safety và hỗ trợ IDE</td></tr>
+<tr><td>Build Tool</td><td>Vite 8</td><td>HMR nhanh và production builds tối ưu</td></tr>
+<tr><td>Styling</td><td>Tailwind CSS 4</td><td>CSS utility-first với design tokens</td></tr>
+<tr><td>Components</td><td>Radix UI</td><td>Primitives accessible, unstyled</td></tr>
+</table>
+
+<h3>Hạ tầng</h3>
+<table>
+<tr><th>Thành phần</th><th>Công nghệ</th><th>Mục đích</th></tr>
+<tr><td>Điều phối</td><td>Docker Compose</td><td>Triển khai cục bộ đa dịch vụ</td></tr>
+<tr><td>GPU Runtime</td><td>NVIDIA Container Toolkit</td><td>GPU passthrough vào containers</td></tr>
+<tr><td>Web Server</td><td>nginx</td><td>Phục vụ file tĩnh frontend</td></tr>
+</table>
+</section>
+
+<!-- Section 5: Mô hình dữ liệu -->
+<section id="data-model">
+<h2>5. Mô hình dữ liệu</h2>
+<p>Schema cơ sở dữ liệu gồm bốn bảng chính được quản lý qua SQLAlchemy models trong gói dùng chung. Tất cả models sử dụng khóa chính integer tự tăng và được truy cập qua giao diện async session của SQLAlchemy 2.</p>
+<p>Embeddings được lưu dưới dạng mảng JSONB (danh sách float) thay vì kiểu vector chuyên dụng, giữ hệ thống đơn giản và native PostgreSQL mà không cần extension như pgvector. Điều này đánh đổi hiệu suất truy vấn ở quy mô lớn để lấy sự đơn giản ở quy mô demo.</p>
+
+<h3>MediaItem</h3>
+<table>
+<tr><th>Cột</th><th>Kiểu</th><th>Ghi chú</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Tự tăng</td></tr>
+<tr><td>file_path</td><td>String</td><td>Đường dẫn tương đối trong MEDIA_ROOT</td></tr>
+<tr><td>original_filename</td><td>String</td><td>Tên file người dùng tải lên</td></tr>
+<tr><td>media_type</td><td>String</td><td>"image" hoặc "video"</td></tr>
+<tr><td>status</td><td>String</td><td>pending → processing → completed</td></tr>
+<tr><td>duration</td><td>Float</td><td>Thời lượng video tính bằng giây</td></tr>
+<tr><td>caption</td><td>Text</td><td>Mô tả được tạo tự động</td></tr>
+<tr><td>embedding</td><td>JSONB</td><td>Vector embedding CLIP</td></tr>
+<tr><td>index_key</td><td>String</td><td>Khóa trong keyword index</td></tr>
+<tr><td>created_at / updated_at</td><td>DateTime</td><td>Dấu thời gian</td></tr>
+</table>
+
+<h3>VideoScene</h3>
+<table>
+<tr><th>Cột</th><th>Kiểu</th><th>Ghi chú</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Tự tăng</td></tr>
+<tr><td>media_id</td><td>Integer FK</td><td>→ MediaItem.id</td></tr>
+<tr><td>scene_index</td><td>Integer</td><td>Số thứ tự cảnh (bắt đầu từ 0)</td></tr>
+<tr><td>start_time / end_time</td><td>Float</td><td>Giây</td></tr>
+<tr><td>keyframe_path</td><td>String</td><td>Hình ảnh keyframe trích xuất</td></tr>
+<tr><td>thumbnail_path</td><td>String</td><td>Thumbnail nhỏ hơn</td></tr>
+<tr><td>caption</td><td>Text</td><td>Mô tả cảnh</td></tr>
+<tr><td>embedding</td><td>JSONB</td><td>Embedding CLIP mean-pooled đa khung hình</td></tr>
+<tr><td>index_key</td><td>String</td><td>Khóa trong keyword index</td></tr>
+</table>
+
+<h3>KeywordIndexArtifact</h3>
+<table>
+<tr><th>Cột</th><th>Kiểu</th><th>Ghi chú</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Tự tăng</td></tr>
+<tr><td>artifact_key</td><td>String</td><td>Định danh artifact duy nhất</td></tr>
+<tr><td>format_version</td><td>Integer</td><td>Phiên bản tuần tự hóa</td></tr>
+<tr><td>document_count</td><td>Integer</td><td>Số tài liệu đã đánh chỉ mục</td></tr>
+<tr><td>payload</td><td>LargeBinary</td><td>Ma trận TF-IDF + vocab đã tuần tự hóa</td></tr>
+<tr><td>built_at</td><td>DateTime</td><td>Dấu thời gian xây dựng</td></tr>
+</table>
+
+<h3>EvaluationRun</h3>
+<table>
+<tr><th>Cột</th><th>Kiểu</th><th>Ghi chú</th></tr>
+<tr><td>id</td><td>Integer PK</td><td>Tự tăng</td></tr>
+<tr><td>created_at</td><td>DateTime</td><td>Dấu thời gian chạy</td></tr>
+<tr><td>top_k</td><td>Integer</td><td>Độ sâu truy xuất (vd: 10)</td></tr>
+<tr><td>compare_to</td><td>Integer FK</td><td>Lần chạy trước để so sánh</td></tr>
+<tr><td>num_queries</td><td>Integer</td><td>Tổng số truy vấn đánh giá</td></tr>
+<tr><td>summary</td><td>JSONB</td><td>Chỉ số tổng hợp</td></tr>
+<tr><td>results</td><td>JSONB</td><td>Kết quả từng truy vấn</td></tr>
+</table>
+
+<h3>Sơ đồ quan hệ thực thể</h3>
+<div class="diagram">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+  <!-- MediaItem -->
+  <rect x="40" y="30" width="200" height="130" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="140" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">MediaItem</text>
+  <line x1="40" y1="58" x2="240" y2="58" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="50" y="74" font-size="10" fill="#334155">id (PK)</text>
+  <text x="50" y="88" font-size="10" fill="#334155">file_path, original_filename</text>
+  <text x="50" y="102" font-size="10" fill="#334155">media_type, status, duration</text>
+  <text x="50" y="116" font-size="10" fill="#334155">caption, embedding (JSONB)</text>
+  <text x="50" y="130" font-size="10" fill="#334155">index_key</text>
+  <text x="50" y="144" font-size="10" fill="#334155">created_at, updated_at</text>
+  <!-- VideoScene -->
+  <rect x="40" y="190" width="200" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="140" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">VideoScene</text>
+  <line x1="40" y1="218" x2="240" y2="218" stroke="#f59e0b" stroke-width="0.8"/>
+  <text x="50" y="234" font-size="10" fill="#334155">id (PK), media_id (FK)</text>
+  <text x="50" y="248" font-size="10" fill="#334155">scene_index, start/end_time</text>
+  <text x="50" y="262" font-size="10" fill="#334155">keyframe_path, thumbnail_path</text>
+  <text x="50" y="276" font-size="10" fill="#334155">caption, embedding, index_key</text>
+  <!-- FK arrow -->
+  <line x1="140" y1="160" x2="140" y2="190" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="155" y="178" font-size="9" fill="#64748b">1:N</text>
+  <!-- KeywordIndexArtifact -->
+  <rect x="300" y="30" width="180" height="90" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="390" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">KeywordIndexArtifact</text>
+  <line x1="300" y1="58" x2="480" y2="58" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="310" y="74" font-size="10" fill="#334155">id (PK), artifact_key</text>
+  <text x="310" y="88" font-size="10" fill="#334155">format_version, document_count</text>
+  <text x="310" y="102" font-size="10" fill="#334155">payload (LargeBinary), built_at</text>
+  <!-- EvaluationRun -->
+  <rect x="300" y="160" width="180" height="90" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="390" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">EvaluationRun</text>
+  <line x1="300" y1="188" x2="480" y2="188" stroke="#10b981" stroke-width="0.8"/>
+  <text x="310" y="204" font-size="10" fill="#334155">id (PK), created_at</text>
+  <text x="310" y="218" font-size="10" fill="#334155">top_k, compare_to (FK→self)</text>
+  <text x="310" y="232" font-size="10" fill="#334155">num_queries</text>
+  <text x="310" y="246" font-size="10" fill="#334155">summary (JSONB), results (JSONB)</text>
+  <!-- Self-ref arrow -->
+  <path d="M480,205 Q520,205 520,180 Q520,155 480,170" fill="none" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="530" y="185" font-size="9" fill="#64748b">compare_to</text>
+</svg>
+</div>
+</section>
+
+
+
+<!-- Section 6: Pipeline xử lý -->
+<section id="processing-pipeline">
+<h2>6. Pipeline xử lý</h2>
+<p>Media worker xử lý mỗi file tải lên qua một pipeline xác định. Toàn bộ pipeline chạy đồng bộ trong một request duy nhất đến media worker.</p>
+
+<h3>Bước 1: Lưu trữ file</h3>
+<p>File tải lên được lưu vào <code>MEDIA_ROOT</code> với đường dẫn duy nhất dựa trên UUID. Một bản ghi <code>MediaItem</code> được tạo trong cơ sở dữ liệu với <code>status=processing</code>. Tên file gốc được giữ lại cho mục đích hiển thị.</p>
+
+<h3>Bước 2: Phát hiện cảnh (chỉ Video)</h3>
+<p>Đối với file video, PySceneDetect chạy phát hiện nội dung thích ứng với ngưỡng cơ sở 27.0. Điều này chia video thành các cảnh riêng biệt về mặt ngữ nghĩa dựa trên thay đổi nội dung trực quan. Cho mỗi cảnh được phát hiện:</p>
+<ul>
+<li>Một keyframe đại diện được trích xuất tại điểm giữa cảnh</li>
+<li>Một thumbnail nhỏ hơn được tạo cho hiển thị UI</li>
+<li>N=3 khung hình được lấy mẫu đều trên toàn bộ thời lượng cảnh cho embedding đa khung hình</li>
+<li>Một bản ghi <code>VideoScene</code> được tạo liên kết ngược về <code>MediaItem</code> cha</li>
+</ul>
+
+<h3>Bước 3: Tạo mô tả</h3>
+<p>BLIP-large (<code>Salesforce/blip-image-captioning-large</code>) tạo mô tả ngôn ngữ tự nhiên cho mỗi hình ảnh hoặc keyframe cảnh. Pipeline bao gồm lọc mô tả yếu: nếu mô tả được tạo quá ngắn, quá chung chung, hoặc lặp lại, nó sẽ bị loại bỏ và tạo lại với tham số beam search điều chỉnh.</p>
+
+<h3>Bước 4: CLIP Embedding</h3>
+<p><code>openai/clip-vit-base-patch16</code> mã hóa mỗi hình ảnh hoặc keyframe thành vector embedding 512 chiều lưu dưới dạng JSONB. Đối với cảnh video, N=3 embedding khung hình lấy mẫu được tính riêng lẻ rồi mean-pooled thành một embedding cảnh đại diện duy nhất, nắm bắt biến thiên thời gian trong cảnh.</p>
+
+<h3>Bước 5: Xây dựng lại Keyword Index</h3>
+<p>Sau khi xử lý, TF-IDF keyword index được xây dựng lại từ đầu sử dụng tất cả mô tả trong cơ sở dữ liệu. Cấu hình:</p>
+<ul>
+<li>scikit-learn <code>TfidfVectorizer</code></li>
+<li>Unigrams + bigrams (ngram_range=(1,2))</li>
+<li>Tối đa 10.000 features</li>
+<li>Loại bỏ English stop words</li>
+<li>Artifact tuần tự hóa lưu trong bảng <code>KeywordIndexArtifact</code></li>
+</ul>
+
+<h3>Bước 6: Hoàn thành</h3>
+<p><code>MediaItem.status</code> được đặt thành <code>completed</code>. Item (và tất cả cảnh của nó, đối với video) giờ đã có thể tìm kiếm đầy đủ qua cả kênh vector và từ khóa.</p>
+</section>
+
+
+<!-- Section 7: Tìm kiếm & Xếp hạng -->
+<section id="search-ranking">
+<h2>7. Tìm kiếm &amp; Xếp hạng</h2>
+
+<h3>Kênh Vector</h3>
+<p>Truy vấn văn bản được embed qua CLIP vào cùng không gian 512 chiều với các media embeddings đã lưu. Cosine similarity được tính giữa vector truy vấn và mọi embedding đã lưu (hình ảnh + cảnh video). Điểm cosine CLIP thô thường rơi vào dải hẹp — thực nghiệm [0.15, 0.40] cho corpus này — nên một <strong>affine calibration</strong> ánh xạ tuyến tính dải này sang [0, 1]:</p>
+<pre><code>calibrated = (raw_cosine - 0.15) / (0.40 - 0.15)
+calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
+<p>Điều này đảm bảo điểm vector sử dụng toàn bộ dải [0, 1] và có cùng bậc độ lớn với điểm từ khóa cho fusion.</p>
+
+<h3>Kênh từ khóa</h3>
+<p>Truy vấn được vector hóa sử dụng cùng từ vựng TF-IDF với kho mô tả đã lưu. Cosine similarity được tính giữa vector TF-IDF truy vấn và mỗi vector tài liệu (mô tả) trong index. Kênh này xuất sắc ở khớp thuật ngữ chính xác và thực thể có tên cụ thể mà CLIP có thể không nắm bắt tốt. Điểm từ khóa tự nhiên nằm trong [0, 1] và không cần calibration.</p>
+
+<h3>Fusion</h3>
+<p>Điểm cơ sở cuối cùng kết hợp cả hai kênh với trọng số được điều chỉnh thực nghiệm:</p>
+<pre><code>score = 0.7 × vector_score + 0.3 × keyword_score</code></pre>
+<p>Tỷ lệ 70/30 phản ánh rằng CLIP embeddings nắm bắt ý nghĩa ngữ nghĩa rộng hơn (khái niệm trực quan, quan hệ không gian, ý tưởng trừu tượng), trong khi TF-IDF xuất sắc ở khớp thuật ngữ cụ thể mà CLIP có thể bỏ lỡ. Các item chỉ xuất hiện ở một kênh nhận đóng góp bằng không từ kênh còn lại.</p>
+
+<h3>Bonus xếp hạng lại</h3>
+<p>Sau fusion, các bonus cộng thêm thưởng cho tín hiệu văn bản mạnh chỉ ra độ liên quan cao:</p>
+<ul>
+<li><strong>+0.08</strong> — cụm từ truy vấn chính xác tìm thấy trong mô tả (khớp substring không phân biệt hoa thường). Điều này tăng mạnh các item có mô tả trực tiếp mô tả những gì người dùng tìm kiếm.</li>
+<li><strong>+0.02</strong> — mô tả phong phú (độ dài &gt; 50 ký tự). Mô tả dài hơn cho thấy hiểu cảnh mô tả hơn, chất lượng cao hơn, tương quan với CLIP alignment tốt hơn.</li>
+</ul>
+<p>Các bonus này là cộng thêm và có thể đẩy điểm vượt 1.0 trước khi clamp cuối cùng.</p>
+
+<h3>Đảm bảo đa dạng</h3>
+<p>Để ngăn một video đơn lẻ chiếm ưu thế kết quả với nhiều cảnh tương tự:</p>
+<ul>
+<li><strong>Giới hạn mỗi media</strong> — Tối đa 2 cảnh mỗi media item xuất hiện trong kết quả cuối (cấu hình qua <code>SEARCH_MAX_PER_MEDIA</code>)</li>
+<li><strong>Loại trùng mô tả</strong> — Kết quả có mô tả giống hệt được gộp lại thành instance có điểm cao nhất</li>
+<li><strong>Sắp xếp</strong> — Sau lọc đa dạng, kết quả được sắp xếp lại theo điểm cuối giảm dần</li>
+</ul>
+
+<h3>Điểm cuối cùng</h3>
+<p>Sau fusion, bonus xếp hạng lại, và lọc đa dạng, điểm cuối cùng được clamp về [0, 1]. Kết quả dưới <code>SEARCH_MIN_SCORE</code> (mặc định 0.0) bị loại. Phản hồi giới hạn ở <code>SEARCH_MAX_RESULTS</code> (mặc định 20) items.</p>
+<p>Một giai đoạn cross-encoder rerank tùy chọn tồn tại (điều khiển bởi <code>SEARCH_RERANK_ENABLED</code>) nhưng <strong>bị tắt mặc định</strong>. Đánh giá thực nghiệm cho thấy nó làm giảm chất lượng trên corpus nhỏ này — có thể vì các đánh giá semantic similarity của cross-encoder không phù hợp tốt với các truy vấn hẹp, cụ thể trong bộ đánh giá.</p>
+
+<h3>Sơ đồ Pipeline tính điểm</h3>
+<div class="diagram">
+<svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg" style="max-width:700px;">
+  <!-- Query input -->
+  <rect x="10" y="20" width="90" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="55" y="42" text-anchor="middle" font-size="10" font-weight="600" fill="#3730a3">Truy vấn</text>
+  <!-- CLIP embed -->
+  <rect x="130" y="5" width="100" height="32" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="180" y="25" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">CLIP Embed</text>
+  <!-- TF-IDF -->
+  <rect x="130" y="50" width="100" height="32" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="180" y="70" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">TF-IDF Vec</text>
+  <!-- Arrows from query -->
+  <line x1="100" y1="32" x2="130" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="100" y1="44" x2="130" y2="66" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Vector search -->
+  <rect x="265" y="5" width="110" height="32" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="320" y="19" text-anchor="middle" font-size="9" font-weight="600" fill="#5b21b6">Cosine Sim</text>
+  <text x="320" y="31" text-anchor="middle" font-size="8" fill="#475569">vs embeddings đã lưu</text>
+  <!-- Keyword search -->
+  <rect x="265" y="50" width="110" height="32" rx="6" fill="#fce7f3" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="320" y="64" text-anchor="middle" font-size="9" font-weight="600" fill="#9d174d">TF-IDF Cosine</text>
+  <text x="320" y="76" text-anchor="middle" font-size="8" fill="#475569">vs kho mô tả</text>
+  <!-- Arrows -->
+  <line x1="230" y1="21" x2="265" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="230" y1="66" x2="265" y2="66" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Calibration -->
+  <rect x="410" y="5" width="100" height="32" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="460" y="19" text-anchor="middle" font-size="9" font-weight="600" fill="#334155">Hiệu chuẩn</text>
+  <text x="460" y="31" text-anchor="middle" font-size="8" fill="#475569">[0.15,0.40]→[0,1]</text>
+  <line x1="375" y1="21" x2="410" y2="21" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Fusion -->
+  <rect x="310" y="110" width="130" height="40" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="375" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">Fusion</text>
+  <text x="375" y="143" text-anchor="middle" font-size="9" fill="#475569">0.7×vec + 0.3×kw</text>
+  <!-- Arrows to fusion -->
+  <line x1="460" y1="37" x2="400" y2="110" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="320" y1="82" x2="350" y2="110" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Rerank -->
+  <rect x="310" y="175" width="130" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="375" y="195" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">Xếp hạng lại</text>
+  <text x="375" y="208" text-anchor="middle" font-size="8" fill="#475569">+0.08 cụm từ, +0.02 phong phú</text>
+  <line x1="375" y1="150" x2="375" y2="175" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Diversity -->
+  <rect x="310" y="240" width="130" height="32" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="375" y="260" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">Đa dạng</text>
+  <line x1="375" y1="215" x2="375" y2="240" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Output -->
+  <rect x="490" y="240" width="90" height="32" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="535" y="260" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Kết quả</text>
+  <line x1="440" y1="256" x2="490" y2="256" stroke="#64748b" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- Annotations -->
+  <text x="500" y="200" font-size="8" fill="#94a3b8">tối đa 2/media</text>
+  <text x="500" y="212" font-size="8" fill="#94a3b8">loại trùng mô tả</text>
+  <text x="500" y="224" font-size="8" fill="#94a3b8">clamp [0,1]</text>
+</svg>
+</div>
+<div class="screenshot"><img src="assets/screenshot-search.png" alt="Ảnh chụp giao diện tìm kiếm Semedia"></div>
+</section>
+
+
+
+<!-- Section 8: Hệ thống đánh giá -->
+<section id="evaluation">
+<h2>8. Hệ thống đánh giá</h2>
+<p>Semedia bao gồm một khung đánh giá tích hợp để đo chất lượng truy xuất so với một corpus cố định gồm các truy vấn đã đánh giá.</p>
+
+<h3>Corpus &amp; Truy vấn</h3>
+<ul>
+<li><strong>120 truy vấn đã đánh giá</strong> — 97 tích cực (mong đợi kết quả liên quan) + 23 tiêu cực (mong đợi không có kết quả)</li>
+<li><strong>Corpus cố định 35 tài sản</strong> — 28 hình ảnh + 7 video từ Wikimedia Commons</li>
+<li>Tín dụng cấp cảnh video: một cảnh video khớp truy vấn được tính là hit</li>
+<li>Truy vấn bao phủ các danh mục đa dạng: động vật, phong cảnh, đồ vật, hành động, khái niệm trừu tượng, màu sắc, bố cục</li>
+<li>Truy vấn tiêu cực kiểm tra tính đặc hiệu: truy vấn cho các item không có trong corpus nên trả về rỗng hoặc kết quả độ tin cậy rất thấp</li>
+</ul>
+
+<h3>Giải thích chỉ số</h3>
+<table>
+<tr><th>Chỉ số</th><th>Mô tả</th><th>Tổng hợp</th></tr>
+<tr><td>P@10</td><td>Tỷ lệ kết quả top-10 có liên quan</td><td>Trung bình chỉ tích cực</td></tr>
+<tr><td>R@10</td><td>Tỷ lệ tất cả item liên quan được tìm thấy trong top-10</td><td>Trung bình chỉ tích cực</td></tr>
+<tr><td>MRR</td><td>Nghịch đảo thứ hạng của kết quả liên quan đầu tiên</td><td>Trung bình chỉ tích cực</td></tr>
+<tr><td>NDCG@10</td><td>Normalized Discounted Cumulative Gain — thưởng item liên quan xếp hạng cao hơn</td><td>Trung bình chỉ tích cực</td></tr>
+</table>
+
+<h3>Ảnh chụp hiện tại (31/05/2026)</h3>
+<table>
+<tr><th>Chỉ số</th><th>Giá trị</th><th>Ghi chú</th></tr>
+<tr><td>R@10</td><td><strong>99.0%</strong></td><td>Recall gần hoàn hảo — hầu hết mọi item liên quan được tìm thấy trong top 10</td></tr>
+<tr><td>MRR</td><td><strong>92.5%</strong></td><td>Item liên quan thường xuất hiện ở hạng 1 hoặc 2</td></tr>
+<tr><td>NDCG@10</td><td><strong>94.1%</strong></td><td>Chất lượng xếp hạng mạnh — item liên quan được xếp gần đầu</td></tr>
+<tr><td>P@10</td><td><strong>11.1%</strong></td><td>Bị giới hạn bởi ~1 item liên quan mỗi truy vấn trong corpus 35 tài sản (tối đa lý thuyết ~10%)</td></tr>
+</table>
+<p>R@10 và MRR cao chứng minh rằng hệ thống tìm kiếm lai đáng tin cậy tìm và xếp hạng nội dung liên quan. P@10 thấp là do kích thước corpus, không phải vấn đề chất lượng — với chỉ ~1 item liên quan mỗi truy vấn, 9 trong 10 kết quả trả về nhất thiết không liên quan.</p>
+
+<h3>Tính năng</h3>
+<ul>
+<li>Theo dõi false-positive truy vấn tiêu cực (truy vấn nên trả về không có gì)</li>
+<li>Lưu trữ lần chạy trong cơ sở dữ liệu qua bảng <code>EvaluationRun</code></li>
+<li>So sánh baseline giữa các lần chạy (báo cáo delta)</li>
+<li>Tự động seed corpus từ <code>testing/smoke-assets/</code></li>
+</ul>
+
+<h3>Phương pháp</h3>
+<p>Mỗi truy vấn tích cực có một hoặc nhiều item liên quan mong đợi được xác định bằng tên file hoặc cảnh. Trình chạy đánh giá thực thi mỗi truy vấn trên search API live, thu thập kết quả top-K, và tính chỉ số từng truy vấn. Chỉ số tổng hợp được tính là trung bình trên tất cả truy vấn tích cực (truy vấn tiêu cực chỉ đóng góp vào theo dõi false-positive).</p>
+<p>Truy vấn video nhận tín dụng cấp cảnh: nếu bất kỳ cảnh nào của video mong đợi xuất hiện trong kết quả, truy vấn được coi là hit cho mục đích recall. Cho chỉ số xếp hạng (MRR, NDCG), thứ hạng của cảnh khớp đầu tiên được sử dụng.</p>
+
+<div class="screenshot"><img src="assets/screenshot-evaluation.png" alt="Ảnh chụp kết quả đánh giá"></div>
+</section>
+
+
+<!-- Section 9: Cấu hình -->
+<section id="configuration">
+<h2>9. Cấu hình</h2>
+<p>Các biến môi trường chính điều khiển hành vi của Semedia:</p>
+<table>
+<tr><th>Biến</th><th>Mặc định</th><th>Mô tả</th></tr>
+<tr><td><code>DATABASE_URL</code></td><td>—</td><td>Chuỗi kết nối PostgreSQL</td></tr>
+<tr><td><code>MEDIA_ROOT</code></td><td>—</td><td>Thư mục gốc cho file media đã lưu</td></tr>
+<tr><td><code>ML_DEVICE</code></td><td><code>auto</code></td><td>Thiết bị tính toán: auto, cuda, hoặc cpu</td></tr>
+<tr><td><code>ML_STRICT_CUDA</code></td><td><code>0</code></td><td>Dừng ngay nếu CUDA không khả dụng (1=bật)</td></tr>
+<tr><td><code>ML_PRELOAD_MODELS</code></td><td><code>0</code></td><td>Tải trước model khi khởi động (1=bật)</td></tr>
+<tr><td><code>CLIP_MODEL_NAME</code></td><td><code>openai/clip-vit-base-patch16</code></td><td>Định danh model CLIP</td></tr>
+<tr><td><code>CAPTION_MODEL_NAME</code></td><td><code>Salesforce/blip-image-captioning-large</code></td><td>Định danh model tạo mô tả</td></tr>
+<tr><td><code>SCENE_DETECTION_THRESHOLD</code></td><td><code>27.0</code></td><td>Ngưỡng thích ứng PySceneDetect</td></tr>
+<tr><td><code>SCENE_FRAME_SAMPLE_COUNT</code></td><td><code>3</code></td><td>Số khung hình lấy mẫu mỗi cảnh cho embedding</td></tr>
+<tr><td><code>SEARCH_VECTOR_WEIGHT</code></td><td><code>0.7</code></td><td>Trọng số kênh vector trong fusion</td></tr>
+<tr><td><code>SEARCH_KEYWORD_WEIGHT</code></td><td><code>0.3</code></td><td>Trọng số kênh từ khóa trong fusion</td></tr>
+<tr><td><code>SEARCH_MAX_RESULTS</code></td><td><code>20</code></td><td>Số kết quả tối đa trả về</td></tr>
+<tr><td><code>SEARCH_MAX_PER_MEDIA</code></td><td><code>2</code></td><td>Số cảnh tối đa mỗi media trong kết quả</td></tr>
+<tr><td><code>SEARCH_MIN_SCORE</code></td><td><code>0.0</code></td><td>Ngưỡng điểm tối thiểu</td></tr>
+<tr><td><code>SEARCH_RERANK_ENABLED</code></td><td><code>0</code></td><td>Cross-encoder rerank (0=tắt, 1=bật)</td></tr>
+<tr><td><code>LOG_LEVEL</code></td><td><code>INFO</code></td><td>Mức logging Python</td></tr>
+<tr><td><code>CORS_ALLOW_ALL_ORIGINS</code></td><td><code>0</code></td><td>Cho phép tất cả CORS origins (1=bật)</td></tr>
+</table>
+
+<h3>Ghi chú cấu hình</h3>
+<ul>
+<li><strong>Chọn model</strong> — <code>CLIP_MODEL_NAME</code> và <code>CAPTION_MODEL_NAME</code> chấp nhận bất kỳ định danh model Hugging Face nào. Thay đổi model yêu cầu xử lý lại toàn bộ media để tạo lại embeddings và mô tả.</li>
+<li><strong>Điều chỉnh tìm kiếm</strong> — Trọng số vector/keyword (0.7/0.3) được điều chỉnh thực nghiệm trên corpus đánh giá. Thay đổi các giá trị này ảnh hưởng ngay lập tức đến tất cả kết quả tìm kiếm mà không cần xử lý lại.</li>
+<li><strong>Cấu hình GPU</strong> — Đặt <code>ML_STRICT_CUDA=1</code> trong production để dừng ngay nếu GPU không truy cập được, thay vì âm thầm fallback sang CPU (sẽ cực kỳ chậm cho BLIP-large).</li>
+<li><strong>Tải trước</strong> — <code>ML_PRELOAD_MODELS=1</code> thêm ~30-60 giây vào khởi động nhưng loại bỏ độ trễ cold-start ở request đầu tiên. Khuyến nghị cho production.</li>
+<li><strong>Phát hiện cảnh</strong> — Giá trị <code>SCENE_DETECTION_THRESHOLD</code> thấp hơn tạo nhiều cảnh hơn (nhạy hơn với thay đổi); giá trị cao hơn tạo ít cảnh hơn, dài hơn.</li>
+</ul>
+</section>
+
+
+<!-- Section 10: Vận hành -->
+<section id="run-operate">
+<h2>10. Vận hành</h2>
+
+<h3>Yêu cầu tiên quyết</h3>
+<ul>
+<li>Docker và Docker Compose đã cài đặt</li>
+<li>NVIDIA Container Toolkit (cho tăng tốc GPU trong media-worker)</li>
+<li>Driver NVIDIA trên host expose GPU vào containers</li>
+<li>Đủ dung lượng đĩa cho lưu trữ media và trọng số model (~3 GB cho BLIP + CLIP)</li>
+</ul>
+
+<h3>Khởi động Stack</h3>
+<pre><code>docker compose up --build gateway-api frontend</code></pre>
+<p>Lệnh này build và khởi động tất cả năm dịch vụ (db, media-worker, search-api, gateway-api, frontend). Media-worker sẽ tải trước model khi khởi động khi <code>ML_PRELOAD_MODELS=1</code> được đặt (mặc định trong Docker Compose).</p>
+
+<h3>Xác minh dịch vụ</h3>
+<pre><code># Kiểm tra tất cả containers đang chạy
+docker compose ps
+
+# Kiểm tra gateway health
+curl http://127.0.0.1:8000/api/v1/runtime/
+
+# Kiểm tra frontend
+curl -s http://127.0.0.1:8000/ | head -5</code></pre>
+
+<h3>Seed Corpus đánh giá</h3>
+<pre><code># Từ thư mục gốc Semedia/ — seed corpus cố định 35 tài sản
+docker compose --profile test run --rm --build service-tests pytest testing/ -k "seed"</code></pre>
+
+<h3>Chạy đánh giá</h3>
+<pre><code># Thực thi tất cả 120 truy vấn đã đánh giá và tính chỉ số
+docker compose --profile test run --rm --build service-tests pytest testing/ -k "evaluation"</code></pre>
+
+<h3>Smoke Tests</h3>
+<pre><code>python testing/smoke_stack.py</code></pre>
+<p>Xác thực khả năng truy cập frontend, gateway health, tải lên hình ảnh, tải lên video, tìm kiếm, và xóa — end-to-end qua Docker. Sử dụng tài sản từ <code>testing/smoke-assets/</code>.</p>
+
+<h3>Logs &amp; Gỡ lỗi</h3>
+<pre><code># Theo dõi logs cho một dịch vụ cụ thể
+docker compose logs -f media-worker
+
+# Đặt logging chi tiết
+LOG_LEVEL=DEBUG docker compose up gateway-api</code></pre>
+</section>
+
+
+<!-- Section 11: Kiểm thử -->
+<section id="testing">
+<h2>11. Kiểm thử</h2>
+<p>Semedia sử dụng chiến lược kiểm thử ba tầng bao gồm unit/integration tests, evaluation benchmarks, và end-to-end smoke tests.</p>
+
+<h3>Service Tests (pytest)</h3>
+<ul>
+<li>Cơ sở dữ liệu SQLite cô lập (không phụ thuộc PostgreSQL cho chạy cục bộ nhanh)</li>
+<li>Chỉ chạy CPU (không yêu cầu GPU)</li>
+<li>Model nhẹ/mock cho iteration nhanh</li>
+<li>Tests bao phủ: model CRUD, pipeline logic, search ranking, index build/load, API endpoints</li>
+<li>Chạy qua: <code>docker compose --profile test run --rm --build service-tests</code></li>
+</ul>
+<pre><code># Chạy tất cả service tests
+docker compose --profile test run --rm --build service-tests
+
+# Chạy file test cụ thể
+docker compose --profile test run --rm service-tests pytest testing/test_search.py -v</code></pre>
+
+<h3>Bộ Benchmark đánh giá</h3>
+<ul>
+<li>Xác thực artifacts đánh giá có mặt và đúng định dạng (định nghĩa truy vấn, kết quả mong đợi)</li>
+<li>Seed corpus cố định 35 tài sản (28 hình ảnh + 7 video từ Wikimedia Commons)</li>
+<li>Chạy tất cả 120 truy vấn đã đánh giá trên search API live và tính chỉ số</li>
+<li>So sánh với baselines đã lưu để phát hiện regression</li>
+<li>Báo cáo lỗi từng truy vấn và delta chỉ số tổng hợp</li>
+</ul>
+
+<h3>Smoke Tests (<code>smoke_stack.py</code>)</h3>
+<p>Một script Python kiểm tra toàn bộ stack end-to-end qua Docker:</p>
+<ul>
+<li>Khả năng truy cập frontend (HTTP 200 từ nginx)</li>
+<li>Gateway health và runtime endpoints</li>
+<li>Tải lên hình ảnh → xử lý → status=completed</li>
+<li>Tải lên video → phát hiện cảnh → xử lý → status=completed</li>
+<li>Tìm kiếm văn bản trả về kết quả liên quan</li>
+<li>Tìm kiếm hình ảnh trả về kết quả liên quan</li>
+<li>Xóa media loại bỏ item và các file liên quan</li>
+</ul>
+<pre><code># Chạy smoke tests (yêu cầu stack đang chạy)
+python testing/smoke_stack.py</code></pre>
+</section>
+
+<!-- Section 12: Hạn chế & Hướng phát triển -->
+<section id="limitations">
+<h2>12. Hạn chế &amp; Hướng phát triển</h2>
+
+<h3>Hạn chế hiện tại</h3>
+<table>
+<tr><th>Hạn chế</th><th>Ảnh hưởng</th><th>Hướng khắc phục</th></tr>
+<tr><td>P@10 bị giới hạn bởi corpus nhỏ</td><td>Với ~1 item liên quan mỗi truy vấn trong 35 tài sản, precision không thể vượt ~10%</td><td>Corpus lớn hơn với nhiều item liên quan mỗi truy vấn</td></tr>
+<tr><td>Cross-encoder rerank làm giảm chất lượng</td><td>Bị tắt mặc định; đo được làm giảm chất lượng trên corpus cụ thể này</td><td>Điều chỉnh lại trên corpus lớn hơn nơi semantic reranking thêm giá trị</td></tr>
+<tr><td>Không có vector DB phân tán</td><td>Cosine similarity cục bộ trên tất cả embeddings; O(n) mỗi truy vấn</td><td>pgvector, Qdrant, hoặc Milvus cho ANN indexing</td></tr>
+<tr><td>Không có Redis/Celery</td><td>Xử lý đồng bộ; video dài chặn request</td><td>Hàng đợi tác vụ nền với theo dõi tiến trình</td></tr>
+<tr><td>Đơn GPU</td><td>Không hỗ trợ multi-GPU hoặc suy luận phân tán</td><td>Model parallelism hoặc GPU scheduling cấp request</td></tr>
+<tr><td>Corpus quy mô demo</td><td>35 tài sản (28 hình ảnh + 7 video) — không phải khối lượng production</td><td>Stress testing với 10K+ tài sản</td></tr>
+<tr><td>Không có indexing tăng dần</td><td>TF-IDF index xây dựng lại từ đầu mỗi lần tải lên</td><td>Cập nhật tăng dần hoặc index append-only</td></tr>
+<tr><td>Mô tả chỉ tiếng Anh</td><td>BLIP tạo mô tả tiếng Anh; tìm kiếm thiên về tiếng Anh</td><td>Model tạo mô tả đa ngôn ngữ</td></tr>
+</table>
+
+<h3>Hướng phát triển tương lai</h3>
+<ul>
+<li>Hàng đợi xử lý bất đồng bộ (Redis + Celery hoặc tương tự) cho tải lên không chặn</li>
+<li>Tích hợp vector database (pgvector, Qdrant, hoặc Milvus) cho tìm kiếm approximate nearest-neighbor có khả năng mở rộng</li>
+<li>Corpus đánh giá lớn hơn để mở khóa đo P@10 có ý nghĩa và stress-test xếp hạng</li>
+<li>Multi-GPU và batch inference cho throughput cao hơn trên thư viện media lớn</li>
+<li>Cross-encoder reranking điều chỉnh cho corpus lớn hơn, đa dạng hơn nơi nó có thể chứng minh giá trị</li>
+<li>Vòng phản hồi người dùng cho học relevance và xếp hạng cá nhân hóa</li>
+<li>Cập nhật keyword index tăng dần (tránh rebuild toàn bộ mỗi lần tải lên)</li>
+<li>Tối ưu tạo thumbnail và lazy loading trong frontend</li>
+<li>Phân tích audio track cho video (speech-to-text, phát hiện sự kiện âm thanh)</li>
+<li>Tối ưu tạo thumbnail và định dạng WebP cho payload nhỏ hơn</li>
+<li>Tiến trình xử lý thời gian thực qua WebSocket hoặc SSE</li>
+<li>Hỗ trợ đa ngôn ngữ cho mô tả và truy vấn tìm kiếm</li>
+</ul>
+
+<div class="screenshot"><img src="assets/screenshot-library.png" alt="Ảnh chụp giao diện thư viện Semedia"></div>
+</section>
+
+<footer style="margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--card-border); font-size:12px; color:#64748b; text-align:center;">
+<p>Tài liệu Hệ thống Semedia — Tạo ngày 31/05/2026 — HTML khép kín, không phụ thuộc bên ngoài</p>
+</footer>
+</main>
+</div>
+</body>
+</html>

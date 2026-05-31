@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronDown, X, RotateCcw, ExternalLink, Film, ImageIcon } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import {
+  statusToBadgeVariant,
+  statusProgressBarClass,
+  resolveUploadPreviewSource,
+  type StatusBadgeVariant,
+} from '@/lib/presentation'
 import type { UploadQueueItem } from '../types/api'
 
 interface UploadQueuePanelProps {
@@ -11,12 +17,16 @@ interface UploadQueuePanelProps {
   onRetryUpload?: (id: string) => void
 }
 
-const statusVariant: Record<UploadQueueItem['status'], 'uploading' | 'processing' | 'completed' | 'failed'> = {
-  uploading:  'uploading',
-  pending:    'uploading',
-  processing: 'processing',
-  completed:  'completed',
-  failed:     'failed',
+// Ánh xạ variant ngữ nghĩa (nguồn chân lý trong lib/presentation) -> tên variant
+// của UI_Primitive Badge. Cả hai cho ra cùng lớp token, đây chỉ là lớp tên gọi.
+const BADGE_VARIANT_BY_SEMANTIC: Record<
+  StatusBadgeVariant,
+  'uploading' | 'processing' | 'completed' | 'failed'
+> = {
+  info: 'uploading',
+  warning: 'processing',
+  success: 'completed',
+  destructive: 'failed',
 }
 
 const statusLabel: Record<UploadQueueItem['status'], string> = {
@@ -25,14 +35,6 @@ const statusLabel: Record<UploadQueueItem['status'], string> = {
   processing: 'Processing',
   completed:  'Done',
   failed:     'Failed',
-}
-
-const statusBarColor: Record<UploadQueueItem['status'], string> = {
-  uploading:  'bg-blue-500',
-  pending:    'bg-muted-foreground',
-  processing: 'bg-amber-500',
-  completed:  'bg-emerald-500',
-  failed:     'bg-destructive',
 }
 
 function VideoPreviewFrame({ src }: { src: string }) {
@@ -154,6 +156,8 @@ function UploadItemCard({
   const progress = getProgress()
   const canCancel = item.status === 'uploading' || item.status === 'processing'
   const canRetry = item.status === 'failed'
+  const previewSource = resolveUploadPreviewSource(item)
+  const badgeVariant = BADGE_VARIANT_BY_SEMANTIC[statusToBadgeVariant(item.status)]
 
   return (
     <div className={cn(
@@ -161,19 +165,19 @@ function UploadItemCard({
       "shadow-sm animate-fade-in-up",
     )}>
       <div className="relative w-full aspect-video bg-muted overflow-hidden">
-        {item.previewUrl ? (
+        {previewSource.kind === 'image' ? (
           item.mediaType === 'video' ? (
-            <VideoPreviewFrame src={item.previewUrl} />
+            <VideoPreviewFrame src={previewSource.url} />
           ) : (
             <img
-              src={item.previewUrl}
+              src={previewSource.url}
               alt={item.name}
               className="w-full h-full object-cover"
             />
           )
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            {item.mediaType === 'video'
+            {previewSource.mediaType === 'video'
               ? <Film size={24} strokeWidth={1.5} />
               : <ImageIcon size={24} strokeWidth={1.5} />
             }
@@ -181,7 +185,7 @@ function UploadItemCard({
         )}
 
         <div className="absolute top-2 left-2">
-          <Badge variant={statusVariant[item.status]} className="text-[10px] h-5 px-2 shadow-sm">
+          <Badge variant={badgeVariant} className="text-[10px] h-5 px-2 shadow-sm">
             {statusLabel[item.status]}
           </Badge>
         </div>
@@ -200,7 +204,7 @@ function UploadItemCard({
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500",
-                statusBarColor[item.status],
+                statusProgressBarClass(item.status),
                 (item.status === 'uploading' || item.status === 'processing') && "relative overflow-hidden",
               )}
               style={{ width: `${progress}%` }}

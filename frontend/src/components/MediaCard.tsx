@@ -1,8 +1,22 @@
+import { useState } from 'react'
 import { Film, Play, ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { resolveMediaPreviewSource } from '@/lib/presentation'
 import type { MediaSummary } from '../types/api'
 import { formatFileSize, formatRelativeTime, toAbsoluteUrl } from '../utils/format'
+
+function PreviewFallback({ mediaType }: { mediaType: 'image' | 'video' }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-muted">
+      {mediaType === 'video' ? (
+        <Film size={28} className="text-muted-foreground/50" />
+      ) : (
+        <ImageIcon size={28} className="text-muted-foreground/50" />
+      )}
+    </div>
+  )
+}
 
 interface MediaCardProps {
   media: MediaSummary
@@ -20,8 +34,9 @@ const statusConfig: Record<MediaSummary['status'], { variant: 'completed' | 'pro
 export function MediaCard({ media, onClick, className }: MediaCardProps) {
   const isVideo = media.media_type === 'video'
 
-  const thumbnailUrl = toAbsoluteUrl(media.thumbnail ?? (isVideo ? null : media.file))
-  const hasValidThumbnail = thumbnailUrl && !thumbnailUrl.includes('placeholder')
+  const previewSource = resolveMediaPreviewSource(media)
+  const [imageFailed, setImageFailed] = useState(false)
+  const showImage = previewSource.kind === 'image' && !imageFailed
 
   const status = statusConfig[media.status] ?? statusConfig.pending
   const handleClick = () => onClick?.(media.id)
@@ -50,9 +65,9 @@ export function MediaCard({ media, onClick, className }: MediaCardProps) {
       aria-label={onClick ? `Open ${media.original_filename}` : undefined}
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-        {hasValidThumbnail ? (
+        {showImage ? (
           <img
-            src={thumbnailUrl}
+            src={toAbsoluteUrl(previewSource.url)}
             alt={media.original_filename}
             className={cn(
               "w-full h-full object-cover",
@@ -60,16 +75,10 @@ export function MediaCard({ media, onClick, className }: MediaCardProps) {
               "group-hover:scale-[1.04]",
             )}
             loading="lazy"
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
+            onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            {isVideo ? (
-              <Film size={28} className="text-muted-foreground/50" />
-            ) : (
-              <ImageIcon size={28} className="text-muted-foreground/50" />
-            )}
-          </div>
+          <PreviewFallback mediaType={media.media_type} />
         )}
 
         {isVideo && onClick && (

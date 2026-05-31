@@ -80,7 +80,7 @@ function CompactScenePreview({
 
         {/* Score badge - top left */}
         <div className="absolute top-1 left-1">
-          <Badge className="bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full border-0">
+          <Badge className="bg-foreground/70 text-background text-xs px-1.5 py-0.5 rounded-full border-0">
             {formatScore(scene.score)}
           </Badge>
         </div>
@@ -88,7 +88,7 @@ function CompactScenePreview({
         {/* Time range badge - top right */}
         {scene.start_time !== null && scene.end_time !== null && (
           <div className="absolute top-1 right-1">
-            <Badge className="bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full border-0">
+            <Badge className="bg-foreground/70 text-background text-xs px-1.5 py-0.5 rounded-full border-0">
               {formatTimeRange(scene.start_time, scene.end_time)}
             </Badge>
           </div>

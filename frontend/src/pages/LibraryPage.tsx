@@ -458,6 +458,7 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
                     }
                   }}
                   className="rounded border-border bg-background/80 backdrop-blur-sm"
+                  aria-label={`Select ${item.original_filename}`}
                 />
               </div>
               <MediaCard

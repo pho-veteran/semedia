@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ArrowUpDown, Download, Trash2, Film } from 'lucide-react'
+import { ArrowUpDown, Download, Trash2, Film, ImageIcon } from 'lucide-react'
 import { Button, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { resolveMediaPreviewSource, statusBadgeClasses } from '@/lib/presentation'
 import type { MediaSummary } from '../types/api'
 import { formatFileSize, formatRelativeTime } from '../utils/format'
 
@@ -18,19 +19,34 @@ interface DataTableProps {
   className?: string
 }
 
-const getStatusColor = (status: MediaSummary['status']) => {
-  switch (status) {
-    case 'completed':
-      return 'bg-green-100 text-green-700'
-    case 'processing':
-      return 'bg-orange-100 text-orange-700'
-    case 'failed':
-      return 'bg-red-100 text-red-700'
-    case 'pending':
-      return 'bg-gray-100 text-gray-700'
-    default:
-      return 'bg-gray-100 text-gray-700'
-  }
+/**
+ * Thumbnail cell: chọn nguồn ảnh xem trước qua `resolveMediaPreviewSource`
+ * (ưu tiên `thumbnail`, fallback theo `media_type`), với `onError` rơi về
+ * biểu tượng fallback thay vì hiển thị ảnh hỏng (R14.1–14.4).
+ */
+function ThumbnailCell({ media }: { media: MediaSummary }) {
+  const [errored, setErrored] = useState(false)
+  const source = resolveMediaPreviewSource(media)
+  const showImage = source.kind === 'image' && !errored
+  const fallbackMediaType = source.kind === 'fallback' ? source.mediaType : media.media_type
+
+  return (
+    <div className="w-12 h-8 rounded overflow-hidden bg-muted flex items-center justify-center">
+      {showImage ? (
+        <img
+          src={source.url}
+          alt={media.original_filename}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={() => setErrored(true)}
+        />
+      ) : (
+        <span className="text-muted-foreground">
+          {fallbackMediaType === 'video' ? <Film size={14} /> : <ImageIcon size={14} />}
+        </span>
+      )}
+    </div>
+  )
 }
 
 export function DataTable({
@@ -125,6 +141,7 @@ export function DataTable({
                   }}
                   onChange={(e) => handleSelectAll(e.target.checked)}
                   className="rounded border-border"
+                  aria-label="Select all media"
                 />
               </th>
               
@@ -184,37 +201,13 @@ export function DataTable({
                       checked={isSelected}
                       onChange={(e) => handleSelectItem(item.id, e.target.checked)}
                       className="rounded border-border"
+                      aria-label={`Select ${item.original_filename}`}
                     />
                   </td>
                   
                   {/* Thumbnail */}
                   <td className="p-3">
-                    <div className="w-12 h-8 rounded overflow-hidden bg-muted flex items-center justify-center">
-                      {item.file ? (
-                        item.media_type === 'video' ? (
-                          <div className="text-muted-foreground">
-                            <Film size={14} />
-                          </div>
-                        ) : (
-                          <img
-                            src={item.file}
-                            alt={item.original_filename}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none'
-                              const parent = e.currentTarget.parentElement
-                              if (parent) {
-                                parent.innerHTML = '<span class="text-xs text-muted-foreground">IMG</span>'
-                              }
-                            }}
-                          />
-                        )
-                      ) : (
-                        <span className="text-xs text-muted-foreground">
-                          {item.media_type === 'video' ? 'VID' : 'IMG'}
-                        </span>
-                      )}
-                    </div>
+                    <ThumbnailCell media={item} />
                   </td>
                   
                   {/* Filename */}
@@ -245,7 +238,7 @@ export function DataTable({
                   
                   {/* Status */}
                   <td className="p-3">
-                    <Badge className={cn("text-xs", getStatusColor(item.status))}>
+                    <Badge className={cn("text-xs", statusBadgeClasses(item.status))}>
                       {item.status}
                     </Badge>
                   </td>

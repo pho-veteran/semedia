@@ -188,8 +188,8 @@ export function MediaDetailPage({
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Skeleton className="h-8 w-32 mb-6" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-32" />
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6">
           <div className="space-y-6">
             <Skeleton className="h-12 w-full" />
@@ -204,8 +204,8 @@ export function MediaDetailPage({
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
           <ArrowLeft size={16} className="mr-1" />
           Back to Library
         </Button>
@@ -220,8 +220,8 @@ export function MediaDetailPage({
 
   if (!detail) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
           <ArrowLeft size={16} className="mr-1" />
           Back to Library
         </Button>
@@ -237,17 +237,17 @@ export function MediaDetailPage({
   const isVideo = detail.media_type === 'video'
 
   return (
-    <div className="max-w-7xl mx-auto flex flex-col gap-6 animate-fade-in">
+    <div className="flex flex-col gap-6 animate-fade-in">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground hover:text-foreground -ml-1">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
           <ArrowLeft size={15} className="mr-1" />
           Back
         </Button>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <span>Library</span>
-          <span>/</span>
+          <span aria-hidden="true">/</span>
           <span className="text-foreground font-medium truncate max-w-[200px]">{detail.original_filename}</span>
-        </div>
+        </nav>
       </div>
 
       <div className={cn(

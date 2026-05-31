@@ -41,7 +41,7 @@ export function DashboardPage({
             <span className="gradient-text">Semantic</span> Media
           </h1>
         </div>
-        <p className="text-muted-foreground leading-relaxed whitespace-nowrap">
+        <p className="text-muted-foreground leading-relaxed">
           Upload images and videos — find anything instantly with AI-powered semantic search.
         </p>
       </header>

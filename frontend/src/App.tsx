@@ -1,6 +1,5 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
 import { toast, Toaster } from 'sonner'
-import './App.css'
 import {
   deleteMediaById,
   getMediaDetail,

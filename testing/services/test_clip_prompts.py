@@ -1,4 +1,4 @@
-"""Torch-free unit tests for CLIP prompt templating (Phase 12 B2)."""
+"""Torch-free unit tests for CLIP prompt templating."""
 
 from semedia_shared.clip_service import TEXT_PROMPT_TEMPLATES, build_text_prompts
 

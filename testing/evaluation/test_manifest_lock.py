@@ -9,8 +9,8 @@ def test_all_assets_are_manifested():
     manifest_file = evaluation_dir / "asset_manifest.json"
     assets_dir = evaluation_dir / "assets"
 
-    assert manifest_file.exists(), "Phase 7 requires testing/evaluation/asset_manifest.json"
-    assert assets_dir.exists(), "Phase 7 requires testing/evaluation/assets/"
+    assert manifest_file.exists(), "Expected testing/evaluation/asset_manifest.json to exist"
+    assert assets_dir.exists(), "Expected testing/evaluation/assets/ to exist"
 
     manifest = json.loads(manifest_file.read_text())
     manifested_filenames = {item["filename"] for item in manifest}

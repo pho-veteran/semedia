@@ -540,18 +540,18 @@ def test_compare_reports_flags_metric_regressions():
 
 
 
-def _load_phase7_queries() -> list[dict]:
+def _load_queries() -> list[dict]:
     queries_file = Path(__file__).with_name("queries.json")
     return load_queries(queries_file)
 
 
-def _load_phase7_manifest() -> list[dict]:
+def _load_manifest() -> list[dict]:
     manifest_file = Path(__file__).with_name("asset_manifest.json")
     return json.loads(manifest_file.read_text())
 
 
-def test_queries_dataset_meets_phase7_task2_coverage_requirements():
-    queries = _load_phase7_queries()
+def test_queries_dataset_meets_coverage_requirements():
+    queries = _load_queries()
     judged_queries = [query for query in queries if query.get("judged")]
     judged_by_type = {
         query_type: [query for query in judged_queries if query.get("query_type") == query_type]
@@ -568,7 +568,7 @@ def test_queries_dataset_meets_phase7_task2_coverage_requirements():
         if "near-miss" in query.get("tags", [])
     ]
 
-    assert len(judged_queries) >= 100, "Phase 7 Task 2 requires at least 100 judged queries"
+    assert len(judged_queries) >= 100, "Expected at least 100 judged queries"
     assert len(judged_by_type["object"]) >= 25, "Need at least 25 object queries"
     assert len(judged_by_type["action"]) >= 25, "Need at least 25 action queries"
     assert len(judged_by_type["scene"]) >= 25, "Need at least 25 scene queries"
@@ -611,8 +611,8 @@ def test_run_evaluation_includes_explicitly_judged_queries_with_no_relevant_item
     assert results["mean_ndcg@10"] == 0.0
 
 
-def test_queries_dataset_uses_phase7_task2_schema_and_manual_notes():
-    queries = _load_phase7_queries()
+def test_queries_dataset_uses_expected_schema_and_manual_notes():
+    queries = _load_queries()
     judged_queries = [query for query in queries if query.get("judged")]
     required_fields = {
         "query_id",
@@ -645,8 +645,8 @@ def test_queries_dataset_uses_phase7_task2_schema_and_manual_notes():
 
 
 def test_queries_dataset_ground_truth_matches_manifest_and_negative_queries_stay_generic():
-    queries = _load_phase7_queries()
-    manifest = _load_phase7_manifest()
+    queries = _load_queries()
+    manifest = _load_manifest()
     judged_queries = [query for query in queries if query.get("judged")]
     corpus_size = len(manifest)
     manifest_asset_tokens = {
@@ -715,7 +715,7 @@ def test_queries_dataset_ground_truth_matches_manifest_and_negative_queries_stay
             assert query["notes"].strip(), f"Positive query {query['query_id']} must explain manual judgment"
             assert query["query_text"].strip().lower() != "negative", "Query text must be descriptive"
 
-    assert len(judged_queries) >= 100, "Phase 7 Task 2 requires at least 100 judged queries"
+    assert len(judged_queries) >= 100, "Expected at least 100 judged queries"
 
 
 def test_asset_manifest_lists_a_large_locked_corpus():
@@ -723,8 +723,8 @@ def test_asset_manifest_lists_a_large_locked_corpus():
     manifest_file = evaluation_dir / "asset_manifest.json"
     assets_dir = evaluation_dir / "assets"
 
-    assert manifest_file.exists(), "Phase 7 requires testing/evaluation/asset_manifest.json"
-    assert assets_dir.exists(), "Phase 7 requires testing/evaluation/assets/"
+    assert manifest_file.exists(), "Expected testing/evaluation/asset_manifest.json to exist"
+    assert assets_dir.exists(), "Expected testing/evaluation/assets/ to exist"
 
     manifest = json.loads(manifest_file.read_text())
 

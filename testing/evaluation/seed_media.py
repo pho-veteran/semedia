@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Seed the media library with test assets for Phase 1 baseline evaluation.
+Seed the media library with locked benchmark assets for evaluation.
 """
 from __future__ import annotations
 

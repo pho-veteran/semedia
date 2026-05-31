@@ -11,3 +11,6 @@ storage/
 /.claude/
 # Codegraph
 /.codegraph/
+# Editor
+/.kiro/
+/.vscode/

@@ -94,7 +94,8 @@ Finally, I would like to thank my friends, classmates, and family for their enco
 - Figure 2-15. Media item lifecycle state diagram
 - Figure 2-16. Video scene processing state diagram
 - Figure 2-17. Keyword index lifecycle state diagram
-- Figure 2-18. Semedia class diagram
+- Figure 2-18. Evaluation run lifecycle state diagram
+- Figure 2-19. Semedia class diagram
 - Figure 3-1. General interface layout of Semedia
 - Figure 3-2. Media library interface
 - Figure 3-3. Upload media interface
@@ -103,6 +104,8 @@ Finally, I would like to thank my friends, classmates, and family for their enco
 - Figure 3-6. Grouped video scene results
 - Figure 3-7. Image search interface
 - Figure 3-8. Media detail interface
+- Figure 3-9. Evaluation page showing headline metrics and per-query drill-down
+- Figure 3-10. Per-query result cards with badges, sub-scores, explanation, and expected results
 
 ---
 
@@ -116,7 +119,9 @@ Finally, I would like to thank my friends, classmates, and family for their enco
 | CLIP | Contrastive Language-Image Pre-training |
 | CNN | Convolutional Neural Network |
 | CRUD | Create, Read, Update, Delete |
+| CUDA | Compute Unified Device Architecture |
 | DB | Database |
+| ER | Entity-Relationship |
 | GPU | Graphics Processing Unit |
 | HTTP | HyperText Transfer Protocol |
 | IDF | Inverse Document Frequency |
@@ -129,6 +134,8 @@ Finally, I would like to thank my friends, classmates, and family for their enco
 | ORM | Object-Relational Mapping |
 | REST | Representational State Transfer |
 | SQL | Structured Query Language |
+| SSE | Server-Sent Events |
+| SVG | Scalable Vector Graphics |
 | TF | Term Frequency |
 | TF-IDF | Term Frequency-Inverse Document Frequency |
 | UI | User Interface |
@@ -185,6 +192,7 @@ This architecture separates concerns clearly. Uploading, processing, retrieval, 
 
 **Figure 1-1. Overall architecture of the Semedia semantic media search system.**
 
+
 ## 1.2 Video Scene Detection and PySceneDetect
 
 Video scene detection is the process of dividing a video into meaningful temporal segments based on changes in visual content. A long video often contains multiple scenes, each showing different objects, locations, or actions. If the entire video is treated as one search item, important details may be hidden and retrieval precision becomes lower. Scene-level indexing solves this problem by allowing the system to identify and store smaller visual units that better match the user's search intent.
@@ -193,17 +201,24 @@ A common approach to scene detection is to compare consecutive frames and identi
 
 Semedia applies scene detection as part of its media processing workflow. When a video is uploaded, the system first reads its duration and then applies an adaptive threshold strategy so that short and long videos are handled appropriately. After detecting scene boundaries, the system extracts a representative keyframe near the middle of each scene. This keyframe acts as the visual summary of that segment and is later used for caption generation, embedding extraction, and thumbnail display. For each detected scene, the system stores the scene index, start time, end time, keyframe path, thumbnail path, caption, and embedding.
 
+In addition to single-keyframe extraction, the system employs multi-frame scene embedding to produce more robust visual representations. For each detected scene, N frames are sampled uniformly across the scene duration (controlled by the `SCENE_FRAME_SAMPLE_COUNT` environment variable, default N=3). Each sampled frame is independently encoded through the CLIP visual encoder, and the resulting N embedding vectors are mean-pooled and L2-normalized to produce a single scene embedding. This approach captures more visual diversity within a scene compared to relying on a single keyframe, which reduces the risk of missing important content that appears only briefly. The mean-pooled embedding better represents the overall semantic content of the scene and improves retrieval accuracy for queries that match non-keyframe moments.
+
 PySceneDetect works together with supporting tools such as OpenCV, which is used for reading video frames and saving representative images. Through this process, raw video data is transformed into structured scene records that can participate in the same search pipeline as images. Therefore, scene detection is a key bridge between video storage and fine-grained video retrieval in Semedia.
 
 **Figure 1-2. Video processing pipeline from raw video to searchable scenes.**
+
 
 ## 1.3 BLIP Captioning and CLIP Embeddings
 
 Two core AI techniques in Semedia are automatic caption generation and semantic embedding extraction. These tasks are handled by BLIP and CLIP, which play different but complementary roles in representing visual content.
 
-BLIP, short for Bootstrapping Language-Image Pre-training, is a vision-language model that can generate natural-language descriptions from images. In Semedia, BLIP is used to produce captions for uploaded images and for keyframes extracted from video scenes. These captions help convert visual information into text, which is useful for keyword-based search and for display in the user interface. A generated caption can describe objects, simple actions, and scene context, making the media easier to understand and retrieve through natural-language queries. In practice, the system also applies caption cleanup, normalization, and retry rules for weak captions in order to improve quality and consistency.
+BLIP, short for Bootstrapping Language-Image Pre-training, is a vision-language model that can generate natural-language descriptions from images. In Semedia, BLIP is used to produce captions for uploaded images and for keyframes extracted from video scenes. These captions help convert visual information into text, which is useful for keyword-based search and for display in the user interface. A generated caption can describe objects, simple actions, and scene context, making the media easier to understand and retrieve through natural-language queries. In practice, the system also applies caption cleanup, normalization, and retry rules for weak captions in order to improve quality and consistency. Specifically, when `CAPTION_ENABLE_WEAK_FILTERING=1` is set, the captioning pipeline detects low-quality or generic captions and retries generation with adjusted parameters, discarding results that remain below a quality threshold. This weak-filtering mechanism helps ensure that the keyword index and search explanations are built from meaningful descriptions rather than degenerate model outputs.
 
 CLIP, short for Contrastive Language-Image Pre-training, is a multimodal model that maps images and text into a shared embedding space. In this space, semantically related texts and images are placed closer together. This property allows Semedia to compare a text query with image embeddings, or to compare an example image with stored media embeddings. The similarity between embeddings is measured with cosine similarity, which gives a numerical indication of how closely two items are related in semantic meaning.
+
+To improve the quality of text query embeddings, the system applies prompt templating and ensembling during text encoding. Rather than encoding the raw query text directly, the system generates multiple prompt variants using three templates: `"{}"`, `"a photo of {}"`, and `"a picture of {}"`. Each variant is encoded independently through the CLIP text encoder, and the resulting embedding vectors are mean-pooled to produce a single query embedding. This ensembling technique enriches the query representation by capturing slightly different semantic framings of the same concept, which helps the model match a broader range of relevant images. The approach is inspired by the original CLIP paper's prompt engineering strategy and provides measurable retrieval improvements without additional computational cost at indexing time.
+
+Another important aspect of CLIP integration is cosine similarity calibration. Raw CLIP cosine similarity scores occupy a compressed range: unrelated image-text pairs typically score around 0.15, while strongly matching pairs rarely exceed 0.40. This narrow dynamic range makes it difficult to combine vector scores with TF-IDF keyword scores in a hybrid retrieval system, because the two signals operate on incompatible scales. To address this, Semedia applies a fixed affine transform that maps the observed CLIP score range [0.15, 0.40] to the normalized range [0, 1]. This calibration ensures that vector similarity scores and keyword relevance scores are directly comparable at the fusion stage, enabling the weighted combination to produce meaningful hybrid rankings without one signal dominating the other.
 
 The combination of BLIP and CLIP is important because the two models support different retrieval signals. BLIP provides human-readable textual descriptions that strengthen keyword matching and explanation, while CLIP provides dense semantic vectors that support broader meaning-based matching even when exact words are absent. For example, a text query may still retrieve a relevant image if the semantic content is similar, even when the generated caption does not contain the same exact phrase. In the same way, image-based search becomes possible because the query image and stored media can be compared directly in the shared CLIP space.
 
@@ -211,19 +226,25 @@ Supporting tools such as PyTorch and Hugging Face Transformers are used to load 
 
 **Figure 1-3. BLIP and CLIP roles in media understanding and semantic retrieval.**
 
+
 ## 1.4 TF-IDF, Hybrid Retrieval, Ranking, and Evaluation
 
 After captions and embeddings are generated, the next step is retrieval and ranking. Semedia combines classical information retrieval methods with semantic similarity methods in order to improve result quality.
 
 TF-IDF, which stands for Term Frequency-Inverse Document Frequency, is a well-known technique for keyword-based retrieval. Term Frequency measures how often a word appears in a document, while Inverse Document Frequency reduces the weight of terms that are too common across the entire corpus. As a result, TF-IDF gives higher importance to terms that are distinctive in a particular document. In Semedia, the text corpus is formed mainly from captions of images and video scenes. These captions are indexed so that text queries can retrieve relevant media through lexical matching. Instead of rebuilding the keyword index for every query, the system persists keyword index artifacts and reloads them when needed, which improves stability and efficiency.
 
-However, TF-IDF alone is not enough for semantic search. Keyword retrieval is effective when the user's query contains words that also appear in captions, but it may fail when the wording differs or when the user expresses a concept indirectly. For this reason, Semedia also uses vector retrieval based on CLIP embeddings. Vector search captures semantic similarity, while TF-IDF captures lexical evidence. The system combines both through hybrid retrieval, where vector scores and keyword scores are merged into a broader candidate set before final ranking.
+However, TF-IDF alone is not enough for semantic search. Keyword retrieval is effective when the user's query contains words that also appear in captions, but it may fail when the wording differs or when the user expresses a concept indirectly. For this reason, Semedia also uses vector retrieval based on CLIP embeddings. Vector search captures semantic similarity, while TF-IDF captures lexical evidence. The system combines both through hybrid retrieval, where vector scores and keyword scores are merged into a broader candidate set before final ranking. To ensure sufficient candidate coverage, the system applies a candidate multiplier of 3×, retrieving three times the final requested limit as candidates from each retrieval channel before ranking and filtering reduce the set to the desired output size.
 
-Ranking in Semedia is designed to make the final results more reliable and interpretable. The system normalizes scores into the range of `[0, 1]`, applies weighted fusion between semantic and keyword signals, and then performs reranking when stronger evidence is available, such as an exact phrase appearing in a caption. In addition, diversity limits are used to prevent many scenes from the same video from dominating the result page. This is especially important in video search, where one long file may produce many similar scene-level candidates. Explanation fields are also returned so that users can better understand why a result matched.
+Ranking in Semedia is designed to make the final results more reliable and interpretable. The system applies a specific weighted fusion formula: `score = 0.7 × vector_score + 0.3 × keyword_score`, where vector_score is the calibrated CLIP cosine similarity and keyword_score is the normalized TF-IDF relevance. After initial fusion, the system performs reranking boosts based on additional evidence: an exact phrase match found in the caption adds +0.08 to the fused score, and a rich caption exceeding 50 characters adds +0.02. Diversity constraints are then applied to prevent result-page domination by a single source: a maximum of 2 scenes per parent media item are retained, and caption deduplication removes near-identical entries. Finally, all scores are clamped to the range [0, 1] before serialization. A configurable relevance score floor (`SEARCH_MIN_SCORE`, default 0.0) allows filtering out low-confidence results when stricter precision is desired.
 
-Evaluation is a necessary part of the retrieval pipeline because search quality should be measured systematically rather than judged only by visual inspection. Semedia uses a locked benchmark corpus and a judged query set to support reproducible experiments. Typical evaluation metrics include Precision@10, which measures how many top results are relevant; Recall@10, which measures how many relevant results are retrieved; MRR, which reflects how early the first relevant result appears; and NDCG@10, which evaluates ranking quality while considering position. With this framework, retrieval improvements can be validated objectively and future regressions can be detected more easily.
+The system also supports optional cross-encoder reranking using the `cross-encoder/ms-marco-MiniLM-L-6-v2` model. When enabled, this stage re-scores the top candidates by jointly encoding the query and each candidate's caption through a cross-attention transformer, which can capture finer semantic relationships than independent bi-encoder similarity. However, empirical evaluation on the current corpus showed that cross-encoder reranking actually regressed retrieval quality (MRR dropped from 0.87 to 0.76), likely because the short generated captions do not provide enough textual signal for the cross-encoder to improve upon the already-calibrated CLIP scores. For this reason, cross-encoder reranking is kept default-OFF and is available only as an experimental option for future corpus configurations where it may prove beneficial.
+
+Evaluation is a necessary part of the retrieval pipeline because search quality should be measured systematically rather than judged only by visual inspection. Semedia uses a locked benchmark corpus of 35 assets (28 images and 7 videos) together with a judged query set of 120 queries (97 positive queries with known relevant items and 23 negative queries with no relevant items in the corpus) to support reproducible experiments. The evaluation framework applies video-granularity scene credit (E5 policy), meaning that retrieving any scene belonging to the correct video counts as a hit for that video-level relevance judgment. This policy reflects the practical user experience where finding the right video through any of its scenes is a successful retrieval outcome.
+
+Typical evaluation metrics include Recall@10, which measures how many relevant results are retrieved in the top 10; MRR (Mean Reciprocal Rank), which reflects how early the first relevant result appears; NDCG@10, which evaluates ranking quality while considering position; and Precision@10, which measures the fraction of top-10 results that are relevant. The current metrics snapshot as of the latest evaluation run shows: R@10 = 99.0%, MRR = 92.5%, NDCG@10 = 94.1%, and P@10 = 11.1%. It is important to note that P@10 is not a meaningful signal in this benchmark configuration because most queries have only approximately 1 relevant item in the 35-asset corpus, which structurally caps P@10 at around 10% regardless of retrieval quality. With this evaluation framework, retrieval improvements can be validated objectively and future regressions can be detected more easily.
 
 **Figure 1-4. Hybrid retrieval and ranking flow.**
+
 
 ## 1.5 Implementation Technologies: FastAPI, React, Docker, PostgreSQL, and SQLAlchemy
 
@@ -231,17 +252,18 @@ Semedia is implemented as a modern web-based software system that combines backe
 
 FastAPI is used to build the backend services. It is a Python web framework designed for high-performance API development and is well suited for service-based systems. FastAPI supports type-hint-based request validation, clear response modeling, and automatic OpenAPI documentation, which helps make APIs easier to develop, test, and maintain. In Semedia, FastAPI is used to implement upload endpoints, health checks, media management operations, search endpoints, and service-to-service communication.
 
-React is used for the frontend because it follows a component-based and declarative programming model. A React application is built from reusable interface components, and the screen updates automatically when application state changes. This model is appropriate for interactive features such as media upload forms, text search, image search, result cards, and media detail views. In Semedia, React works together with TypeScript and Vite. TypeScript improves code reliability through static typing, while Vite provides fast development and build tooling.
+React 19 is used for the frontend because it follows a component-based and declarative programming model. A React application is built from reusable interface components, and the screen updates automatically when application state changes. This model is appropriate for interactive features such as media upload forms, text search, image search, result cards, and media detail views. In Semedia, React works together with TypeScript and Vite 8. TypeScript improves code reliability through static typing, while Vite 8 provides fast development and build tooling with modern ESM-based bundling. The frontend design system is built on Tailwind CSS 4 for utility-first styling and Radix UI for accessible, unstyled primitive components. Tailwind CSS 4 provides a constraint-based design approach that ensures visual consistency across the application, while Radix UI supplies headless components for dialogs, dropdowns, tooltips, and other interactive patterns that meet accessibility standards out of the box.
 
-Docker and Docker Compose are used to package and run the full application stack in a reproducible environment. Since Semedia includes multiple services and supporting dependencies, containerization makes development, testing, and deployment more consistent. Through Docker Compose, the gateway API, media worker, search API, frontend, and database can be started and managed together. This is particularly useful for a system that depends on machine learning libraries and multiple backend processes.
+Docker and Docker Compose are used to package and run the full application stack in a reproducible environment. Since Semedia includes multiple services and supporting dependencies, containerization makes development, testing, and deployment more consistent. Through Docker Compose, the gateway API, media worker, search API, frontend, and database can be started and managed together. This is particularly useful for a system that depends on machine learning libraries and multiple backend processes. For GPU-accelerated inference, the deployment relies on the NVIDIA Container Toolkit, which exposes host GPU devices to Docker containers and enables the media worker to run CUDA-based PyTorch operations without manual driver configuration inside the container.
 
-PostgreSQL is used as the primary relational database for persistent application data. It stores media records, video-scene records, index metadata, and other structured information needed by the system. SQLAlchemy is used as the ORM layer that maps Python classes to relational tables and supports database operations in a structured, object-oriented way. In Semedia, key models include `MediaItem`, `VideoScene`, and `KeywordIndexArtifact`. Using PostgreSQL together with SQLAlchemy helps maintain a clean separation between application logic and database interaction.
+PostgreSQL is used as the primary relational database for persistent application data. It stores media records, video-scene records, index metadata, evaluation runs, and other structured information needed by the system. SQLAlchemy is used as the ORM layer that maps Python classes to relational tables and supports database operations in a structured, object-oriented way. In Semedia, key models include `MediaItem`, `VideoScene`, `KeywordIndexArtifact`, and `EvaluationRun`. Using PostgreSQL together with SQLAlchemy helps maintain a clean separation between application logic and database interaction.
 
 In addition to the main technologies, several supporting tools are important in the implementation. PyTorch and Hugging Face Transformers provide the runtime environment for BLIP and CLIP. PySceneDetect and OpenCV support video segmentation and keyframe extraction. scikit-learn supports TF-IDF vectorization and keyword retrieval, while NumPy assists with vector calculations and similarity operations. For testing and quality assurance, backend services use pytest and the frontend uses Vitest. Together, these technologies form the practical foundation that enables Semedia to operate as a complete semantic media search system.
 
 **Figure 1-5. Main technologies used in Semedia.**
 
 ---
+
 
 # Chapter 2. SYSTEM ANALYSIS AND DESIGN
 
@@ -286,9 +308,16 @@ The major functional requirements of Semedia are summarized in Table 2-1.
 | REQ-4.3 | Provide search interfaces | The frontend shall provide text and image search interfaces. | User |
 | REQ-4.4 | Display result details | The frontend shall display result score, caption, media type, and explanation. | User |
 | REQ-4.5 | Group video scenes | The frontend shall group scenes that belong to the same video. | User |
+| REQ-4.6 | Provide evaluation interface | The frontend shall provide a dedicated evaluation page with headline metrics, per-query drill-down, and saved evaluation runs. | Admin |
+| REQ-4.7 | Support dark/light theme | The frontend shall support theme switching between dark and light modes. | User |
+| REQ-4.8 | Keyboard navigation | The frontend shall support keyboard shortcuts for common actions such as search focus, navigation, and modal dismissal. | User |
 | REQ-5.1 | Include benchmark corpus | The project shall include a fixed benchmark corpus. | Admin |
 | REQ-5.2 | Include judged queries | The project shall include judged evaluation queries. | Admin |
 | REQ-5.3 | Report quality metrics | The project shall support reporting search-quality metrics. | Admin |
+| REQ-5.4 | Run evaluation from the frontend UI | The Admin shall be able to trigger and view evaluation runs directly from the web interface without requiring command-line access. | Admin |
+| REQ-5.5 | Persist evaluation runs | Evaluation results shall be saved to the database and can be reloaded for later review and comparison. | Admin |
+| REQ-5.6 | Display expected (ground-truth) results | The evaluation UI shall show the expected relevant items for each query so the Admin can compare actual retrieval against ground truth. | Admin |
+
 
 ## 2.2 Use Case Diagram
 
@@ -312,6 +341,7 @@ rectangle Semedia {
   usecase "View Media" as UC4
   usecase "Delete Media" as UC5
   usecase "Run Benchmark Evaluation" as UC6
+  usecase "View Evaluation Results" as UC7
 }
 
 User --> UC1
@@ -320,6 +350,7 @@ User --> UC3
 User --> UC4
 User --> UC5
 Admin --> UC6
+Admin --> UC7
 @enduml
 ```
 
@@ -479,6 +510,7 @@ I5 --> I6
 | Main Flow | 1. Admin starts the evaluation workflow. 2. The system runs benchmark queries against the current stack. 3. The system calculates evaluation metrics. 4. The system outputs a report for review. |
 | Alternative Flow | If evaluation data is missing or the run fails, the system reports the error and no final report is produced. |
 
+
 ## 2.3 Activity Diagrams
 
 This section presents the main operational workflows of Semedia. Activity diagrams should be created in PlantUML or StarUML so they follow standard UML notation and are easy to export into the final report.
@@ -530,17 +562,28 @@ partition "Media Worker" {
     :Set status to PROCESSING;
     if (Media type is image?) then (Yes)
       :Generate image caption;
+      if (Caption weak?) then (Yes)
+        :Retry with stronger beam search;
+      else (No)
+      endif
       :Generate image embedding;
       :Update MediaItem caption and embedding;
     else (Video)
       :Get video duration;
-      :Detect scenes;
+      :Detect scenes (adaptive threshold);
       if (Scenes detected?) then (Yes)
         :Extract keyframe and thumbnail for each scene;
+        :Sample N=3 frames per scene;
         :Generate captions for keyframes;
-        :Generate embeddings for keyframes;
+        if (Caption weak?) then (Yes)
+          :Retry with stronger beam search;
+        else (No)
+        endif
+        :Generate CLIP embeddings for sampled frames;
+        :Mean-pool and L2-normalize scene embeddings;
         :Create VideoScene records;
         :Update MediaItem summary caption;
+        :Clean up temporary sample frames;
       else (No)
         :Raise processing error;
       endif
@@ -578,13 +621,17 @@ partition "Gateway API" {
 partition "Search API" {
   :Validate query and top_k;
   if (Valid request?) then (Yes)
-    :Request text embedding;
+    :Request text embedding (3 prompt templates, mean-pooled);
     :Ensure keyword index is current;
-    :Generate vector candidates;
-    :Generate keyword candidates;
-    :Merge candidates;
-    :Rank, rerank, and diversify results;
-    :Serialize response;
+    :Generate vector candidates (3× candidate multiplier);
+    :Calibrate CLIP cosines ([0.15,0.40] → [0,1]);
+    :Generate keyword candidates (TF-IDF cosine);
+    :Merge candidates by key;
+    :Fuse scores (0.7×vector + 0.3×keyword);
+    :Rerank (exact phrase +0.08, rich caption +0.02);
+    :Apply diversity (max 2 per media, dedupe captions);
+    :Filter by min score floor;
+    :Serialize response with explanations;
   else (No)
     :Return validation error;
   endif
@@ -671,6 +718,7 @@ stop
 
 **Figure 2-9. View and delete media activity diagram.**
 
+
 ## 2.4 Sequence Diagrams
 
 Sequence diagrams should be drafted in Mermaid for faster iteration and easier text-based maintenance during report preparation.
@@ -725,17 +773,28 @@ sequenceDiagram
         alt Image media
             Worker->>Caption: Generate image caption
             Caption-->>Worker: Caption
+            Worker->>Caption: Check weak-caption filter
+            opt Caption is weak
+                Worker->>Caption: Retry with stronger beams
+                Caption-->>Worker: Improved caption
+            end
             Worker->>CLIP: Generate image embedding
             CLIP-->>Worker: Embedding
             Worker->>DB: Update MediaItem
         else Video media
-            Worker->>Video: Detect scenes and extract keyframes
+            Worker->>Video: Detect scenes (adaptive threshold)
+            Video-->>Worker: Scene boundaries
+            Worker->>Video: Extract keyframes + thumbnails
             Video-->>Worker: Scene assets
+            Worker->>Video: Sample N=3 frames per scene
+            Video-->>Worker: Sample frames
             Worker->>Caption: Generate scene captions
-            Caption-->>Worker: Captions
-            Worker->>CLIP: Generate scene embeddings
-            CLIP-->>Worker: Embeddings
+            Caption-->>Worker: Captions (with weak-filter retry)
+            Worker->>CLIP: Encode sampled frames (batched)
+            CLIP-->>Worker: Per-frame embeddings
+            Worker->>Worker: Mean-pool + L2-normalize per scene
             Worker->>DB: Replace VideoScene rows
+            Worker->>Worker: Clean up temporary sample frames
         end
         Worker->>DB: Mark processing completed
         Worker->>Index: Rebuild keyword index
@@ -762,15 +821,17 @@ sequenceDiagram
     Frontend->>Gateway: Submit search request
     Gateway->>Search: Forward query
     Search->>Search: Validate request
-    Search->>CLIP: Generate query embedding
-    CLIP-->>Search: Query embedding
+    Search->>CLIP: Generate query embedding (3 prompt templates)
+    CLIP-->>Search: Mean-pooled query embedding
     Search->>Index: Load keyword index
     Index-->>Search: TF-IDF candidates
     Search->>DB: Load searchable records
     DB-->>Search: Media and scene data
-    Search->>Rank: Merge, rank, and diversify candidates
+    Search->>Search: Compute CLIP cosines + calibrate [0.15,0.40]→[0,1]
+    Search->>Rank: Merge, fuse (0.7v+0.3k), rerank, diversify
     Rank-->>Search: Ranked results
-    Search-->>Gateway: Search response
+    Search->>Search: Apply min-score floor
+    Search-->>Gateway: Search response with explanations
     Gateway-->>Frontend: Search response
     Frontend-->>User: Display ranked results
 ```
@@ -836,6 +897,7 @@ sequenceDiagram
 ```
 
 **Figure 2-14. View and delete media sequence diagram.**
+
 
 ## 2.5 State Diagrams
 
@@ -904,9 +966,27 @@ EmptyArtifact --> [*]
 
 **Figure 2-17. Keyword index lifecycle state diagram.**
 
+### 2.5.4 EvaluationRun Lifecycle State Diagram
+
+```plantuml
+@startuml
+title EvaluationRun Lifecycle State Diagram
+[*] --> Running : admin triggers evaluation
+Running : SSE streaming progress\nto frontend
+Running --> Completed : all queries evaluated
+Completed : results persisted\nto database
+Running --> Error : evaluation failure
+Error --> [*]
+Completed --> [*]
+@enduml
+```
+
+**Figure 2-18. Evaluation run lifecycle state diagram.**
+
+
 ## 2.6 Class Diagram
 
-This class diagram focuses on the three central persistence models of Semedia. `MediaItem` is the parent entity for uploaded files, `VideoScene` stores scene-level search data for videos, and `KeywordIndexArtifact` stores the serialized keyword-search index derived from completed media content.
+This class diagram focuses on the central persistence models of Semedia. `MediaItem` is the parent entity for uploaded files, `VideoScene` stores scene-level search data for videos, `KeywordIndexArtifact` stores the serialized keyword-search index derived from completed media content, and `EvaluationRun` stores the results of benchmark evaluation runs triggered from the frontend.
 
 ```plantuml
 @startuml
@@ -941,6 +1021,8 @@ class MediaItem {
   +error_message: text
   +uploaded_at: datetime
   +updated_at: datetime
+  +enqueued_at: datetime?
+  +processed_at: datetime?
 }
 
 class VideoScene {
@@ -954,6 +1036,8 @@ class VideoScene {
   +caption: text
   +embedding: list<float>?
   +index_key: string
+  +created_at: datetime
+  +updated_at: datetime
 }
 
 class KeywordIndexArtifact {
@@ -966,17 +1050,29 @@ class KeywordIndexArtifact {
   +updated_at: datetime
 }
 
+class EvaluationRun {
+  +id: int
+  +created_at: datetime
+  +top_k: int
+  +compare_to: string?
+  +num_queries: int
+  +summary: json
+  +results: json
+}
+
 MediaItem "1" *-- "0..*" VideoScene : scenes
 MediaItem --> MediaType
 MediaItem --> ProcessingStatus
 KeywordIndexArtifact ..> MediaItem : indexes image captions
 KeywordIndexArtifact ..> VideoScene : indexes scene captions
+EvaluationRun ..> MediaItem : evaluates retrieval of
 @enduml
 ```
 
-**Figure 2-18. Semedia class diagram.**
+**Figure 2-19. Semedia class diagram.**
 
 ---
+
 
 # Chapter 3. IMPLEMENTATION
 
@@ -984,19 +1080,27 @@ KeywordIndexArtifact ..> VideoScene : indexes scene captions
 
 Semedia was implemented as a web-based semantic media search system for image and video retrieval. The system integrates a React frontend with FastAPI-based backend services to provide a complete workflow from media upload to automatic processing and search result presentation. From the user's perspective, the application exposes a unified interface for managing a media library, submitting text or image queries, reviewing ranked results, and inspecting detailed information for each media item.
 
-The interface is organized into four main functional areas: the media dashboard and library view, the upload interface, the search workspace, and the media detail view. This structure keeps media management, retrieval, and result inspection easy to distinguish while still supporting the full semantic search workflow.
+The interface is organized into several main functional areas: the dashboard overview, the media library view, the upload interface, the search workspace, the media detail view, and the evaluation page. Navigation between these areas is provided through a persistent sidebar layout (AppLayout + Sidebar), which gives users quick access to all major sections of the application without losing context. This structure keeps media management, retrieval, evaluation, and result inspection easy to distinguish while still supporting the full semantic search workflow.
 
 From an implementation standpoint, the frontend communicates with the backend through HTTP APIs. When a user uploads a media file, the gateway service stores the file and creates a media record. The media worker then automatically performs image or video processing tasks. For video content, the worker applies scene detection to segment the video into meaningful scenes. For visual understanding, the system generates textual captions using the BLIP model and produces multimodal embeddings using the CLIP model. Search requests are then handled through a hybrid retrieval pipeline that combines TF-IDF keyword matching and vector similarity scoring. The ranking layer further applies score normalization, explanation generation, and diversity constraints so that results are both interpretable and less repetitive.
 
+The system also includes a dedicated Search Quality Evaluation interface accessible from the sidebar. This page allows the admin to run the 120-query benchmark against the live stack, view real-time progress via SSE (Server-Sent Events) streaming, inspect per-query results with thumbnails and expected ground-truth items, and load previously saved evaluation runs for comparison. The evaluation interface bridges the gap between backend metrics and visual understanding of retrieval quality, making it possible to identify specific failure cases and track improvements over time without leaving the browser.
+
+The application supports dark and light theme modes, allowing users to switch between visual themes according to their preference or environment. Keyboard shortcuts are implemented for common actions such as focusing the search input, navigating between results, and dismissing modals, which improves efficiency for power users and supports accessibility requirements.
+
 **Figure 3-1. General interface layout of Semedia.**
+
+![Figure 3-1. General interface layout of Semedia](figures/figure-3-1-general-interface.png)
 
 ## 3.2 User Interface
 
-The user interface of Semedia was developed with React and TypeScript to provide a responsive and interactive user experience. Users can upload or manage media, perform searches, review ranked results, and inspect details of relevant items through a consistent set of screens.
+The user interface of Semedia was developed with React 19 and TypeScript to provide a responsive and interactive user experience. The application uses a sidebar navigation layout (AppLayout + Sidebar) that provides persistent access to the Dashboard, Library, Search, Upload, and Evaluation pages. Users can upload or manage media, perform searches, review ranked results, run evaluation benchmarks, and inspect details of relevant items through a consistent set of screens.
 
-The dashboard and media library serve as the entry point of the application. This screen presents the current media collection and allows users to observe uploaded items together with their processing state and basic metadata. By organizing content in a visual list or grid, the interface makes it easier to verify whether files have been ingested successfully and whether they are available for retrieval operations.
+The Dashboard page serves as the entry point of the application, providing an overview of system status including total media count, processing statistics, and recent activity. The media library is accessible as a separate dedicated page that presents the current media collection and allows users to observe uploaded items together with their processing state and basic metadata. By organizing content in a visual list or grid, the interface makes it easier to verify whether files have been ingested successfully and whether they are available for retrieval operations.
 
 [Insert Figure 3-2 here: Media library interface]
+
+![Figure 3-2. Media library interface](figures/figure-3-2-media-library.png)
 
 **Figure 3-2. Media library interface showing uploaded media items and system status.**
 
@@ -1004,11 +1108,15 @@ The upload interface enables users to add image and video files to the system. T
 
 [Insert Figure 3-3 here: Upload media interface]
 
+![Figure 3-3. Upload interface](figures/figure-3-3-upload-interface.png)
+
 **Figure 3-3. Upload interface used to submit image and video files for automatic processing.**
 
 For text-based retrieval, the interface provides a search bar where users can enter natural-language queries. This feature allows users to search media collections semantically rather than relying only on file names or manually assigned tags. After submission, the frontend sends the query to the backend search service, which combines TF-IDF keyword retrieval and CLIP-based vector retrieval. The resulting list is sorted through hybrid ranking logic so that visually and semantically relevant items are prioritized.
 
 [Insert Figure 3-4 here: Text search interface]
+
+![Figure 3-4. Text search interface](figures/figure-3-4-text-search.png)
 
 **Figure 3-4. Text search interface for natural-language semantic retrieval.**
 
@@ -1016,11 +1124,15 @@ Each retrieved result is presented through a result card. The result card summar
 
 [Insert Figure 3-5 here: Search result card]
 
+![Figure 3-5. Result card with score explanation](figures/figure-3-5-result-card.png)
+
 **Figure 3-5. Result card displaying preview content, metadata, normalized score, and relevance explanation.**
 
 A notable user-interface feature of Semedia is grouped video-scene retrieval. Rather than treating each video as a single undifferentiated object, the system allows individual scenes to be retrieved and displayed while still preserving their relationship to the original video. In the interface, grouped scene results help users identify which segment of a video is relevant to the query. This design is especially useful for long videos, where only a short scene may correspond to the search intent.
 
 [Insert Figure 3-6 here: Grouped video scenes]
+
+![Figure 3-6. Grouped video-scene results](figures/figure-3-6-grouped-scenes.png)
 
 **Figure 3-6. Grouped video-scene results showing scene-level matches within a parent video.**
 
@@ -1028,17 +1140,40 @@ In addition to text search, the interface supports image-based search. In this w
 
 [Insert Figure 3-7 here: Image search interface]
 
+![Figure 3-7. Image search interface](figures/figure-3-7-image-search.png)
+
 **Figure 3-7. Image search interface for retrieving visually similar media items.**
 
 The media detail page provides a more comprehensive view of a selected item. On this screen, users can inspect file metadata, captions generated by the BLIP model, processing status, preview images, and, in the case of videos, scene-specific information. This detailed view is important for validating search outcomes because it gives users access to the underlying descriptive and structural information used by the retrieval pipeline.
 
 [Insert Figure 3-8 here: Media detail interface]
 
+![Figure 3-8. Media detail interface](figures/figure-3-8-media-detail.png)
+
 **Figure 3-8. Media detail interface showing metadata, generated captions, and scene-related information.**
 
-In summary, the user interface of Semedia supports the complete lifecycle of semantic media retrieval. It enables media upload and management, automatic processing feedback, natural-language and image-based search, scene-level exploration of videos, and detailed result inspection.
+### 3.2.1 Evaluation Interface
+
+The Evaluation page provides a dedicated interface for running and reviewing search quality benchmarks. From this page, the admin can trigger a full evaluation run against the 120-query benchmark set, observe real-time progress through SSE streaming, and review the final results with headline metrics (R@10, MRR, NDCG@10, P@10) displayed prominently at the top of the page.
+
+[Insert Figure 3-9 here: Evaluation page]
+
+![Figure 3-9. Evaluation page showing headline metrics and per-query drill-down](figures/figure-3-9-evaluation-page.png)
+
+**Figure 3-9. Evaluation page showing headline metrics and per-query drill-down.**
+
+Below the headline metrics, the interface presents a per-query drill-down where each query is shown as an expandable card. Each card displays the query text, its relevance judgment, the retrieval outcome (hit or miss), and badges indicating sub-scores (vector score, keyword score, fused score). When expanded, the card shows the actual retrieved results with thumbnails alongside the expected (ground-truth) results, enabling direct visual comparison between what was retrieved and what should have been retrieved. Previously saved evaluation runs can be loaded from the database for historical comparison.
+
+[Insert Figure 3-10 here: Per-query result cards]
+
+![Figure 3-10. Per-query result cards with badges, sub-scores, explanation, and expected results](figures/figure-3-10-eval-drilldown.png)
+
+**Figure 3-10. Per-query result cards with badges, sub-scores, explanation, and expected results.**
+
+In summary, the user interface of Semedia supports the complete lifecycle of semantic media retrieval. It enables media upload and management, automatic processing feedback, natural-language and image-based search, scene-level exploration of videos, detailed result inspection, and systematic evaluation of search quality through a dedicated benchmark interface.
 
 ---
+
 
 # CONCLUSION
 
@@ -1050,7 +1185,11 @@ For video content, the system applies scene detection so that long videos can be
 
 Another major achievement is the implementation of TF-IDF keyword retrieval together with vector-based semantic retrieval. Instead of depending on only one search paradigm, the system uses hybrid ranking to combine the strengths of lexical matching and embedding similarity. In addition, the project implements score normalization, explanation fields, and diversity control, which improve the interpretability and practical usefulness of search results.
 
-From the software engineering perspective, the project also achieved a complete frontend implementation using React, providing an accessible user interface for media library management, upload, text search, image search, scene browsing, and result inspection. Finally, an important non-visual achievement is the benchmark and evaluation infrastructure. By establishing a judged query set, baseline reports, and evaluation workflows, the project created a foundation for measuring retrieval quality systematically and for supporting future search improvements on empirical evidence rather than intuition alone.
+A significant achievement is the search quality improvement trajectory demonstrated through systematic evaluation. From Phase 7 baseline metrics (R@10 = 42.9%, MRR = 31.1%) to the current state (R@10 = 99.0%, MRR = 92.5%), the system achieved substantial retrieval improvements through a combination of CLIP cosine similarity calibration, prompt template ensembling, multi-frame scene embedding, and video-granularity scene credit. These improvements were validated through the locked benchmark corpus and judged query set, ensuring that gains are reproducible and not artifacts of overfitting to specific examples. As part of this process, a corpus integrity audit identified 8 mismatched assets in the benchmark set that were replaced to ensure evaluation validity.
+
+The project also includes a full-featured evaluation interface that allows running benchmarks directly from the browser, viewing per-query results with expected ground-truth comparisons, observing real-time progress via SSE streaming, and persisting evaluation runs to the database for later review and historical comparison. This capability bridges the gap between automated metrics and human understanding of retrieval behavior, making it practical to identify specific failure patterns and validate improvements without command-line tooling.
+
+From the software engineering perspective, the project also achieved a complete frontend implementation using React 19, providing an accessible user interface for media library management, upload, text search, image search, scene browsing, result inspection, and evaluation. Finally, an important non-visual achievement is the benchmark and evaluation infrastructure. By establishing a judged query set, baseline reports, and evaluation workflows, the project created a foundation for measuring retrieval quality systematically and for supporting future search improvements on empirical evidence rather than intuition alone.
 
 Overall, the obtained results demonstrate that Semedia is not merely a prototype for storing media files, but a functional semantic retrieval system that integrates modern computer vision, natural language processing, hybrid information retrieval, and practical web application development.
 
@@ -1061,6 +1200,12 @@ Although the project achieved its primary objectives, several limitations remain
 Second, the keyword retrieval component relies on a TF-IDF index that must be rebuilt when the searchable library changes significantly. While this method is effective and transparent, the rebuild cost may become more noticeable for larger datasets. Future work should consider more incremental indexing strategies or more advanced hybrid search infrastructures.
 
 Third, retrieval quality depends heavily on the quality of generated captions and pretrained models. BLIP and CLIP provide strong baseline performance, but they are not perfect for all domains. Caption errors, domain mismatch, and limited action understanding can negatively affect search accuracy. This limitation is particularly visible in complex video actions, where subtle events or temporal relationships may not be fully captured. Therefore, future development should explore stronger captioning models, better temporal understanding, and richer multimodal representations.
+
+Regarding cross-encoder reranking, the system includes an implementation using the `cross-encoder/ms-marco-MiniLM-L-6-v2` model, but empirical evaluation demonstrated that it regresses retrieval quality on the current corpus. Specifically, MRR dropped from 0.87 to 0.76 when cross-encoder reranking was enabled, likely because the short generated captions do not provide sufficient textual signal for the cross-encoder to improve upon the already-calibrated bi-encoder scores. For this reason, cross-encoder reranking is kept default-OFF. Future work with longer or richer document representations may benefit from this stage.
+
+A structural limitation of the current benchmark is that P@10 is capped at approximately 10% because most queries have only 1 relevant item in the 35-asset corpus. This is a benchmark design limitation rather than a retrieval failure — the system correctly retrieves the relevant item but cannot achieve high precision when the denominator (10 results) far exceeds the number of relevant items (typically 1). Expanding the corpus size and relevance annotations would provide a more informative precision signal.
+
+Another evaluation limitation concerns negative queries. The negative-query false-positive rate remains 100% at the default `SEARCH_MIN_SCORE=0.0` setting, meaning all queries return results regardless of whether relevant content exists in the corpus. Tuning the score floor to 0.3 reduces the false-positive rate to 74%, but this introduces a trade-off with recall on positive queries. Future work should explore adaptive thresholding or confidence-based abstention strategies to better handle queries with no relevant results.
 
 Another limitation concerns semantic coverage. The current system does not yet incorporate OCR, detailed object recognition, or explicit action recognition as first-class retrieval signals. Adding these capabilities would improve performance for queries involving text inside images, specific objects, or fine-grained events in videos. Similarly, query expansion techniques could help the system handle broader vocabulary variation and ambiguous user intent.
 
@@ -1091,7 +1236,8 @@ In conclusion, Semedia provides a strong foundation for semantic media search, b
 15. Semedia Project Documentation. `docs/TASKS.md` — implementation task tracking and progress summary.
 16. Semedia Project Documentation. `docs/metrics/search_quality_history.md` — baseline and tuning history.
 17. Semedia Project Documentation. `docs/metrics/search_tuning_checklist.md` — search parameter tuning workflow.
-18. Semedia Project Documentation. `docs/metrics/evaluation_benchmark_rubric.md` — evaluation rubric and relevance judgment guidance.
+18. Semedia Project Documentation. `docs/metrics/evaluation_benchmark_rubric.md` — evaluation rubric, relevance judgment guidance, and metric interpretation caveats (P@10 cap, video-granularity scene credit).
 19. Semedia Project Documentation. `docs/implementations/phase2-processing-indexing.md` — processing and indexing implementation notes.
 20. Semedia Project Documentation. `docs/implementations/phase4-caption-quality.md` — caption quality implementation notes.
 21. Semedia Project Documentation. `docs/implementations/phase6-ranking-explanations.md` — ranking and explanation implementation notes.
+22. Semedia Project Documentation. `docs/implementations/accuracy-audit-2026-05-29.md` — accuracy audit and corpus integrity remediation.

@@ -125,17 +125,12 @@ export function MediaDetailPage({
     setError(null)
     try {
       await deleteMediaById(mediaId)
-      toast.success('Media deleted', {
-        duration: 5000,
-        action: {
-          label: 'Undo',
-          onClick: () => {
-            toast.info('Undo functionality requires backend support - not yet implemented')
-          },
-        },
-      })
-      await onDeleted(mediaId)
       setDeleteDialogOpen(false)
+      toast.success('Media deleted', { duration: 4000 })
+      try {
+        await onDeleted(mediaId)
+      } catch {
+      }
     } catch (requestError) {
       const errorMessage = requestError instanceof Error ? requestError.message : 'Delete failed.'
       setError(errorMessage)
@@ -193,8 +188,8 @@ export function MediaDetailPage({
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Skeleton className="h-8 w-32 mb-6" />
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-32" />
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6">
           <div className="space-y-6">
             <Skeleton className="h-12 w-full" />
@@ -209,8 +204,8 @@ export function MediaDetailPage({
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
           <ArrowLeft size={16} className="mr-1" />
           Back to Library
         </Button>
@@ -225,8 +220,8 @@ export function MediaDetailPage({
 
   if (!detail) {
     return (
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-        <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
           <ArrowLeft size={16} className="mr-1" />
           Back to Library
         </Button>
@@ -242,28 +237,26 @@ export function MediaDetailPage({
   const isVideo = detail.media_type === 'video'
 
   return (
-    <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-8">
-      {/* Breadcrumb and Back Button */}
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft size={16} className="mr-1" />
-          Back to Library
+    <div className="flex flex-col gap-6 animate-fade-in">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-1">
+          <ArrowLeft size={15} className="mr-1" />
+          Back
         </Button>
-        <div className="text-sm text-muted-foreground mt-2">
-          Dashboard &gt; Library &gt; Media Detail
-        </div>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span>Library</span>
+          <span aria-hidden="true">/</span>
+          <span className="text-foreground font-medium truncate max-w-[200px]">{detail.original_filename}</span>
+        </nav>
       </div>
 
-      {/* 2-column layout for videos, single column for images */}
       <div className={cn(
         "grid gap-6",
         isVideo && detail.scenes.length > 0 ? "lg:grid-cols-[1.5fr_1fr]" : "grid-cols-1"
       )}>
-        {/* Left column: Media + Caption */}
-        <div className="space-y-6">
-          {/* Metadata header */}
+        <div className="space-y-5">
           <div className="space-y-3">
-            <h1 className="text-2xl font-bold text-foreground truncate">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground line-clamp-2">
               {detail.original_filename}
             </h1>
             
@@ -305,7 +298,6 @@ export function MediaDetailPage({
             </div>
           </div>
           
-          {/* Media preview */}
           <Card>
             <CardContent className="p-0">
               {isVideo ? (
@@ -329,7 +321,6 @@ export function MediaDetailPage({
             </CardContent>
           </Card>
           
-          {/* Caption */}
           <Card>
             <CardHeader>
               <CardTitle>Caption</CardTitle>
@@ -342,7 +333,6 @@ export function MediaDetailPage({
           </Card>
         </div>
         
-        {/* Right column: Video Scenes (only for videos with scenes) */}
         {isVideo && detail.scenes.length > 0 && (
           <div>
             <Card className="lg:sticky lg:top-6">
@@ -383,7 +373,6 @@ export function MediaDetailPage({
           </div>
         )}
 
-        {/* Empty state for videos without scenes */}
         {isVideo && detail.scenes.length === 0 && (
           <div>
             <Card>
@@ -399,7 +388,6 @@ export function MediaDetailPage({
         )}
       </div>
 
-      {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

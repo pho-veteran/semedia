@@ -317,20 +317,20 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
   const totalItems = filteredAndSortedMedia.length
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">Media Library</h1>
-        <p className="text-muted-foreground">
-          {totalItems} {totalItems === 1 ? 'item' : 'items'}
+    <div className="space-y-6 animate-fade-in">
+      <header className="space-y-1.5">
+        <h1 className="text-4xl font-bold tracking-tight">
+          <span className="gradient-text">Media</span> Library
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          <span className="num-tabular">{totalItems}</span>
+          {' '}{totalItems === 1 ? 'item' : 'items'} in your library
         </p>
-      </div>
+      </header>
 
-      {/* Filter Toolbar */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4">
-            {/* Top row: Search + Filters + View toggle */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex-1 min-w-[200px]">
                 <Input
@@ -383,7 +383,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
               </div>
             </div>
             
-            {/* Bottom row: Active filter chips */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-muted-foreground">Active:</span>
@@ -401,7 +400,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
         </CardContent>
       </Card>
 
-      {/* Bulk Actions Toolbar */}
       {selectedIds.length > 0 && (
         <Card className="border-primary">
           <CardContent className="py-3">
@@ -427,7 +425,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
         </Card>
       )}
 
-      {/* Content Area */}
       {totalItems === 0 ? (
         <EmptyState
           variant="custom"
@@ -449,7 +446,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {paginatedMedia.map((item) => (
             <div key={item.id} className="relative">
-              {/* Selection checkbox overlay */}
               <div className="absolute top-2 left-2 z-10">
                 <input
                   type="checkbox"
@@ -462,6 +458,7 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
                     }
                   }}
                   className="rounded border-border bg-background/80 backdrop-blur-sm"
+                  aria-label={`Select ${item.original_filename}`}
                 />
               </div>
               <MediaCard
@@ -485,7 +482,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
         />
       )}
 
-      {/* Pagination Controls */}
       {totalItems > 0 && (
         <Card>
           <CardContent className="py-4">
@@ -530,7 +526,6 @@ export function LibraryPage({ onOpenMedia, onDeleteMedia }: LibraryPageProps) {
         </Card>
       )}
 
-      {/* Bulk Delete Confirmation Dialog */}
       <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>

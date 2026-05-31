@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui'
+import { shouldShowBoostBadge } from '@/lib/presentation'
 import { cn } from '@/lib/utils'
 import type { SearchResult } from '../types/api'
 import { formatScore, formatTimeRange, toAbsoluteUrl } from '../utils/format'
@@ -110,7 +111,7 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
         
         {/* Relevance score chip - top left */}
         <div className="absolute top-2 left-2">
-          <Badge className="bg-black/60 text-white text-xs px-2 py-0.5 rounded-full border-0">
+          <Badge className="bg-foreground/70 text-background text-xs px-2 py-0.5 rounded-full border-0">
             {formatScore(item.score)}
           </Badge>
         </div>
@@ -118,7 +119,7 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
         {/* Time range chip - top right (for video scenes) */}
         {hasVideoScene && item.start_time !== null && item.end_time !== null && (
           <div className="absolute top-2 right-2">
-            <Badge className="bg-black/60 text-white text-xs px-2 py-0.5 rounded-full border-0">
+            <Badge className="bg-foreground/70 text-background text-xs px-2 py-0.5 rounded-full border-0">
               {formatTimeRange(item.start_time, item.end_time)}
             </Badge>
           </div>
@@ -134,26 +135,26 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
 
           <div className="flex flex-wrap gap-2">
             {getIdentityBadges(item).map((badge) => (
-              <Badge key={badge} variant={badge === 'Scene' ? 'secondary' : 'outline'} className="text-[11px]">
+              <Badge key={badge} variant={badge === 'Scene' ? 'secondary' : 'outline'} className="text-xs">
                 {badge}
               </Badge>
             ))}
             {getContextBadges(item).map((badge) => (
-              <Badge key={badge} variant="outline" className="text-[11px] bg-primary/5 border-primary/20">
+              <Badge key={badge} variant="outline" className="text-xs bg-accent text-accent-foreground">
                 {badge}
               </Badge>
             ))}
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-xs">
               Semantic {formatScore(item.vector_score)}
             </Badge>
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-xs">
               Caption {formatScore(item.keyword_score)}
             </Badge>
-            {item.explanation.rerank_boost > 0 && (
-              <Badge variant="outline" className="text-[11px] bg-green-500/5 border-green-500/20 text-foreground">
+            {shouldShowBoostBadge(item.explanation.rerank_boost) && (
+              <Badge variant="outline" className="text-xs bg-success/10 border-success/20 text-foreground">
                 Boost {formatBoost(item.explanation.rerank_boost)}
               </Badge>
             )}

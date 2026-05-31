@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react'
-import { ChevronDown, X, RotateCcw } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { ChevronDown, X, RotateCcw, ExternalLink, Film, ImageIcon } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import {
+  statusToBadgeVariant,
+  statusProgressBarClass,
+  resolveUploadPreviewSource,
+  type StatusBadgeVariant,
+} from '@/lib/presentation'
 import type { UploadQueueItem } from '../types/api'
-import { formatDateTime } from '../utils/format'
 
 interface UploadQueuePanelProps {
   items: UploadQueueItem[]
@@ -12,185 +17,248 @@ interface UploadQueuePanelProps {
   onRetryUpload?: (id: string) => void
 }
 
-const getStatusColor = (status: UploadQueueItem['status']) => {
-  switch (status) {
-    case 'uploading':
-      return 'bg-blue-100 text-blue-700'
-    case 'processing':
-      return 'bg-orange-100 text-orange-700'
-    case 'completed':
-      return 'bg-green-100 text-green-700'
-    case 'failed':
-      return 'bg-red-100 text-red-700'
-    default:
-      return 'bg-gray-100 text-gray-700'
-  }
+// Ánh xạ variant ngữ nghĩa (nguồn chân lý trong lib/presentation) -> tên variant
+// của UI_Primitive Badge. Cả hai cho ra cùng lớp token, đây chỉ là lớp tên gọi.
+const BADGE_VARIANT_BY_SEMANTIC: Record<
+  StatusBadgeVariant,
+  'uploading' | 'processing' | 'completed' | 'failed'
+> = {
+  info: 'uploading',
+  warning: 'processing',
+  success: 'completed',
+  destructive: 'failed',
 }
 
-interface UploadItemProps {
+const statusLabel: Record<UploadQueueItem['status'], string> = {
+  uploading:  'Uploading',
+  pending:    'Pending',
+  processing: 'Processing',
+  completed:  'Done',
+  failed:     'Failed',
+}
+
+function VideoPreviewFrame({ src }: { src: string }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+  const attemptedRef = useRef(false)
+
+  useEffect(() => {
+    if (attemptedRef.current) return
+    attemptedRef.current = true
+
+    const video = document.createElement('video')
+    video.preload = 'auto'  // blob URLs are local — no network cost
+    video.muted = true
+    video.playsInline = true
+
+    const cleanup = () => {
+      video.removeAttribute('src')
+      video.load()
+    }
+
+    video.addEventListener('loadedmetadata', () => {
+      video.currentTime = Math.min(0.5, video.duration || 0)
+    }, { once: true })
+
+    video.addEventListener('seeked', () => {
+      try {
+        const vw = video.videoWidth || 320
+        const vh = video.videoHeight || 180
+        const scale = Math.min(1, 320 / vw)
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(vw * scale)
+        canvas.height = Math.round(vh * scale)
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+          setThumbUrl(canvas.toDataURL('image/jpeg', 0.7))
+        }
+      } catch {
+        setFailed(true)
+      }
+      cleanup()
+    }, { once: true })
+
+    video.addEventListener('error', () => { setFailed(true); cleanup() }, { once: true })
+
+    const timeout = setTimeout(() => { setFailed(true); cleanup() }, 5000)
+    video.addEventListener('seeked', () => clearTimeout(timeout), { once: true })
+    video.addEventListener('error', () => clearTimeout(timeout), { once: true })
+
+    video.src = src
+  }, [src])
+
+  if (thumbUrl) {
+    return <img src={thumbUrl} alt="Video preview" className="w-full h-full object-cover" />
+  }
+
+  if (failed) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <Film size={20} className="text-muted-foreground/50" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-muted animate-pulse">
+      <Film size={20} className="text-muted-foreground/30" />
+    </div>
+  )
+}
+
+function UploadItemCard({
+  item,
+  onOpenMedia,
+  onCancel,
+  onRetry,
+}: {
   item: UploadQueueItem
   onOpenMedia: (mediaId: number) => void
   onCancel?: (id: string) => void
   onRetry?: (id: string) => void
-}
-
-function UploadItemCard({ item, onOpenMedia, onCancel, onRetry }: UploadItemProps) {
+}) {
   const [shouldRemove, setShouldRemove] = useState(false)
   const [, setTick] = useState(0)
 
-  // Auto-remove completed items immediately
   useEffect(() => {
-    if (item.status === 'completed') {
-      setShouldRemove(true)
-    }
+    if (item.status === 'completed') setShouldRemove(true)
   }, [item.status])
-
-  // Cleanup preview URL only when component is actually removed
-  useEffect(() => {
-    return () => {
-      if (shouldRemove && item.previewUrl) {
-        URL.revokeObjectURL(item.previewUrl)
-      }
-    }
-  }, [shouldRemove, item.previewUrl])
 
   useEffect(() => {
     if (item.status === 'uploading' || item.status === 'processing') {
-      const interval = setInterval(() => {
-        setTick(tick => tick + 1)
-      }, 1000) 
-      
+      const interval = setInterval(() => setTick(t => t + 1), 1000)
       return () => clearInterval(interval)
     }
   }, [item.status])
 
+  useEffect(() => () => {
+    if (shouldRemove && item.previewUrl) URL.revokeObjectURL(item.previewUrl)
+  }, [shouldRemove, item.previewUrl])
+
   const getProgress = () => {
     switch (item.status) {
-      case 'uploading':
-        const uploadTime = Date.now() - new Date(item.updatedAt).getTime()
-        const estimatedUploadTime = 10000 
-        const uploadProgress = Math.min(Math.floor((uploadTime / estimatedUploadTime) * 70), 70)
-        return Math.max(uploadProgress, 10) 
-      case 'processing':
-        const processingTime = Date.now() - new Date(item.updatedAt).getTime()
-        const estimatedProcessingTime = 15000 
-        const processingProgress = Math.min(Math.floor((processingTime / estimatedProcessingTime) * 20), 20)
-        return Math.max(70 + processingProgress, 70) 
-      case 'completed':
-        return 100
-      case 'failed':
-        return 0
-      default:
-        return 0
+      case 'uploading': {
+        const ms = Date.now() - new Date(item.updatedAt).getTime()
+        return Math.max(Math.min(Math.floor((ms / 10000) * 70), 70), 10)
+      }
+      case 'processing': {
+        const ms = Date.now() - new Date(item.updatedAt).getTime()
+        return Math.max(70 + Math.min(Math.floor((ms / 15000) * 20), 20), 70)
+      }
+      case 'completed': return 100
+      default: return 0
     }
   }
+
+  if (shouldRemove) return null
 
   const progress = getProgress()
   const canCancel = item.status === 'uploading' || item.status === 'processing'
   const canRetry = item.status === 'failed'
-
-  if (shouldRemove) {
-    return null
-  }
+  const previewSource = resolveUploadPreviewSource(item)
+  const badgeVariant = BADGE_VARIANT_BY_SEMANTIC[statusToBadgeVariant(item.status)]
 
   return (
-    <div 
-      className={cn(
-        "flex-shrink-0 w-[280px] rounded-lg border border-border bg-card p-3",
-        "animate-in slide-in-from-top-2 duration-250"
-      )}
-    >
-
-      <div className="relative mb-3">
-        <div className="w-full aspect-video bg-muted rounded-md overflow-hidden flex items-center justify-center">
-          {item.previewUrl ? (
-            item.mediaType === 'video' ? (
-              <video 
-                src={item.previewUrl} 
-                className="w-full h-full object-cover"
-                preload="metadata"
-                muted
-                playsInline
-              />
-            ) : (
-              <img 
-                src={item.previewUrl} 
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
-            )
+    <div className={cn(
+      "flex-shrink-0 w-[264px] rounded-2xl border border-border/60 bg-card overflow-hidden",
+      "shadow-sm animate-fade-in-up",
+    )}>
+      <div className="relative w-full aspect-video bg-muted overflow-hidden">
+        {previewSource.kind === 'image' ? (
+          item.mediaType === 'video' ? (
+            <VideoPreviewFrame src={previewSource.url} />
           ) : (
-            <span className="text-xs text-muted-foreground font-medium">
-              {item.name.split('.').pop()?.toUpperCase()}
-            </span>
-          )}
+            <img
+              src={previewSource.url}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            {previewSource.mediaType === 'video'
+              ? <Film size={24} strokeWidth={1.5} />
+              : <ImageIcon size={24} strokeWidth={1.5} />
+            }
+          </div>
+        )}
+
+        <div className="absolute top-2 left-2">
+          <Badge variant={badgeVariant} className="text-[10px] h-5 px-2 shadow-sm">
+            {statusLabel[item.status]}
+          </Badge>
         </div>
-        <Badge className={cn("absolute top-2 left-2 text-xs", getStatusColor(item.status))}>
-          {item.status === 'uploading' ? 'Uploading' :
-           item.status === 'processing' ? 'Processing' :
-           item.status === 'completed' ? 'Completed' :
-           item.status === 'failed' ? 'Failed' : 'Pending'}
-        </Badge>
       </div>
-      
-      {/* File info */}
-      <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground truncate" title={item.name}>
+
+      <div className="px-3 pt-3 pb-3 space-y-2.5">
+        <p
+          className="text-[13px] font-medium text-foreground truncate"
+          title={item.name}
+        >
           {item.name}
         </p>
-        
-        {/* Progress bar */}
-        <div className="w-full bg-muted rounded-full h-2">
-          <div 
-            className={cn(
-              "h-2 rounded-full transition-all duration-300",
-              item.status === 'uploading' ? 'bg-blue-500' :
-              item.status === 'processing' ? 'bg-orange-500' :
-              item.status === 'completed' ? 'bg-green-500' :
-              item.status === 'failed' ? 'bg-red-500' : 'bg-gray-500'
+
+        <div className="space-y-1">
+          <div className="w-full rounded-full h-1.5 bg-muted overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                statusProgressBarClass(item.status),
+                (item.status === 'uploading' || item.status === 'processing') && "relative overflow-hidden",
+              )}
+              style={{ width: `${progress}%` }}
+            >
+              {(item.status === 'uploading' || item.status === 'processing') && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-shimmer"
+                  style={{ backgroundSize: '200% 100%' }}
+                />
+              )}
+            </div>
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground num-tabular">
+            <span>{progress}%</span>
+            {item.status === 'failed' && item.message && (
+              <span className="text-destructive truncate max-w-[140px]" title={item.message}>
+                {item.message}
+              </span>
             )}
-            style={{ width: `${progress}%` }}
-          />
+          </div>
         </div>
-        
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{progress}%</span>
-          <span>{formatDateTime(item.updatedAt)}</span>
-        </div>
-        
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-1">
+
+        <div className="flex items-center gap-1.5">
           {canCancel && onCancel && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onCancel(item.id)}
-              className="flex-1 h-8"
+              className="h-7 px-2 text-xs text-muted-foreground flex-1"
             >
-              <X size={14} className="mr-1" />
+              <X size={12} className="mr-1" />
               Cancel
             </Button>
           )}
-          
           {canRetry && onRetry && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onRetry(item.id)}
-              className="flex-1 h-8"
+              className="h-7 px-2 text-xs flex-1"
             >
-              <RotateCcw size={14} className="mr-1" />
+              <RotateCcw size={12} className="mr-1" />
               Retry
             </Button>
           )}
-          
           {item.mediaId && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => onOpenMedia(item.mediaId!)}
-              className="flex-1 h-8"
+              className="h-7 px-2 text-xs flex-1"
             >
+              <ExternalLink size={12} className="mr-1" />
               Open
             </Button>
           )}
@@ -200,59 +268,67 @@ function UploadItemCard({ item, onOpenMedia, onCancel, onRetry }: UploadItemProp
   )
 }
 
-export function UploadQueuePanel({ 
-  items, 
-  onOpenMedia, 
-  onCancelUpload, 
-  onRetryUpload 
+export function UploadQueuePanel({
+  items,
+  onOpenMedia,
+  onCancelUpload,
+  onRetryUpload,
 }: UploadQueuePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-
-  // Filter out completed items
   const activeItems = items.filter(item => item.status !== 'completed')
 
-  // Don't render if no active items
-  if (activeItems.length === 0) {
-    return null
-  }
+  if (activeItems.length === 0) return null
+
+  const activeCount = activeItems.filter(i => i.status === 'uploading' || i.status === 'processing').length
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
+    <Card className="w-full overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg" aria-live="polite" aria-atomic="true">
-            Upload Queue ({activeItems.length})
-          </CardTitle>
+          <div className="flex items-center gap-2.5">
+            <CardTitle className="text-sm font-semibold">
+              Uploads
+            </CardTitle>
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="num-tabular">{activeItems.length}</span> item{activeItems.length !== 1 ? 's' : ''}
+              {activeCount > 0 && (
+                <>
+                  <span>·</span>
+                  <span className="text-brand num-tabular">{activeCount} active</span>
+                </>
+              )}
+            </span>
+          </div>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7"
             aria-label={isCollapsed ? 'Expand upload queue' : 'Collapse upload queue'}
           >
-            <ChevronDown 
-              size={16} 
+            <ChevronDown
+              size={14}
               className={cn(
                 "transition-transform duration-200",
                 isCollapsed && "rotate-180"
-              )} 
+              )}
             />
           </Button>
         </div>
       </CardHeader>
-      
+
       {!isCollapsed && (
-        <CardContent className="pt-0">
-          {/* Horizontal scroll container for upload items */}
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6">
-            {activeItems.map((item) => (
-              <UploadItemCard
-                key={item.id}
-                item={item}
-                onOpenMedia={onOpenMedia}
-                onCancel={onCancelUpload}
-                onRetry={onRetryUpload}
-              />
+        <CardContent className="pt-4">
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-6 px-6 snap-x snap-mandatory">
+            {activeItems.map(item => (
+              <div key={item.id} className="snap-start">
+                <UploadItemCard
+                  item={item}
+                  onOpenMedia={onOpenMedia}
+                  onCancel={onCancelUpload}
+                  onRetry={onRetryUpload}
+                />
+              </div>
             ))}
           </div>
         </CardContent>

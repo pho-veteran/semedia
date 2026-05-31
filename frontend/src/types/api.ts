@@ -12,6 +12,7 @@ export interface PaginatedResponse<T> {
 export interface MediaSummary {
   id: number
   file: string
+  thumbnail: string | null
   original_filename: string
   media_type: MediaType
   mime_type: string

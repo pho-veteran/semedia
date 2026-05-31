@@ -1,8 +1,22 @@
-import { Film } from 'lucide-react'
-import { Card, CardContent, Badge } from '@/components/ui'
+import { useState } from 'react'
+import { Film, Play, ImageIcon } from 'lucide-react'
+import { Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { resolveMediaPreviewSource } from '@/lib/presentation'
 import type { MediaSummary } from '../types/api'
 import { formatFileSize, formatRelativeTime, toAbsoluteUrl } from '../utils/format'
+
+function PreviewFallback({ mediaType }: { mediaType: 'image' | 'video' }) {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-muted">
+      {mediaType === 'video' ? (
+        <Film size={28} className="text-muted-foreground/50" />
+      ) : (
+        <ImageIcon size={28} className="text-muted-foreground/50" />
+      )}
+    </div>
+  )
+}
 
 interface MediaCardProps {
   media: MediaSummary
@@ -10,38 +24,33 @@ interface MediaCardProps {
   className?: string
 }
 
-const getStatusColor = (status: MediaSummary['status']) => {
-  switch (status) {
-    case 'completed':
-      return 'bg-green-100 text-green-700'
-    case 'processing':
-      return 'bg-orange-100 text-orange-700'
-    case 'failed':
-      return 'bg-red-100 text-red-700'
-    case 'pending':
-      return 'bg-gray-100 text-gray-700'
-    default:
-      return 'bg-gray-100 text-gray-700'
-  }
+const statusConfig: Record<MediaSummary['status'], { variant: 'completed' | 'processing' | 'failed' | 'uploading'; label: string }> = {
+  completed:  { variant: 'completed',  label: 'complete' },
+  processing: { variant: 'processing', label: 'Processing' },
+  failed:     { variant: 'failed',     label: 'Failed' },
+  pending:    { variant: 'uploading',  label: 'Pending' },
 }
 
 export function MediaCard({ media, onClick, className }: MediaCardProps) {
   const isVideo = media.media_type === 'video'
-  const mediaUrl = toAbsoluteUrl(media.file)
-  const hasValidThumbnail = mediaUrl && !mediaUrl.includes('placeholder')
-  
-  const handleClick = () => {
-    if (onClick) {
-      onClick(media.id)
-    }
-  }
+
+  const previewSource = resolveMediaPreviewSource(media)
+  const [imageFailed, setImageFailed] = useState(false)
+  const showImage = previewSource.kind === 'image' && !imageFailed
+
+  const status = statusConfig[media.status] ?? statusConfig.pending
+  const handleClick = () => onClick?.(media.id)
 
   return (
-    <Card 
+    <article
       className={cn(
-        "group cursor-pointer transition-all duration-150",
-        "hover:shadow-md hover:scale-[1.02]",
-        onClick && "focus:outline-none focus:ring-2 focus:ring-ring",
+        "group relative overflow-hidden rounded-2xl",
+        "bg-card border border-border/60",
+        "shadow-sm",
+        "transition-all duration-200 ease-smooth",
+        "hover:shadow-lg hover:-translate-y-0.5 hover:border-border",
+        onClick && "cursor-pointer",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className
       )}
       onClick={handleClick}
@@ -52,72 +61,77 @@ export function MediaCard({ media, onClick, className }: MediaCardProps) {
           handleClick()
         }
       }}
+      role={onClick ? "button" : undefined}
+      aria-label={onClick ? `Open ${media.original_filename}` : undefined}
     >
-      <CardContent className="p-0">
-        {/* Thumbnail with 16:10 aspect ratio */}
-        <div className="relative aspect-[16/10] overflow-hidden rounded-t-lg bg-muted">
-          {hasValidThumbnail ? (
-            <img
-              src={mediaUrl}
-              alt={media.original_filename}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                // Hide broken image on error
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted">
-              {isVideo ? (
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Film size={32} />
-                  {media.scene_count > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      {media.scene_count} scenes
-                    </Badge>
-                  )}
-                </div>
-              ) : (
-                <div className="text-muted-foreground text-sm">
-                  No preview
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        
-        {/* Content */}
-        <div className="p-4 space-y-3">
-          {/* Header with filename and status */}
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-1">
-                {media.original_filename}
-              </h3>
-              <Badge className={cn("text-xs flex-shrink-0", getStatusColor(media.status))}>
-                {media.status}
-              </Badge>
-            </div>
-            
-            {/* Metadata */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="capitalize">{media.media_type}</span>
-              <span>·</span>
-              <span>{formatFileSize(media.file_size)}</span>
-              <span>·</span>
-              <span>{formatRelativeTime(media.uploaded_at)}</span>
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        {showImage ? (
+          <img
+            src={toAbsoluteUrl(previewSource.url)}
+            alt={media.original_filename}
+            className={cn(
+              "w-full h-full object-cover",
+              "transition-transform duration-500 ease-smooth",
+              "group-hover:scale-[1.04]",
+            )}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <PreviewFallback mediaType={media.media_type} />
+        )}
+
+        {isVideo && onClick && (
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center",
+            "bg-black/0 group-hover:bg-black/30",
+            "transition-all duration-200",
+          )}>
+            <div className={cn(
+              "flex items-center justify-center",
+              "w-10 h-10 rounded-full bg-white/90 shadow-lg",
+              "opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100",
+              "transition-all duration-200 ease-spring",
+            )}>
+              <Play size={16} className="text-foreground ml-0.5" fill="currentColor" />
             </div>
           </div>
-          
-          {/* Caption excerpt */}
-          {media.caption && (
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {media.caption}
-            </p>
-          )}
+        )}
+
+        {isVideo && media.scene_count > 0 && (
+          <div className="absolute bottom-2 left-2">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-black/70 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white">
+              <Film size={9} />
+              {media.scene_count} scenes
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-3.5 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <h3 className="min-w-0 flex-1 font-medium text-[13px] leading-snug text-foreground truncate">
+            {media.original_filename}
+          </h3>
+          <Badge variant={status.variant} className="shrink-0 text-[10px] px-2 py-0 h-5">
+            {status.label}
+          </Badge>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground num-tabular">
+          <span className="capitalize">{media.media_type}</span>
+          <span className="text-border">·</span>
+          <span>{formatFileSize(media.file_size)}</span>
+          <span className="text-border">·</span>
+          <span>{formatRelativeTime(media.uploaded_at)}</span>
+        </div>
+
+        {media.caption && (
+          <p className="text-[12px] text-muted-foreground line-clamp-2 leading-relaxed">
+            {media.caption}
+          </p>
+        )}
+      </div>
+    </article>
   )
 }

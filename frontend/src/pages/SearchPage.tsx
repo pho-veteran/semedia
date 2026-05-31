@@ -311,7 +311,7 @@ export function SearchPage({ onOpenMedia, searchInputRef }: SearchPageProps) {
     searchedMode === 'image' ? `the image query "${searchedLabel}"` : `"${searchedLabel}"`
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="space-y-6">
       {/* Page Header */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Search Media</h1>

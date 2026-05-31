@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CloudUpload } from 'lucide-react'
+import { CloudUpload, ImageIcon, Film } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -20,31 +20,23 @@ export function UploadDropzone({ onFilesSelected, className, ...props }: UploadD
 
   const validateFiles = (files: File[]): File[] => {
     const validFiles: File[] = []
-    
     for (const file of files) {
       if (!SUPPORTED_TYPES.includes(file.type)) {
         toast.error(`File type not supported: ${file.name}`)
         continue
       }
-
       if (file.size > MAX_FILE_SIZE) {
-        toast.warning(`File exceeds 100MB - upload may be slow: ${file.name}`)
+        toast.warning(`File exceeds 100MB – upload may be slow: ${file.name}`)
       }
-      
       validFiles.push(file)
     }
-    
     return validFiles
   }
 
   const handleFiles = (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) {
-      return
-    }
-    
+    if (!fileList || fileList.length === 0) return
     const files = Array.from(fileList)
     const validFiles = validateFiles(files)
-    
     if (validFiles.length > 0) {
       onFilesSelected(validFiles)
     }
@@ -83,42 +75,86 @@ export function UploadDropzone({ onFilesSelected, className, ...props }: UploadD
   return (
     <div
       className={cn(
-        "relative min-h-[200px] rounded-lg border-2 border-dashed border-border bg-background",
-        "flex flex-col items-center justify-center p-8 text-center cursor-pointer",
-        "transition-colors duration-150",
-        isDragging && "border-primary bg-primary/5",
+        "relative overflow-hidden rounded-2xl",
+        "flex flex-col items-center justify-center gap-5",
+        "min-h-[200px] p-8 text-center",
+        "cursor-pointer select-none",
+        "border-2 border-dashed",
+        "transition-all duration-200 ease-smooth",
+        isDragging
+          ? [
+              "border-brand bg-brand/5",
+              "shadow-glow-sm animate-pulse-glow",
+              "scale-[1.01]",
+            ].join(" ")
+          : "border-border/60 bg-muted/30 hover:border-brand/40 hover:bg-brand/[0.02]",
         className
       )}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      aria-label="Upload files: click or drag and drop"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleClick()
+        }
+      }}
       {...props}
     >
-      <CloudUpload 
-        size={48} 
+      <div
+        aria-hidden="true"
         className={cn(
-          "text-muted-foreground mb-4",
-          isDragging && "text-primary"
-        )} 
-      />
-      
-      <div className="space-y-2">
-        <p className="text-lg font-medium text-foreground">
-          Drop files here or click to browse
-        </p>
-        <p className="text-sm text-muted-foreground">
-          PNG, JPG, WEBP, GIF, BMP · MP4, WebM, MOV
-        </p>
-      </div>
-      
-      <Button 
-        variant="outline" 
-        className="mt-4"
-        onClick={(e) => {
-          e.stopPropagation()
-          handleClick()
+          "absolute inset-0 -z-10 transition-opacity duration-300",
+          isDragging ? "opacity-100" : "opacity-0",
+        )}
+        style={{
+          background: "radial-gradient(ellipse at center, hsl(var(--brand) / 0.08) 0%, transparent 70%)",
         }}
+      />
+
+      <div className={cn(
+        "flex items-center justify-center w-14 h-14 rounded-2xl",
+        "transition-all duration-200 ease-spring",
+        isDragging
+          ? "bg-brand/15 text-brand scale-110"
+          : "bg-muted text-muted-foreground",
+      )}>
+        <CloudUpload size={28} strokeWidth={1.5} />
+      </div>
+
+      <div className="space-y-1.5 max-w-xs">
+        <p className={cn(
+          "text-base font-semibold transition-colors duration-150",
+          isDragging ? "text-brand" : "text-foreground",
+        )}>
+          {isDragging ? "Drop to upload" : "Drop files here"}
+        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          or click to browse your device
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-1.5 pt-1">
+          <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+            <ImageIcon size={10} />
+            PNG, JPG, WEBP, GIF
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+            <Film size={10} />
+            MP4, WebM, MOV
+          </span>
+        </div>
+      </div>
+
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-1 pointer-events-none"
+        tabIndex={-1}
+        aria-hidden="true"
       >
         Browse Files
       </Button>

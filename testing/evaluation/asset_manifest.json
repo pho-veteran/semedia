@@ -22,8 +22,8 @@
     "filename": "img-beach-01.jpg",
     "media_type": "image",
     "categories": ["outdoor", "beach", "coast", "water"],
-    "description": "Beach scene with shoreline and water.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Sandy beach with shoreline and breaking waves.",
+    "source": "Downloaded from Wikimedia Commons (File:DSCF1288 A quiet stretch of sandy beach at dusk ...) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for beach, coast, shoreline, and seaside queries."
   },
   {
@@ -40,8 +40,8 @@
     "filename": "img-book-stack-01.jpg",
     "media_type": "image",
     "categories": ["object", "books", "reading", "indoor"],
-    "description": "Stack of books or book-focused still life.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Tall stack of multicolored books on a table.",
+    "source": "Downloaded from Wikimedia Commons (File:Stack of multicolored books on a table.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for book, books, reading, and library-style queries."
   },
   {
@@ -49,8 +49,8 @@
     "filename": "img-bridge-river-01.jpg",
     "media_type": "image",
     "categories": ["outdoor", "bridge", "river", "landscape"],
-    "description": "Bridge spanning a river or waterway.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Stone bridge spanning a river.",
+    "source": "Downloaded from Wikimedia Commons (File:Stone Bridge Over River Tame, Hamstead Hill. - geograph.org.uk - 1301159.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for bridge, river, and waterside landscape queries."
   },
   {
@@ -184,8 +184,8 @@
     "filename": "img-red-car-01.jpg",
     "media_type": "image",
     "categories": ["vehicle", "car", "red", "street"],
-    "description": "Red car on a street or roadside in daylight.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Red Ferrari sports car on display.",
+    "source": "Downloaded from Wikimedia Commons (File:Red Ferrari sports car in HK 20190608 191049.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for red car and vehicle-color queries."
   },
   {
@@ -193,8 +193,8 @@
     "filename": "img-sailing-boat-01.jpg",
     "media_type": "image",
     "categories": ["boat", "sailboat", "water", "outdoor"],
-    "description": "Sailing boat or sailboat on open water.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Sailboat under sail on open water.",
+    "source": "Downloaded from Wikimedia Commons (File:Sonic 23 sailboat Gyp Sea 7980.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for sailboat, sailing, and boat-on-water queries."
   },
   {
@@ -202,8 +202,8 @@
     "filename": "img-snow-cabin-01.jpg",
     "media_type": "image",
     "categories": ["winter", "snow", "cabin", "outdoor"],
-    "description": "Snowy cabin or winter cabin scene.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Log cabin covered in snow in winter.",
+    "source": "Downloaded from Wikimedia Commons (File:Cabin on Blue Lake in UP.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for snow, winter cabin, and cold-weather scene queries."
   },
   {
@@ -220,8 +220,8 @@
     "filename": "img-tractor-01.jpg",
     "media_type": "image",
     "categories": ["vehicle", "tractor", "farm", "outdoor"],
-    "description": "Farm tractor or tractor vehicle outdoors.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Tractor on a track through farmland.",
+    "source": "Downloaded from Wikimedia Commons (File:Farm and tractor in Färlev.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for tractor, farm vehicle, and agriculture queries."
   },
   {
@@ -238,8 +238,8 @@
     "filename": "img-waterfall-01.jpg",
     "media_type": "image",
     "categories": ["nature", "waterfall", "water", "outdoor"],
-    "description": "Waterfall scene with flowing water.",
-    "source": "Downloaded from a Pexels photo URL and stored locally under testing/evaluation/assets/ for benchmark use.",
+    "description": "Tall waterfall plunging off a cliff (Sipi Falls).",
+    "source": "Downloaded from Wikimedia Commons (File:Sunset over Sipi Falls – Highland Cascade in Eastern Uganda.jpg) and stored locally under testing/evaluation/assets/ for benchmark use.",
     "notes": "Positive target for waterfall, cascade, and water-landscape queries."
   },
   {

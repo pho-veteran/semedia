@@ -13,6 +13,7 @@
 
 import type {
   MediaSummary,
+  SearchResultExplanation,
   UploadQueueItem,
   UploadQueueStatus,
 } from '../types/api'
@@ -86,6 +87,51 @@ export function statusProgressBarClass(status: UploadQueueStatus): string {
  */
 export function shouldShowBoostBadge(rerankBoost: number): boolean {
   return rerankBoost > 0
+}
+
+const MATCH_TYPE_LABEL: Record<SearchResultExplanation['match_type'], string> = {
+  visual: 'Visual match',
+  caption: 'Caption match',
+  hybrid: 'Hybrid match',
+}
+
+// Boost contribution from reranking, formatted as a signed percentage.
+export function formatBoost(value: number): string {
+  return `+${Math.round(value * 100)}%`
+}
+
+// One-line "why this matched" summary shared by search and evaluation cards.
+export function explanationSummary(explanation: SearchResultExplanation): string {
+  const reasons: string[] = []
+  if (explanation.exact_phrase_match) reasons.push('exact phrase in caption')
+  if (explanation.rich_caption) reasons.push('rich caption')
+  const label = MATCH_TYPE_LABEL[explanation.match_type]
+  return reasons.length > 0 ? `${label} · ${reasons.join(' · ')}` : label
+}
+
+// Context badges (exact phrase / rich caption) shared by both cards.
+export function contextBadges(explanation: SearchResultExplanation): string[] {
+  const badges: string[] = []
+  if (explanation.exact_phrase_match) badges.push('Exact phrase')
+  if (explanation.rich_caption) badges.push('Rich caption')
+  return badges
+}
+
+// Identity badges (Image / Scene N) shared by both cards.
+export function identityBadges(
+  item: { result_type: string; scene_index?: number | null; scene_id?: number | null },
+): string[] {
+  const badges = [item.result_type === 'video_scene' ? 'Scene' : 'Image']
+  if (item.result_type === 'video_scene') {
+    badges.push(
+      item.scene_index !== null && item.scene_index !== undefined
+        ? `Scene ${item.scene_index + 1}`
+        : item.scene_id !== null && item.scene_id !== undefined
+          ? `Scene ${item.scene_id}`
+          : 'Scene',
+    )
+  }
+  return badges
 }
 
 // Một chuỗi được coi là "có giá trị" khi khác null/undefined và không rỗng.

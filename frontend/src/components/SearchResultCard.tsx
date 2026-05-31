@@ -1,5 +1,11 @@
 import { Badge } from '@/components/ui'
-import { shouldShowBoostBadge } from '@/lib/presentation'
+import {
+  contextBadges,
+  explanationSummary,
+  formatBoost,
+  identityBadges,
+  shouldShowBoostBadge,
+} from '@/lib/presentation'
 import { cn } from '@/lib/utils'
 import type { SearchResult } from '../types/api'
 import { formatScore, formatTimeRange, toAbsoluteUrl } from '../utils/format'
@@ -9,57 +15,6 @@ interface SearchResultCardProps {
   onOpenMedia: (mediaId: number, startTime: number | null) => void
   className?: string
   isFocused?: boolean
-}
-
-function formatBoost(value: number): string {
-  return `+${Math.round(value * 100)}%`
-}
-
-function getExplanationSummary(item: SearchResult): string {
-  const matchTypeLabel = {
-    visual: 'Visual match',
-    caption: 'Caption match',
-    hybrid: 'Hybrid match',
-  }[item.explanation.match_type]
-
-  const reasons: string[] = []
-  if (item.explanation.exact_phrase_match) {
-    reasons.push('exact phrase in caption')
-  }
-  if (item.explanation.rich_caption) {
-    reasons.push('rich caption')
-  }
-
-  return reasons.length > 0 ? `${matchTypeLabel} · ${reasons.join(' · ')}` : matchTypeLabel
-}
-
-function getIdentityBadges(item: SearchResult): string[] {
-  const badges = [item.result_type === 'video_scene' ? 'Scene' : 'Image']
-
-  const sceneLabel = item.scene_index !== null && item.scene_index !== undefined
-    ? `Scene ${item.scene_index + 1}`
-    : item.scene_id !== null
-      ? `Scene ${item.scene_id}`
-      : 'Scene'
-
-  if (item.result_type === 'video_scene') {
-    badges.push(sceneLabel)
-  }
-
-  return badges
-}
-
-function getContextBadges(item: SearchResult): string[] {
-  const badges: string[] = []
-
-  if (item.explanation.exact_phrase_match) {
-    badges.push('Exact phrase')
-  }
-  if (item.explanation.rich_caption) {
-    badges.push('Rich caption')
-  }
-
-  return badges
 }
 
 export function SearchResultCard({ item, onOpenMedia, className, isFocused = false }: SearchResultCardProps) {
@@ -134,12 +89,12 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
           </h3>
 
           <div className="flex flex-wrap gap-2">
-            {getIdentityBadges(item).map((badge) => (
+            {identityBadges(item).map((badge) => (
               <Badge key={badge} variant={badge === 'Scene' ? 'secondary' : 'outline'} className="text-xs">
                 {badge}
               </Badge>
             ))}
-            {getContextBadges(item).map((badge) => (
+            {contextBadges(item.explanation).map((badge) => (
               <Badge key={badge} variant="outline" className="text-xs bg-accent text-accent-foreground">
                 {badge}
               </Badge>
@@ -163,7 +118,7 @@ export function SearchResultCard({ item, onOpenMedia, className, isFocused = fal
 
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground/90 line-clamp-2">
-            {getExplanationSummary(item)}
+            {explanationSummary(item.explanation)}
           </p>
           {item.caption && (
             <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">

@@ -9,6 +9,7 @@ import {
 } from './api/client'
 import { AppLayout } from './components/layout/AppLayout'
 import { DashboardPage } from './pages/DashboardPage'
+import { EvaluationPage } from './pages/EvaluationPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { MediaDetailPage } from './pages/MediaDetailPage'
 import { SearchPage } from './pages/SearchPage'
@@ -26,6 +27,7 @@ type AppRoute =
   | { page: 'dashboard' }
   | { page: 'search' }
   | { page: 'library' }
+  | { page: 'evaluation' }
   | { page: 'media'; mediaId: number; startTime: number | null }
 
 const EMPTY_MEDIA_PAGE: PaginatedResponse<MediaSummary> = {
@@ -49,6 +51,10 @@ function parseHashRoute(hash: string): AppRoute {
 
   if (segments[0] === 'library') {
     return { page: 'library' }
+  }
+
+  if (segments[0] === 'evaluation') {
+    return { page: 'evaluation' }
   }
 
   if (segments[0] === 'media' && segments[1]) {
@@ -75,6 +81,10 @@ function routeToHash(route: AppRoute): string {
     return '#/library'
   }
 
+  if (route.page === 'evaluation') {
+    return '#/evaluation'
+  }
+
   if (route.page === 'media') {
     const params = new URLSearchParams()
     if (route.startTime !== null && Number.isFinite(route.startTime)) {
@@ -89,7 +99,7 @@ function routeToHash(route: AppRoute): string {
 
 function App() {
   const [route, setRoute] = useState<AppRoute>(() => parseHashRoute(window.location.hash))
-  const [previousPage, setPreviousPage] = useState<'dashboard' | 'search' | 'library'>('dashboard')
+  const [previousPage, setPreviousPage] = useState<'dashboard' | 'search' | 'library' | 'evaluation'>('dashboard')
   const [runtime, setRuntime] = useState<RuntimeStatus | null>(null)
   const [runtimeError, setRuntimeError] = useState<string | null>(null)
   const [mediaPage, setMediaPage] = useState<PaginatedResponse<MediaSummary>>(EMPTY_MEDIA_PAGE)
@@ -495,6 +505,10 @@ function App() {
 
   if (route.page === 'library') {
     content = <LibraryPage onOpenMedia={openMedia} onDeleteMedia={handleDeleteMedia} />
+  }
+
+  if (route.page === 'evaluation') {
+    content = <EvaluationPage />
   }
 
   if (route.page === 'media') {

@@ -5,6 +5,7 @@ type SidebarRoute =
   | { page: 'dashboard' }
   | { page: 'search' }
   | { page: 'library' }
+  | { page: 'evaluation' }
   | { page: 'media'; mediaId: number; startTime: number | null }
 
 interface AppLayoutProps {

@@ -87,6 +87,18 @@ class VideoScene(Base):
     )
 
 
+class EvaluationRun(Base):
+    __tablename__ = "evaluation_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    top_k: Mapped[int] = mapped_column(Integer, default=10)
+    compare_to: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    num_queries: Mapped[int] = mapped_column(Integer, default=0)
+    summary: Mapped[dict] = mapped_column(EmbeddingType, default=dict)
+    results: Mapped[list] = mapped_column(EmbeddingType, default=list)
+
+
 class KeywordIndexArtifact(Base):
     __tablename__ = "keyword_index_artifacts"
 

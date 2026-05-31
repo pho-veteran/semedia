@@ -83,8 +83,10 @@ services:
       MEDIA_WORKER_URL: ${MEDIA_WORKER_URL:-http://media-worker:8000}
       SEARCH_API_URL: ${SEARCH_API_URL:-http://search-api:8000}
       CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-1}
+      EVALUATION_DATA_DIR: ${EVALUATION_DATA_DIR:-/app/evaluation}
     volumes:
       - backend_media:${MEDIA_ROOT:-/app/storage}
+      - ./testing/evaluation:/app/evaluation:ro
     ports:
       - "${GATEWAY_API_PORT:-8000}:8000"
     depends_on:

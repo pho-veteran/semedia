@@ -1,4 +1,4 @@
-import { LayoutDashboard, Search, FolderOpen, Menu, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Search, FolderOpen, FlaskConical, Menu, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Badge, Sheet, SheetContent, SheetTrigger } from '@/components/ui'
 import { ThemeToggle } from '../ThemeToggle'
@@ -10,6 +10,7 @@ type SidebarRoute =
   | { page: 'dashboard' }
   | { page: 'search' }
   | { page: 'library' }
+  | { page: 'evaluation' }
   | { page: 'media'; mediaId: number; startTime: number | null }
 
 interface SidebarProps {
@@ -139,6 +140,13 @@ function SidebarContent({
             label="Library"
             active={currentPage === 'library'}
             onClick={() => onNavigate({ page: 'library' })}
+            collapsed={collapsed}
+          />
+          <NavItem
+            icon={<FlaskConical size={18} />}
+            label="Evaluation"
+            active={currentPage === 'evaluation'}
+            onClick={() => onNavigate({ page: 'evaluation' })}
             collapsed={collapsed}
           />
         </div>

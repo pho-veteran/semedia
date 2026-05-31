@@ -44,6 +44,9 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Semedia Gateway API", version="0.1.0", lifespan=lifespan)
 app.mount(settings.media_base_url, StaticFiles(directory=settings.media_root, check_dir=False), name="media")
 
+from app.evaluation import router as evaluation_router  # noqa: E402
+app.include_router(evaluation_router)
+
 if settings.allow_all_origins:
     app.add_middleware(
         CORSMiddleware,

@@ -45,7 +45,14 @@ def merge_candidates(vector_results: list[dict], keyword_results: list[dict]) ->
     return list(merged.values())
 
 
-def _apply_reranking(settings, candidates: list[dict], query_text: str) -> list[dict]:
+def _apply_reranking(settings, candidates: list[dict], query_text: str, reranker=None) -> list[dict]:
+    if reranker is not None:
+        scores = reranker(query_text, [candidate.get("caption", "") for candidate in candidates])
+        if scores and len(scores) == len(candidates):
+            for candidate, score in zip(candidates, scores):
+                candidate["rerank_score"] = _clamp_score(score)
+            return candidates
+
     normalized_query = _normalize_text(query_text)
 
     for candidate in candidates:
@@ -123,7 +130,7 @@ def build_result_explanation(candidate: dict, *, query_text: str | None, query_m
     }
 
 
-def rank_candidates(settings, candidates: list[dict], *, query_text: str | None, query_mode: str, limit: int) -> list[dict]:
+def rank_candidates(settings, candidates: list[dict], *, query_text: str | None, query_mode: str, limit: int, reranker=None) -> list[dict]:
     ranked = [{**candidate} for candidate in candidates]
 
     for candidate in ranked:
@@ -137,7 +144,7 @@ def rank_candidates(settings, candidates: list[dict], *, query_text: str | None,
         candidate["rerank_score"] = candidate["fusion_score"]
 
     if query_mode == "text" and query_text:
-        ranked = _apply_reranking(settings, ranked, query_text)
+        ranked = _apply_reranking(settings, ranked, query_text, reranker=reranker)
 
     ranked.sort(key=lambda item: item.get("rerank_score", item.get("fusion_score", 0.0)), reverse=True)
     ranked = _apply_diversity(settings, ranked, limit, dedupe_captions=query_mode == "text")

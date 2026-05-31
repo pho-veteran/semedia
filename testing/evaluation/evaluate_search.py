@@ -27,8 +27,19 @@ def _dedupe_preserving_order(values: list[object]) -> list[object]:
     return deduped
 
 
+def _video_credit_key(identifier: object) -> object:
+    # Credit any scene of the correct parent video: scene:<file>:<index> -> scene:<file>.
+    # Runtime scene indices shift across re-seeding, so judge video hits at video granularity.
+    if isinstance(identifier, str) and identifier.startswith("scene:"):
+        parts = identifier.split(":")
+        if len(parts) == 3:
+            return f"scene:{parts[1]}"
+    return identifier
+
+
 def compute_metrics(relevant_ids: set[object], retrieved_ids: list[object], k: int = 10) -> dict[str, float]:
-    retrieved_ids = _dedupe_preserving_order(retrieved_ids)
+    relevant_ids = {_video_credit_key(item_id) for item_id in relevant_ids}
+    retrieved_ids = _dedupe_preserving_order([_video_credit_key(item_id) for item_id in retrieved_ids])
     top_k = retrieved_ids[:k]
     hits = sum(1 for item_id in top_k if item_id in relevant_ids)
 
@@ -36,7 +47,7 @@ def compute_metrics(relevant_ids: set[object], retrieved_ids: list[object], k: i
     recall = hits / len(relevant_ids) if relevant_ids else 0.0
 
     mrr = 0.0
-    for index, item_id in enumerate(retrieved_ids, start=1):
+    for index, item_id in enumerate(top_k, start=1):
         if item_id in relevant_ids:
             mrr = 1.0 / index
             break
@@ -76,18 +87,22 @@ def summarize_group(per_query_results: list[dict], key: str, k: int) -> dict[str
     return summary
 
 
-def summarize_negative_queries(per_query_results: list[dict], k: int) -> dict[str, float]:
+def summarize_negative_queries(per_query_results: list[dict], k: int, score_threshold: float = 0.0) -> dict[str, float]:
     negatives = [row for row in per_query_results if "negative" in row.get("tags", [])]
     if not negatives:
-        return {"num_queries": 0, "false_positive_rate": 0.0, "mean_false_positives_per_query": 0.0}
+        return {"num_queries": 0, "false_positive_rate": 0.0, "mean_false_positives_per_query": 0.0, "score_threshold": score_threshold}
 
-    false_positive_counts = [len(row["retrieved_ids"]) for row in negatives]
+    false_positive_counts = [
+        sum(1 for score in row.get("retrieved_scores", []) if score >= score_threshold)
+        for row in negatives
+    ]
     queries_with_false_positives = sum(1 for count in false_positive_counts if count > 0)
 
     return {
         "num_queries": len(negatives),
         "false_positive_rate": queries_with_false_positives / len(negatives),
         "mean_false_positives_per_query": sum(false_positive_counts) / len(negatives),
+        "score_threshold": score_threshold,
     }
 
 
@@ -146,6 +161,7 @@ def run_evaluation(
     include_by_modality: bool = False,
     include_by_difficulty: bool = False,
     include_negative_summary: bool = False,
+    negative_score_threshold: float = 0.0,
 ) -> dict:
     queries = load_queries(queries_file)
     judged_queries = [
@@ -176,9 +192,19 @@ def run_evaluation(
         }
 
         results = search_fn(query["query_text"], k)
-        retrieved_ids = _dedupe_preserving_order([_result_identifier(result) for result in results])
+        retrieved_ids = []
+        retrieved_scores = []
+        seen_ids: set[object] = set()
+        for result in results:
+            identifier = _result_identifier(result)
+            if identifier in seen_ids:
+                continue
+            seen_ids.add(identifier)
+            retrieved_ids.append(identifier)
+            retrieved_scores.append(round(float(result.get("score", 0.0)), 4))
         metrics = compute_metrics(relevant_ids, retrieved_ids, k=k)
-        all_metrics.append(metrics)
+        if "negative" not in query.get("tags", []):
+            all_metrics.append(metrics)
 
         if collect_per_query:
             per_query_results.append(
@@ -194,6 +220,7 @@ def run_evaluation(
                     "mrr": metrics["mrr"],
                     "ndcg@k": metrics[f"ndcg@{k}"],
                     "retrieved_ids": retrieved_ids[:k],
+                    "retrieved_scores": retrieved_scores[:k],
                 }
             )
 
@@ -203,6 +230,7 @@ def run_evaluation(
         "mean_mrr": 0.0,
         f"mean_ndcg@{k}": 0.0,
         "num_queries": len(all_metrics),
+        "num_negative_queries": sum(1 for query in judged_queries if "negative" in query.get("tags", [])),
     }
 
     if all_metrics:
@@ -218,13 +246,15 @@ def run_evaluation(
     if include_per_query:
         result["per_query"] = per_query_results
 
+    # Negatives are scored only via summarize_negative_queries; keep them out of positive slices.
+    positive_results = [row for row in per_query_results if "negative" not in row.get("tags", [])]
     if include_by_type:
-        result["by_type"] = summarize_group(per_query_results, "query_type", k)
+        result["by_type"] = summarize_group(positive_results, "query_type", k)
     if include_by_modality:
-        result["by_modality"] = summarize_group(per_query_results, "media_type_target", k)
+        result["by_modality"] = summarize_group(positive_results, "media_type_target", k)
     if include_by_difficulty:
-        result["by_difficulty"] = summarize_group(per_query_results, "difficulty", k)
+        result["by_difficulty"] = summarize_group(positive_results, "difficulty", k)
     if include_negative_summary:
-        result["negative_queries"] = summarize_negative_queries(per_query_results, k)
+        result["negative_queries"] = summarize_negative_queries(per_query_results, k, negative_score_threshold)
 
     return result

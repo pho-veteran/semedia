@@ -85,7 +85,7 @@ def test_search_text_uses_candidate_breadth_before_final_limit(search_env, monke
         calls.append(("keyword", top_k))
         return []
 
-    def fake_rank_candidates(settings, candidates, *, query_text, query_mode, limit):
+    def fake_rank_candidates(settings, candidates, *, query_text, query_mode, limit, reranker=None):
         calls.append(("rank", limit))
         return ranked
 
@@ -1231,7 +1231,7 @@ def test_search_text_returns_component_scores_and_explanation(search_env, monkey
     assert response.status_code == 200
     result = response.json()["results"][0]
     assert result["media_id"] == image.id
-    assert result["vector_score"] == 0.3
+    assert result["vector_score"] == 0.6  # calibrated CLIP cosine (raw 0.30 -> 0.60)
     assert result["keyword_score"] == 1.0
     assert result["explanation"] == {
         "match_type": "caption",

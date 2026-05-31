@@ -21,6 +21,21 @@ def _cosine(left: np.ndarray, right: np.ndarray) -> float:
     return float(np.dot(left, right) / (left_norm * right_norm))
 
 
+# CLIP text-image cosine similarities are compressed (~0.15 for unrelated, ~0.40 for a
+# strong match). Map that band to [0,1] with a FIXED affine transform so vector scores
+# become comparable to TF-IDF keyword scores at fusion, while preserving absolute meaning
+# (so the search_min_score floor and negative-query filtering still work). Tune the band
+# against the locked benchmark. A per-query min-max here would destroy that absolute meaning.
+_CLIP_SIM_FLOOR = 0.15
+_CLIP_SIM_CEIL = 0.40
+
+
+def _calibrate_clip_similarity(cosine: float) -> float:
+    if _CLIP_SIM_CEIL <= _CLIP_SIM_FLOOR:
+        return max(0.0, min(1.0, cosine))
+    return max(0.0, min(1.0, (cosine - _CLIP_SIM_FLOOR) / (_CLIP_SIM_CEIL - _CLIP_SIM_FLOOR)))
+
+
 def _normalize_scores(results: list[dict]) -> list[dict]:
     for result in results:
         result["score"] = max(0.0, min(1.0, float(result["score"])))
@@ -39,6 +54,13 @@ def _completed_media(session: Session) -> list[MediaItem]:
 
 def _serialize_score(value: float) -> float:
     return round(max(0.0, min(1.0, float(value))), 4)
+
+
+def _filter_by_min_score(settings, ranked: list[dict]) -> list[dict]:
+    min_score = getattr(settings, "search_min_score", 0.0)
+    if min_score <= 0.0:
+        return ranked
+    return [item for item in ranked if item.get("score", 0.0) >= min_score]
 
 
 def _stable_scene_key(item: dict) -> str | None:
@@ -82,7 +104,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
 
     for media in _completed_media(session):
         if media.media_type == "image" and media.embedding:
-            score = _cosine(query, np.array(media.embedding, dtype=np.float32))
+            score = _calibrate_clip_similarity(_cosine(query, np.array(media.embedding, dtype=np.float32)))
             results.append(
                 {
                     "key": ("image", media.id),
@@ -105,7 +127,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
 
         for scene in media.scenes:
             if scene.embedding:
-                score = _cosine(query, np.array(scene.embedding, dtype=np.float32))
+                score = _calibrate_clip_similarity(_cosine(query, np.array(scene.embedding, dtype=np.float32)))
                 results.append(
                     {
                         "key": ("scene", scene.id),
@@ -137,14 +159,15 @@ def _keyword_results(settings, session: Session, query_text: str, top_k: int) ->
     return search_keyword(query_text, index_data, top_k)
 
 
-def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None) -> list[dict]:
+def search_text(settings, session: Session, query_text: str, query_embedding: list[float], top_k: int | None = None, reranker=None) -> list[dict]:
     limit = top_k or settings.search_max_results
     candidate_multiplier = max(1, int(getattr(settings, "search_candidate_multiplier", 1)))
     candidate_limit = limit * candidate_multiplier
     vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, candidate_limit))
     keyword_results = _normalize_scores(_keyword_results(settings, session, query_text, candidate_limit))
     candidates = merge_candidates(vector_results, keyword_results)
-    ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit)
+    ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit, reranker=reranker)
+    ranked = _filter_by_min_score(settings, ranked)
 
     return [
         _serialize_ranked_result(item, query_text=query_text, query_mode="text")
@@ -157,6 +180,7 @@ def search_image(settings, session: Session, query_embedding: list[float], top_k
     vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, limit))
     candidates = merge_candidates(vector_results, [])
     ranked = rank_candidates(settings, candidates, query_text=None, query_mode="image", limit=limit)
+    ranked = _filter_by_min_score(settings, ranked)
 
     return [
         _serialize_ranked_result(item, query_text=None, query_mode="image")

@@ -26,6 +26,10 @@ class Settings:
     allow_all_origins: bool
     search_max_per_media: int = 2
     search_candidate_multiplier: int = 3
+    search_min_score: float = 0.0
+    scene_frame_sample_count: int = 3
+    search_rerank_enabled: bool = False
+    rerank_model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     ml_device: str = "auto"
     caption_max_length: int = 50
     caption_min_length: int = 10
@@ -65,6 +69,10 @@ def get_settings(service_name: str) -> Settings:
         search_max_results=int(os.getenv("SEARCH_MAX_RESULTS", "20")),
         search_max_per_media=int(os.getenv("SEARCH_MAX_PER_MEDIA", "2")),
         search_candidate_multiplier=int(os.getenv("SEARCH_CANDIDATE_MULTIPLIER", "3")),
+        search_min_score=float(os.getenv("SEARCH_MIN_SCORE", "0.0")),
+        scene_frame_sample_count=int(os.getenv("SCENE_FRAME_SAMPLE_COUNT", "3")),
+        search_rerank_enabled=_truthy("SEARCH_RERANK_ENABLED"),
+        rerank_model_name=os.getenv("RERANK_MODEL_NAME", "cross-encoder/ms-marco-MiniLM-L-6-v2"),
         ml_device=os.getenv("ML_DEVICE", "auto").strip().lower() or "auto",
         ml_strict_cuda=_truthy("ML_STRICT_CUDA"),
         ml_preload_models=_truthy("ML_PRELOAD_MODELS", "1"),

@@ -16,6 +16,18 @@ def _normalize(vector):
     return vector / norm
 
 
+TEXT_PROMPT_TEMPLATES: list[str] = [
+    "{}",
+    "a photo of {}",
+    "a picture of {}",
+]
+
+
+def build_text_prompts(text: str) -> list[str]:
+    """Format *text* through each prompt template for CLIP ensembling."""
+    return [t.format(text) for t in TEXT_PROMPT_TEMPLATES]
+
+
 def _load_clip_resources(settings):
     import torch
     from PIL import Image
@@ -100,12 +112,14 @@ def encode_text(settings, text: str) -> list[float]:
     try:
         torch, _Image, model_name, device, strict_cuda, processor, model, use_device_map = _load_clip_resources(settings)
         logger.info("Running CLIP text inference with %s on %s.", model_name, device)
+        prompts = build_text_prompts(text)
         with torch.inference_mode():
-            inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True)
+            inputs = processor(text=prompts, return_tensors="pt", padding=True, truncation=True)
             if device != "cuda" or not use_device_map:
                 inputs = move_batch_to_device(inputs, device)
             features = model.get_text_features(**inputs)
-            return _normalize(features).squeeze(0).cpu().tolist()
+            pooled = features.mean(dim=0, keepdim=True)
+            return _normalize(pooled).squeeze(0).cpu().tolist()
     except Exception as exc:
         if strict_cuda and device == "cuda":
             raise RuntimeError(f"Strict CUDA CLIP text inference failed: {exc}") from exc

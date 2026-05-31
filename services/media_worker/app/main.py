@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from semedia_shared.clip_service import encode_images, encode_text
 from semedia_shared.config import get_settings
+from semedia_shared.rerank_service import rerank_scores
 from semedia_shared.database import build_engine, build_session_factory, init_database, session_dependency
 from semedia_shared.log import configure_logging, get_logger
 from semedia_shared.media_types import infer_media_type
@@ -68,6 +69,19 @@ def embed_text(payload: dict) -> dict:
     if not text:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="text is required.")
     return {"embedding": encode_text(settings, text)}
+
+
+@app.post("/internal/rerank")
+def rerank(payload: dict) -> dict:
+    query = (payload.get("query") or "").strip()
+    texts = payload.get("texts")
+    if not query or not isinstance(texts, list):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="query and texts are required.")
+    try:
+        return {"scores": rerank_scores(settings, query, texts)}
+    except Exception as exc:
+        logger.exception("Rerank request failed.")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Rerank unavailable: {exc}") from exc
 
 
 @app.post("/internal/embeddings/image")

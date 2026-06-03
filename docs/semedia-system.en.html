@@ -90,13 +90,13 @@ tr:nth-child(even) { background: var(--table-stripe); }
 </nav>
 <main>
 <h1>Semedia System Documentation</h1>
-<span class="badge">Snapshot as of 2026-05-31</span>
+<span class="badge">Snapshot as of 2026-06-03 (live stack + code audit)</span>
 
 
 <!-- Section 1: Overview -->
 <section id="overview">
 <h2>1. Overview</h2>
-<p>Semedia is a local semantic media search system that enables natural-language search over images and videos. It runs as a self-contained Docker Compose stack of five services, combining CLIP visual-language embeddings with TF-IDF keyword search for hybrid retrieval and ranking.</p>
+<p>Semedia is a local semantic media search system that enables natural-language search over images and videos. It runs as a self-contained Docker Compose stack of five services, combining CLIP visual-language embeddings with TF-IDF keyword search for hybrid retrieval and ranking. As of the 2026-06-03 live verification run, the stack starts with Docker Compose, the gateway reports CUDA runtime availability through the media worker, and the accepted recorded benchmark baseline remains <code>phase12-e5-c1</code>.</p>
 
 <h3>Key Capabilities</h3>
 <ul>
@@ -127,7 +127,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <h3>Services</h3>
 <table>
 <tr><th>Service</th><th>Role</th><th>Stack</th></tr>
-<tr><td><code>frontend</code></td><td>User interface served via nginx</td><td>React 19, Vite 8, Tailwind CSS 4</td></tr>
+<tr><td><code>frontend</code></td><td>User interface served via nginx</td><td>React 19, Vite 8, Tailwind CSS 3, Radix UI</td></tr>
 <tr><td><code>gateway-api</code></td><td>Public API, file serving, search proxy</td><td>FastAPI, Python 3.12</td></tr>
 <tr><td><code>media-worker</code></td><td>GPU-bound: scene detection, captioning, embeddings</td><td>PyTorch, BLIP-large, CLIP ViT-B/16</td></tr>
 <tr><td><code>search-api</code></td><td>Hybrid retrieval and ranking</td><td>FastAPI, scikit-learn</td></tr>
@@ -137,12 +137,12 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <h3>Shared Package: <code>semedia_shared</code></h3>
 <p>Contains SQLAlchemy models, processing pipeline logic, search/ranking helpers, keyword index management, and configuration utilities. Used by gateway-api, media-worker, and search-api.</p>
 <ul>
-<li><code>models</code> — SQLAlchemy ORM definitions for MediaItem, VideoScene, KeywordIndexArtifact, EvaluationRun</li>
-<li><code>pipeline</code> — Scene detection, captioning, embedding generation orchestration</li>
-<li><code>search</code> — Vector similarity, keyword matching, result merging</li>
-<li><code>ranking</code> — Fusion scoring, reranking bonuses, diversity enforcement</li>
-<li><code>index</code> — TF-IDF index build, serialization, and loading</li>
-<li><code>config</code> — Environment variable parsing and validation</li>
+<li><code>models.py</code> — SQLAlchemy ORM definitions for <code>MediaItem</code>, <code>VideoScene</code>, <code>KeywordIndexArtifact</code>, and <code>EvaluationRun</code></li>
+<li><code>pipeline.py</code> — scene detection, captioning, embedding generation, status transitions, and post-process index rebuild orchestration</li>
+<li><code>search_service.py</code> — vector similarity, keyword retrieval, result merging, serialization, and score-floor filtering</li>
+<li><code>ranking_service.py</code> — fusion scoring, reranking bonuses, optional cross-encoder integration, and diversity enforcement</li>
+<li><code>index_service.py</code> — TF-IDF index build, serialization, loading, and search</li>
+<li><code>config.py</code> — environment variable parsing and validation</li>
 </ul>
 
 <h3>Communication Patterns</h3>
@@ -203,7 +203,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <p>Semedia has three primary data flows: upload/processing (write path), text search (read path), and image search (visual read path). Each flow traverses multiple services with clear responsibility boundaries.</p>
 
 <h3>a) Upload &amp; Processing Flow</h3>
-<p>When a user uploads media through the frontend, the file is received by the gateway API, persisted to disk and database, then processed synchronously by the media worker. The entire pipeline — scene detection, captioning, embedding, and indexing — completes before the upload response is returned. This synchronous design simplifies the architecture but means upload latency scales with file size and complexity (a multi-scene video takes longer than a single image).</p>
+<p>When a user uploads media through the frontend, the file is received by the gateway API, persisted to disk and database, and a <code>MediaItem</code> row is created with pending/enqueued state. The gateway then returns <code>201</code> immediately and schedules a FastAPI background task that calls the media worker over internal HTTP. The worker pipeline itself still runs synchronously once invoked — scene detection, captioning, embedding, and index rebuild complete inside the worker request — but upload acknowledgement is asynchronous from the user's perspective.</p>
 <div class="diagram">
 <svg viewBox="0 0 760 110" xmlns="http://www.w3.org/2000/svg" style="max-width:760px;">
   <rect x="5" y="30" width="80" height="40" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.2"/>
@@ -212,10 +212,10 @@ tr:nth-child(even) { background: var(--table-stripe); }
   <text x="150" y="54" text-anchor="middle" font-size="10" font-weight="600" fill="#065f46">Gateway</text>
   <rect x="215" y="30" width="80" height="40" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
   <text x="255" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#334155">Save File</text>
-  <text x="255" y="62" text-anchor="middle" font-size="9" fill="#475569">+ DB</text>
+  <text x="255" y="62" text-anchor="middle" font-size="9" fill="#475569">+ pending DB</text>
   <rect x="320" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
-  <text x="360" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Scene</text>
-  <text x="360" y="62" text-anchor="middle" font-size="9" fill="#475569">Detect</text>
+  <text x="360" y="50" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Background</text>
+  <text x="360" y="62" text-anchor="middle" font-size="9" fill="#475569">dispatch</text>
   <rect x="425" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
   <text x="465" y="54" text-anchor="middle" font-size="9" font-weight="600" fill="#92400e">Caption</text>
   <rect x="530" y="30" width="80" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.2"/>
@@ -328,7 +328,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <tr><td>Framework</td><td>React 19</td><td>Component-based UI with concurrent features</td></tr>
 <tr><td>Language</td><td>TypeScript</td><td>Type safety and IDE support</td></tr>
 <tr><td>Build Tool</td><td>Vite 8</td><td>Fast HMR and optimized production builds</td></tr>
-<tr><td>Styling</td><td>Tailwind CSS 4</td><td>Utility-first CSS with design tokens</td></tr>
+<tr><td>Styling</td><td>Tailwind CSS 3</td><td>Utility-first CSS with design tokens</td></tr>
 <tr><td>Components</td><td>Radix UI</td><td>Accessible, unstyled primitives</td></tr>
 </table>
 
@@ -344,7 +344,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <!-- Section 5: Data Model -->
 <section id="data-model">
 <h2>5. Data Model</h2>
-<p>The database schema consists of four primary tables managed via SQLAlchemy models in the shared package. All models use auto-incrementing integer primary keys and are accessed through SQLAlchemy 2's async session interface.</p>
+<p>The database schema consists of four primary tables managed via SQLAlchemy models in the shared package. All models use auto-incrementing integer primary keys and are accessed through SQLAlchemy 2's synchronous <code>Session</code> interface in the current services.</p>
 <p>Embeddings are stored as JSONB arrays (list of floats) rather than a dedicated vector type, keeping the system simple and PostgreSQL-native without requiring extensions like pgvector. This trades query performance at scale for simplicity at demo scale.</p>
 
 <h3>MediaItem</h3>
@@ -354,12 +354,16 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <tr><td>file_path</td><td>String</td><td>Relative path in MEDIA_ROOT</td></tr>
 <tr><td>original_filename</td><td>String</td><td>User-uploaded name</td></tr>
 <tr><td>media_type</td><td>String</td><td>"image" or "video"</td></tr>
-<tr><td>status</td><td>String</td><td>pending → processing → completed</td></tr>
+<tr><td>mime_type</td><td>String</td><td>Uploaded content type</td></tr>
+<tr><td>file_size</td><td>Integer</td><td>Uploaded file size in bytes</td></tr>
+<tr><td>status</td><td>String</td><td>pending → processing → completed / failed</td></tr>
 <tr><td>duration</td><td>Float</td><td>Video duration in seconds</td></tr>
 <tr><td>caption</td><td>Text</td><td>Generated caption</td></tr>
 <tr><td>embedding</td><td>JSONB</td><td>CLIP embedding vector</td></tr>
 <tr><td>index_key</td><td>String</td><td>Key into keyword index</td></tr>
-<tr><td>created_at / updated_at</td><td>DateTime</td><td>Timestamps</td></tr>
+<tr><td>error_message</td><td>Text</td><td>Failure detail when processing fails</td></tr>
+<tr><td>uploaded_at / updated_at</td><td>DateTime</td><td>Timestamps</td></tr>
+<tr><td>enqueued_at / processed_at</td><td>DateTime</td><td>Async processing lifecycle timestamps</td></tr>
 </table>
 
 <h3>VideoScene</h3>
@@ -374,6 +378,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <tr><td>caption</td><td>Text</td><td>Scene caption</td></tr>
 <tr><td>embedding</td><td>JSONB</td><td>Multi-frame mean-pooled CLIP embedding</td></tr>
 <tr><td>index_key</td><td>String</td><td>Key into keyword index</td></tr>
+<tr><td>created_at / updated_at</td><td>DateTime</td><td>Scene timestamps</td></tr>
 </table>
 
 <h3>KeywordIndexArtifact</h3>
@@ -381,10 +386,10 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
 <tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
 <tr><td>artifact_key</td><td>String</td><td>Unique artifact identifier</td></tr>
-<tr><td>format_version</td><td>Integer</td><td>Serialization version</td></tr>
+<tr><td>format_version</td><td>String</td><td>Serialization version label</td></tr>
 <tr><td>document_count</td><td>Integer</td><td>Number of indexed documents</td></tr>
 <tr><td>payload</td><td>LargeBinary</td><td>Serialized TF-IDF matrix + vocab</td></tr>
-<tr><td>built_at</td><td>DateTime</td><td>Build timestamp</td></tr>
+<tr><td>built_at / updated_at</td><td>DateTime</td><td>Artifact timestamps</td></tr>
 </table>
 
 <h3>EvaluationRun</h3>
@@ -393,7 +398,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <tr><td>id</td><td>Integer PK</td><td>Auto-increment</td></tr>
 <tr><td>created_at</td><td>DateTime</td><td>Run timestamp</td></tr>
 <tr><td>top_k</td><td>Integer</td><td>Retrieval depth (e.g., 10)</td></tr>
-<tr><td>compare_to</td><td>Integer FK</td><td>Previous run for comparison</td></tr>
+<tr><td>compare_to</td><td>String nullable</td><td>Optional previous baseline/report label for comparison</td></tr>
 <tr><td>num_queries</td><td>Integer</td><td>Total queries evaluated</td></tr>
 <tr><td>summary</td><td>JSONB</td><td>Aggregate metrics</td></tr>
 <tr><td>results</td><td>JSONB</td><td>Per-query results</td></tr>
@@ -408,10 +413,10 @@ tr:nth-child(even) { background: var(--table-stripe); }
   <line x1="40" y1="58" x2="240" y2="58" stroke="#3b82f6" stroke-width="0.8"/>
   <text x="50" y="74" font-size="10" fill="#334155">id (PK)</text>
   <text x="50" y="88" font-size="10" fill="#334155">file_path, original_filename</text>
-  <text x="50" y="102" font-size="10" fill="#334155">media_type, status, duration</text>
-  <text x="50" y="116" font-size="10" fill="#334155">caption, embedding (JSONB)</text>
-  <text x="50" y="130" font-size="10" fill="#334155">index_key</text>
-  <text x="50" y="144" font-size="10" fill="#334155">created_at, updated_at</text>
+  <text x="50" y="102" font-size="10" fill="#334155">media_type, mime_type, file_size</text>
+  <text x="50" y="116" font-size="10" fill="#334155">status, duration, caption, embedding</text>
+  <text x="50" y="130" font-size="10" fill="#334155">index_key, error_message</text>
+  <text x="50" y="144" font-size="10" fill="#334155">uploaded/enqueued/processed timestamps</text>
   <!-- VideoScene -->
   <rect x="40" y="190" width="200" height="100" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
   <text x="140" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">VideoScene</text>
@@ -419,7 +424,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
   <text x="50" y="234" font-size="10" fill="#334155">id (PK), media_id (FK)</text>
   <text x="50" y="248" font-size="10" fill="#334155">scene_index, start/end_time</text>
   <text x="50" y="262" font-size="10" fill="#334155">keyframe_path, thumbnail_path</text>
-  <text x="50" y="276" font-size="10" fill="#334155">caption, embedding, index_key</text>
+  <text x="50" y="276" font-size="10" fill="#334155">caption, embedding, index_key, timestamps</text>
   <!-- FK arrow -->
   <line x1="140" y1="160" x2="140" y2="190" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
   <text x="155" y="178" font-size="9" fill="#64748b">1:N</text>
@@ -429,7 +434,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
   <line x1="300" y1="58" x2="480" y2="58" stroke="#6366f1" stroke-width="0.8"/>
   <text x="310" y="74" font-size="10" fill="#334155">id (PK), artifact_key</text>
   <text x="310" y="88" font-size="10" fill="#334155">format_version, document_count</text>
-  <text x="310" y="102" font-size="10" fill="#334155">payload (LargeBinary), built_at</text>
+  <text x="310" y="102" font-size="10" fill="#334155">payload (LargeBinary), built/updated</text>
   <!-- EvaluationRun -->
   <rect x="300" y="160" width="180" height="90" rx="8" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
   <text x="390" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46">EvaluationRun</text>
@@ -452,7 +457,7 @@ tr:nth-child(even) { background: var(--table-stripe); }
 <p>The media worker processes each uploaded file through a deterministic pipeline. The entire pipeline runs synchronously within a single request to the media worker.</p>
 
 <h3>Step 1: File Storage</h3>
-<p>The uploaded file is saved to <code>MEDIA_ROOT</code> with a unique path derived from a UUID. A <code>MediaItem</code> record is created in the database with <code>status=processing</code>. The original filename is preserved for display purposes.</p>
+<p>The uploaded file is saved to <code>MEDIA_ROOT</code> with a unique path derived from a UUID. A <code>MediaItem</code> record is created in the database with <code>status=pending</code> plus enqueue metadata, and the gateway schedules background dispatch to the media worker. The original filename is preserved for display purposes.</p>
 
 <h3>Step 2: Scene Detection (Video Only)</h3>
 <p>For video files, PySceneDetect runs adaptive content detection with a base threshold of 27.0. This splits the video into semantically distinct scenes based on visual content changes. For each detected scene:</p>
@@ -519,7 +524,7 @@ calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
 
 <h3>Final Score</h3>
 <p>After fusion, reranking bonuses, and diversity filtering, the final score is clamped to [0, 1]. Results below <code>SEARCH_MIN_SCORE</code> (default 0.0) are excluded. The response is limited to <code>SEARCH_MAX_RESULTS</code> (default 20) items.</p>
-<p>An optional cross-encoder rerank stage exists (controlled by <code>SEARCH_RERANK_ENABLED</code>) but is <strong>disabled by default</strong>. Empirical evaluation showed it regresses quality on this small corpus — likely because the cross-encoder's semantic similarity judgments don't align well with the narrow, specific queries in the evaluation set.</p>
+<p>An optional cross-encoder rerank stage exists (controlled by <code>SEARCH_RERANK_ENABLED</code>) but is <strong>disabled by default</strong>. Current benchmark history shows that the tested MS-MARCO caption-only reranker regresses quality on this corpus because it discards CLIP's visual signal when replacing the fusion score, so it remains an opt-in capability rather than the default path.</p>
 
 <h3>Scoring Pipeline Diagram</h3>
 <div class="diagram">
@@ -605,27 +610,27 @@ calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
 <tr><td>NDCG@10</td><td>Normalized Discounted Cumulative Gain — rewards relevant items ranked higher</td><td>Positive-only mean</td></tr>
 </table>
 
-<h3>Current Snapshot (2026-05-31)</h3>
+<h3>Current Snapshot (2026-06-03 live run)</h3>
 <table>
 <tr><th>Metric</th><th>Value</th><th>Notes</th></tr>
-<tr><td>R@10</td><td><strong>99.0%</strong></td><td>Near-perfect recall — almost every relevant item is found in top 10</td></tr>
-<tr><td>MRR</td><td><strong>92.5%</strong></td><td>Relevant items typically appear at rank 1 or 2</td></tr>
-<tr><td>NDCG@10</td><td><strong>94.1%</strong></td><td>Strong ranking quality — relevant items are ranked near the top</td></tr>
-<tr><td>P@10</td><td><strong>11.1%</strong></td><td>Capped by ~1 relevant item per query in a 35-asset corpus (theoretical max ~10%)</td></tr>
+<tr><td>R@10</td><td><strong>98.97%</strong></td><td>Live Docker evaluation run against the current stack</td></tr>
+<tr><td>MRR</td><td><strong>92.20%</strong></td><td>Live run; first relevant result usually appears very early</td></tr>
+<tr><td>NDCG@10</td><td><strong>93.89%</strong></td><td>Live run; strong top-rank ordering on positive queries</td></tr>
+<tr><td>P@10</td><td><strong>11.13%</strong></td><td>Live run; low by design because the corpus has very few relevant items per query</td></tr>
 </table>
-<p>The high R@10 and MRR demonstrate that the hybrid search system reliably finds and ranks relevant content. The low P@10 is an artifact of corpus size, not a quality issue — with only ~1 relevant item per query, 9 of the 10 returned results are necessarily irrelevant.</p>
+<p>The 2026-06-03 live run was executed with <code>docker compose --profile test run --rm service-tests python testing/evaluation/run_evaluation.py --base-url http://gateway-api:8000 --queries testing/evaluation/queries.json --compare-to testing/evaluation/baselines/baseline-phase7.json</code> and returned comparison status <code>ok</code>. The accepted recorded benchmark baseline in project history remains <code>phase12-e5-c1</code> with P@10 <code>0.1103</code>, R@10 <code>0.9794</code>, MRR <code>0.8664</code>, and NDCG@10 <code>0.8902</code>. As noted in the rubric, low P@10 is expected on this small locked corpus and should be interpreted alongside Recall/MRR/NDCG.</p>
 
 <h3>Features</h3>
 <ul>
 <li>Negative-query false-positive tracking (queries that should return nothing)</li>
-<li>Run persistence in database via <code>EvaluationRun</code> table</li>
 <li>Baseline comparison between runs (delta reporting)</li>
-<li>Automated corpus seeding from <code>testing/smoke-assets/</code></li>
+<li>Optional output report generation from the evaluation CLI</li>
+<li>Automated corpus seeding from <code>testing/evaluation/assets/</code></li>
 </ul>
 
 <h3>Methodology</h3>
-<p>Each positive query has one or more expected relevant items identified by filename or scene. The evaluation runner executes each query against the live search API, collects the top-K results, and computes per-query metrics. Aggregate metrics are computed as the mean across all positive queries only (negative queries contribute only to false-positive tracking).</p>
-<p>Video queries receive scene-level credit: if any scene of the expected video appears in the results, the query is considered a hit for recall purposes. For ranking metrics (MRR, NDCG), the rank of the first matching scene is used.</p>
+<p>Each positive query has one or more expected relevant items identified by filename or scene. The evaluation runner executes each query against the live search API, collects the top-K results, and computes per-query metrics. Aggregate headline metrics are computed across positive queries only; negative queries feed the separate false-positive summary.</p>
+<p>Video queries use video-granularity scene credit during scoring: runtime scene keys are collapsed to the parent video, so retrieving any scene from the correct video credits the labeled scene. This matches the current benchmark rubric and accepted E5 measurement rules.</p>
 
 <div class="screenshot"><img src="assets/screenshot-evaluation.png" alt="Evaluation results screenshot"></div>
 </section>
@@ -639,8 +644,8 @@ calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
 <tr><td><code>DATABASE_URL</code></td><td>—</td><td>PostgreSQL connection string</td></tr>
 <tr><td><code>MEDIA_ROOT</code></td><td>—</td><td>Root directory for stored media files</td></tr>
 <tr><td><code>ML_DEVICE</code></td><td><code>auto</code></td><td>Compute device: auto, cuda, or cpu</td></tr>
-<tr><td><code>ML_STRICT_CUDA</code></td><td><code>0</code></td><td>Fail fast if CUDA unavailable (1=enabled)</td></tr>
-<tr><td><code>ML_PRELOAD_MODELS</code></td><td><code>0</code></td><td>Preload models at startup (1=enabled)</td></tr>
+<tr><td><code>ML_STRICT_CUDA</code></td><td><code>0</code> in shared config / <code>1</code> in Docker Compose</td><td>Fail fast if CUDA unavailable when enabled</td></tr>
+<tr><td><code>ML_PRELOAD_MODELS</code></td><td><code>1</code></td><td>Preload models at startup (enabled by default in current stack)</td></tr>
 <tr><td><code>CLIP_MODEL_NAME</code></td><td><code>openai/clip-vit-base-patch16</code></td><td>CLIP model identifier</td></tr>
 <tr><td><code>CAPTION_MODEL_NAME</code></td><td><code>Salesforce/blip-image-captioning-large</code></td><td>Captioning model identifier</td></tr>
 <tr><td><code>SCENE_DETECTION_THRESHOLD</code></td><td><code>27.0</code></td><td>PySceneDetect adaptive threshold</td></tr>
@@ -652,15 +657,15 @@ calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
 <tr><td><code>SEARCH_MIN_SCORE</code></td><td><code>0.0</code></td><td>Minimum score threshold</td></tr>
 <tr><td><code>SEARCH_RERANK_ENABLED</code></td><td><code>0</code></td><td>Cross-encoder rerank (0=off, 1=on)</td></tr>
 <tr><td><code>LOG_LEVEL</code></td><td><code>INFO</code></td><td>Python logging level</td></tr>
-<tr><td><code>CORS_ALLOW_ALL_ORIGINS</code></td><td><code>0</code></td><td>Allow all CORS origins (1=enabled)</td></tr>
+<tr><td><code>CORS_ALLOW_ALL_ORIGINS</code></td><td><code>1</code></td><td>Allow all CORS origins in the current local-development stack</td></tr>
 </table>
 
 <h3>Configuration Notes</h3>
 <ul>
 <li><strong>Model selection</strong> — <code>CLIP_MODEL_NAME</code> and <code>CAPTION_MODEL_NAME</code> accept any Hugging Face model identifier. Changing models requires reprocessing all media to regenerate embeddings and captions.</li>
 <li><strong>Search tuning</strong> — The vector/keyword weights (0.7/0.3) were empirically tuned on the evaluation corpus. Adjusting these affects all search results immediately without reprocessing.</li>
-<li><strong>GPU configuration</strong> — Set <code>ML_STRICT_CUDA=1</code> in production to fail fast if the GPU is not accessible, rather than silently falling back to CPU (which would be extremely slow for BLIP-large).</li>
-<li><strong>Preloading</strong> — <code>ML_PRELOAD_MODELS=1</code> adds ~30-60s to startup but eliminates cold-start latency on the first request. Recommended for production.</li>
+<li><strong>GPU configuration</strong> — The shared settings default allows non-strict CUDA selection, but the shipped Docker Compose stack sets <code>ML_STRICT_CUDA=1</code>. The 2026-06-03 live run reported <code>selected_device=cuda</code> with one visible NVIDIA GPU.</li>
+<li><strong>Preloading</strong> — <code>ML_PRELOAD_MODELS=1</code> is active in the current stack and adds startup time but eliminates cold-start latency on the first request.</li>
 <li><strong>Scene detection</strong> — Lower <code>SCENE_DETECTION_THRESHOLD</code> values produce more scenes (more sensitive to changes); higher values produce fewer, longer scenes.</li>
 </ul>
 </section>
@@ -679,30 +684,39 @@ calibrated = clamp(calibrated, 0.0, 1.0)</code></pre>
 </ul>
 
 <h3>Start the Stack</h3>
-<pre><code>docker compose up --build gateway-api frontend</code></pre>
-<p>This builds and starts all five services (db, media-worker, search-api, gateway-api, frontend). The media-worker will preload models on startup when <code>ML_PRELOAD_MODELS=1</code> is set (default in Docker Compose).</p>
+<pre><code>docker compose up -d --build gateway-api frontend</code></pre>
+<p>This builds and starts the full dependency chain (db, media-worker, search-api, gateway-api, frontend). The media-worker preloads models on startup when <code>ML_PRELOAD_MODELS=1</code> is active, which is the default in the shipped Docker Compose stack.</p>
 
 <h3>Verify Services</h3>
 <pre><code># Check all containers are running
 docker compose ps
 
 # Test gateway health
+curl http://127.0.0.1:8000/api/v1/health/
+
+# Inspect runtime / CUDA selection
 curl http://127.0.0.1:8000/api/v1/runtime/
 
 # Test frontend
-curl -s http://127.0.0.1:8000/ | head -5</code></pre>
+curl -s http://127.0.0.1:4173 | head -5</code></pre>
 
 <h3>Seed Evaluation Corpus</h3>
-<pre><code># From Semedia/ root — seeds the 35-asset locked corpus
-docker compose --profile test run --rm --build service-tests pytest testing/ -k "seed"</code></pre>
+<pre><code># From repo root — seeds the 35-asset locked corpus
+docker compose --profile test run --rm service-tests \
+  python testing/evaluation/seed_media.py</code></pre>
 
 <h3>Run Evaluation</h3>
 <pre><code># Execute all 120 judged queries and compute metrics
-docker compose --profile test run --rm --build service-tests pytest testing/ -k "evaluation"</code></pre>
+docker compose --profile test run --rm service-tests \
+  python testing/evaluation/run_evaluation.py \
+  --base-url http://gateway-api:8000 \
+  --queries testing/evaluation/queries.json \
+  --compare-to testing/evaluation/baselines/baseline-phase7.json</code></pre>
 
 <h3>Smoke Tests</h3>
-<pre><code>python testing/smoke_stack.py</code></pre>
-<p>Validates frontend reachability, gateway health, image upload, video upload, search, and delete — end-to-end through Docker. Uses assets from <code>testing/smoke-assets/</code>.</p>
+<pre><code>docker compose --profile test run --rm service-tests \
+  python testing/smoke_stack.py --base-url http://gateway-api:8000 --frontend-url http://frontend</code></pre>
+<p>Validates frontend reachability, gateway health, image upload, video upload, search, and delete end-to-end through Docker. On the 2026-06-03 live run, this command reached frontend, health, runtime, upload, and text-search checks successfully but failed the final by-image assertion for the smoke fixture, so treat it as a useful operational check rather than proof that every smoke asset remains a stable image-query target.</p>
 
 <h3>Logs &amp; Debugging</h3>
 <pre><code># Follow logs for a specific service
@@ -724,12 +738,13 @@ LOG_LEVEL=DEBUG docker compose up gateway-api</code></pre>
 <li>Lighter/mock models for fast iteration</li>
 <li>Tests cover: model CRUD, pipeline logic, search ranking, index build/load, API endpoints</li>
 <li>Run via: <code>docker compose --profile test run --rm --build service-tests</code></li>
+<li>Canonical service tests live under <code>testing/services/</code></li>
 </ul>
 <pre><code># Run all service tests
 docker compose --profile test run --rm --build service-tests
 
 # Run specific test file
-docker compose --profile test run --rm service-tests pytest testing/test_search.py -v</code></pre>
+docker compose --profile test run --rm service-tests pytest testing/services/test_search_api.py -v</code></pre>
 
 <h3>Evaluation Benchmark Suite</h3>
 <ul>
@@ -751,8 +766,9 @@ docker compose --profile test run --rm service-tests pytest testing/test_search.
 <li>Image search returns relevant results</li>
 <li>Media deletion removes item and associated files</li>
 </ul>
-<pre><code># Run smoke tests (requires stack to be running)
-python testing/smoke_stack.py</code></pre>
+<pre><code># Run smoke tests against Compose service DNS (requires stack to be running)
+docker compose --profile test run --rm service-tests \
+  python testing/smoke_stack.py --base-url http://gateway-api:8000 --frontend-url http://frontend</code></pre>
 </section>
 
 <!-- Section 12: Limitations & Future Work -->
@@ -765,7 +781,7 @@ python testing/smoke_stack.py</code></pre>
 <tr><td>P@10 capped by small corpus</td><td>With ~1 relevant item per query in 35 assets, precision cannot exceed ~10%</td><td>Larger corpus with multiple relevant items per query</td></tr>
 <tr><td>Cross-encoder rerank regresses</td><td>Disabled by default; measured to hurt quality on this specific corpus</td><td>Retune on larger corpus where semantic reranking adds value</td></tr>
 <tr><td>No distributed vector DB</td><td>Local cosine similarity over all embeddings; O(n) per query</td><td>pgvector, Qdrant, or Milvus for ANN indexing</td></tr>
-<tr><td>No Redis/Celery</td><td>Processing is synchronous; long videos block the request</td><td>Background task queue with progress tracking</td></tr>
+<tr><td>No durable job queue</td><td>Gateway upload acknowledgement is asynchronous, but processing still relies on in-process FastAPI background dispatch without external queue durability, retries, or progress streaming</td><td>Background task queue with progress tracking</td></tr>
 <tr><td>Single-GPU</td><td>No multi-GPU or distributed inference support</td><td>Model parallelism or request-level GPU scheduling</td></tr>
 <tr><td>Demo-scale corpus</td><td>35 assets (28 images + 7 videos) — not production volume</td><td>Stress testing with 10K+ assets</td></tr>
 <tr><td>No incremental indexing</td><td>TF-IDF index rebuilt from scratch on each upload</td><td>Incremental updates or append-only index</td></tr>
@@ -792,7 +808,7 @@ python testing/smoke_stack.py</code></pre>
 </section>
 
 <footer style="margin-top:4rem; padding-top:1.5rem; border-top:1px solid var(--card-border); font-size:12px; color:#64748b; text-align:center;">
-<p>Semedia System Documentation — Generated 2026-05-31 — Self-contained HTML, no external dependencies</p>
+<p>Semedia System Documentation — Updated 2026-06-03 from live Docker run and code audit — Self-contained HTML, no external dependencies</p>
 </footer>
 </main>
 </div>

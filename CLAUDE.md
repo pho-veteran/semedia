@@ -176,7 +176,7 @@ docker compose --profile test run --rm service-tests \
 docker compose --profile test run --rm service-tests pytest testing/evaluation/test_evaluate_search.py testing/evaluation/test_full_evaluation.py testing/evaluation/test_benchmark_validation.py testing/evaluation/test_manifest_lock.py -v
 ```
 
-The evaluation framework uses a locked local corpus (`testing/evaluation/assets/` — 35 assets: 30 images + 7 videos), a 120-query judged benchmark (`testing/evaluation/queries.json`), and saved baseline reports for regression detection. See `docs/metrics/search_tuning_checklist.md` for the full tuning workflow.
+The evaluation framework uses a locked local corpus (`testing/evaluation/assets/` — 35 assets: 28 images + 7 videos), a 120-query judged benchmark (`testing/evaluation/queries.json`), and saved baseline reports for regression detection. See `docs/metrics/search_tuning_checklist.md` for the full tuning workflow.
 
 **Metric semantics:**
 - Headline P@10/R@10/MRR/NDCG@10 are computed over **positive queries only**; negatives feed only the negative summary

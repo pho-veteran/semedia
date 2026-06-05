@@ -1283,6 +1283,66 @@ def test_image_search_returns_visual_explanation(search_env, monkeypatch):
     }
 
 
+
+def test_image_search_spreads_strong_nonperfect_scores(search_env, monkeypatch):
+    module = search_env["module"]
+    client = search_env["client"]
+    session_factory = search_env["session_factory"]
+
+    with session_factory() as session:
+        strongest = MediaItem(
+            file_path="originals/strongest.jpg",
+            original_filename="strongest.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="strongest",
+            embedding=[1.0, 0.0],
+            index_key="media:92",
+        )
+        strong = MediaItem(
+            file_path="originals/strong.jpg",
+            original_filename="strong.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="strong",
+            embedding=[0.9, 0.4358898944],
+            index_key="media:93",
+        )
+        weaker = MediaItem(
+            file_path="originals/weaker.jpg",
+            original_filename="weaker.jpg",
+            media_type="image",
+            mime_type="image/jpeg",
+            file_size=3,
+            status=ProcessingStatus.COMPLETED,
+            caption="weaker",
+            embedding=[0.8, 0.6],
+            index_key="media:94",
+        )
+        session.add_all([strongest, strong, weaker])
+        session.commit()
+
+    monkeypatch.setattr(module, "_embed_image", lambda file: [1.0, 0.0])
+
+    response = client.post(
+        "/api/v1/search/by-image/",
+        data={"top_k": "5"},
+        files={"file": ("query.png", VALID_PNG_BYTES, "image/png")},
+    )
+
+    assert response.status_code == 200
+    results = response.json()["results"]
+    scores = [item["vector_score"] for item in results[:3]]
+    assert scores == sorted(scores, reverse=True)
+    assert scores[0] == 1.0
+    assert scores[1] < 1.0
+    assert scores[1] > scores[2]
+
+
 def test_search_keyword_exact_top_k(search_env, monkeypatch):
     """Verify that search_keyword() returns exactly top_k results, not top_k * 2."""
     module = search_env["module"]

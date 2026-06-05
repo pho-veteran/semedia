@@ -26,14 +26,29 @@ def _cosine(left: np.ndarray, right: np.ndarray) -> float:
 # become comparable to TF-IDF keyword scores at fusion, while preserving absolute meaning
 # (so the search_min_score floor and negative-query filtering still work). Tune the band
 # against the locked benchmark. A per-query min-max here would destroy that absolute meaning.
-_CLIP_SIM_FLOOR = 0.15
-_CLIP_SIM_CEIL = 0.40
+_TEXT_CLIP_SIM_FLOOR = 0.15
+_TEXT_CLIP_SIM_CEIL = 0.40
+
+# Image-image CLIP similarities are typically much higher than text-image similarities.
+# Reusing the text-query band would saturate many strong-but-not-perfect image matches at
+# 1.0, flattening image-search semantic scores. Keep a fixed image-query band so image
+# scores retain spread while preserving absolute score semantics.
+_IMAGE_CLIP_SIM_FLOOR = 0.50
+_IMAGE_CLIP_SIM_CEIL = 0.99
+
+
+def _calibrate_similarity_band(cosine: float, floor: float, ceil: float) -> float:
+    if ceil <= floor:
+        return max(0.0, min(1.0, cosine))
+    return max(0.0, min(1.0, (cosine - floor) / (ceil - floor)))
 
 
 def _calibrate_clip_similarity(cosine: float) -> float:
-    if _CLIP_SIM_CEIL <= _CLIP_SIM_FLOOR:
-        return max(0.0, min(1.0, cosine))
-    return max(0.0, min(1.0, (cosine - _CLIP_SIM_FLOOR) / (_CLIP_SIM_CEIL - _CLIP_SIM_FLOOR)))
+    return _calibrate_similarity_band(cosine, _TEXT_CLIP_SIM_FLOOR, _TEXT_CLIP_SIM_CEIL)
+
+
+def _calibrate_image_query_similarity(cosine: float) -> float:
+    return _calibrate_similarity_band(cosine, _IMAGE_CLIP_SIM_FLOOR, _IMAGE_CLIP_SIM_CEIL)
 
 
 def _normalize_scores(results: list[dict]) -> list[dict]:
@@ -98,13 +113,14 @@ def _serialize_ranked_result(item: dict, *, query_text: str | None, query_mode: 
     }
 
 
-def _vector_results(settings, session: Session, query_embedding: list[float], top_k: int) -> list[dict]:
+def _vector_results(settings, session: Session, query_embedding: list[float], top_k: int, *, query_mode: str) -> list[dict]:
     query = np.array(query_embedding, dtype=np.float32)
     results: list[dict] = []
+    calibrate = _calibrate_image_query_similarity if query_mode == "image" else _calibrate_clip_similarity
 
     for media in _completed_media(session):
         if media.media_type == "image" and media.embedding:
-            score = _calibrate_clip_similarity(_cosine(query, np.array(media.embedding, dtype=np.float32)))
+            score = calibrate(_cosine(query, np.array(media.embedding, dtype=np.float32)))
             results.append(
                 {
                     "key": ("image", media.id),
@@ -127,7 +143,7 @@ def _vector_results(settings, session: Session, query_embedding: list[float], to
 
         for scene in media.scenes:
             if scene.embedding:
-                score = _calibrate_clip_similarity(_cosine(query, np.array(scene.embedding, dtype=np.float32)))
+                score = calibrate(_cosine(query, np.array(scene.embedding, dtype=np.float32)))
                 results.append(
                     {
                         "key": ("scene", scene.id),
@@ -163,7 +179,9 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
     limit = top_k or settings.search_max_results
     candidate_multiplier = max(1, int(getattr(settings, "search_candidate_multiplier", 1)))
     candidate_limit = limit * candidate_multiplier
-    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, candidate_limit))
+    vector_results = _normalize_scores(
+        _vector_results(settings, session, query_embedding, candidate_limit, query_mode="text")
+    )
     keyword_results = _normalize_scores(_keyword_results(settings, session, query_text, candidate_limit))
     candidates = merge_candidates(vector_results, keyword_results)
     ranked = rank_candidates(settings, candidates, query_text=query_text, query_mode="text", limit=limit, reranker=reranker)
@@ -177,7 +195,7 @@ def search_text(settings, session: Session, query_text: str, query_embedding: li
 
 def search_image(settings, session: Session, query_embedding: list[float], top_k: int | None = None) -> list[dict]:
     limit = top_k or settings.search_max_results
-    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, limit))
+    vector_results = _normalize_scores(_vector_results(settings, session, query_embedding, limit, query_mode="image"))
     candidates = merge_candidates(vector_results, [])
     ranked = rank_candidates(settings, candidates, query_text=None, query_mode="image", limit=limit)
     ranked = _filter_by_min_score(settings, ranked)

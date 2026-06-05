@@ -6,6 +6,7 @@ import type {
   PaginatedResponse,
   RuntimeStatus,
   SearchResponse,
+  SeedEvaluationMediaResponse,
   UploadResponse,
 } from '../types/api'
 
@@ -100,5 +101,11 @@ export function searchMediaByImage(file: File, topK = 20) {
   return request<ImageSearchResponse>('/api/v1/search/by-image/', {
     method: 'POST',
     body: formData,
+  })
+}
+
+export function seedEvaluationMedia() {
+  return request<SeedEvaluationMediaResponse>('/api/v1/evaluation/seed-media', {
+    method: 'POST',
   })
 }

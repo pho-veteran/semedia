@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FlaskConical, Play, Square, ChevronDown, ChevronRight, Check, X, AlertTriangle } from 'lucide-react'
+import { FlaskConical, Play, Square, ChevronDown, ChevronRight, Check, X, AlertTriangle, Loader2, Database } from 'lucide-react'
 import { API_BASE_URL } from '../config'
+import { seedEvaluationMedia } from '../api/client'
+import type { SeedEvaluationMediaResponse } from '../types/api'
 import {
   useEvaluation,
   type QueryResult,
@@ -429,6 +431,24 @@ export function EvaluationPage() {
   const [queryFilter, setQueryFilter] = useState('all')
   const [loadedBaseline, setLoadedBaseline] = useState<Record<string, any> | null>(null)
   const [runs, setRuns] = useState<SavedRunInfo[]>([])
+  const [isSeeding, setIsSeeding] = useState(false)
+  const [seedSummary, setSeedSummary] = useState<SeedEvaluationMediaResponse | null>(null)
+  const [seedError, setSeedError] = useState<string | null>(null)
+  const isEvalRunning = state.status === 'running'
+  const disableRunActions = isEvalRunning || isSeeding
+
+  const handleSeed = useCallback(async () => {
+    setIsSeeding(true)
+    setSeedError(null)
+    try {
+      const summary = await seedEvaluationMedia()
+      setSeedSummary(summary)
+    } catch (error) {
+      setSeedError(error instanceof Error ? error.message : 'Failed to seed evaluation media.')
+    } finally {
+      setIsSeeding(false)
+    }
+  }, [])
 
   const fetchRuns = useCallback(() => {
     return fetch(`${API_BASE_URL}/api/v1/evaluation/runs?limit=20`)
@@ -500,7 +520,7 @@ export function EvaluationPage() {
             Run the 120-query benchmark against the live search stack and inspect per-query results.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           {runs.length > 0 && (
             <Select
               value={state.summary?.run_id ? String(state.summary.run_id) : ''}
@@ -521,12 +541,23 @@ export function EvaluationPage() {
               {baselines.map(b => <SimpleSelectItem key={b} value={b}>{b}</SimpleSelectItem>)}
             </Select>
           )}
+          <Button size="sm" variant="outline" onClick={handleSeed} disabled={disableRunActions}>
+            {isSeeding ? (
+              <>
+                <Loader2 size={14} className="mr-1.5 animate-spin" /> Seeding…
+              </>
+            ) : (
+              <>
+                <Database size={14} className="mr-1.5" /> Seed Evaluation Media
+              </>
+            )}
+          </Button>
           {state.status === 'running' ? (
-            <Button variant="destructive" size="sm" onClick={stop}>
+            <Button variant="destructive" size="sm" onClick={stop} disabled={isSeeding}>
               <Square size={14} className="mr-1.5" /> Stop
             </Button>
           ) : (
-            <Button size="sm" onClick={handleRun}>
+            <Button size="sm" onClick={handleRun} disabled={disableRunActions}>
               <Play size={14} className="mr-1.5" /> Run Evaluation
             </Button>
           )}
@@ -543,11 +574,31 @@ export function EvaluationPage() {
       {/* Progress */}
       {state.status === 'running' && <ProgressBar completed={state.completed} total={state.total} />}
 
+      {/* Seed summary */}
+      {seedSummary && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Evaluation media seeded</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex flex-wrap gap-4">
+              <div><span className="text-muted-foreground">Total:</span> <span className="font-medium">{seedSummary.total}</span></div>
+              <div><span className="text-muted-foreground">Uploaded:</span> <span className="font-medium">{seedSummary.uploaded}</span></div>
+              <div><span className="text-muted-foreground">Completed:</span> <span className="font-medium">{seedSummary.completed}</span></div>
+              <div><span className="text-muted-foreground">Skipped:</span> <span className="font-medium">{seedSummary.skipped}</span></div>
+              <div><span className="text-muted-foreground">Failed:</span> <span className="font-medium">{seedSummary.failed}</span></div>
+              <div><span className="text-muted-foreground">Elapsed:</span> <span className="font-medium">{seedSummary.elapsed_seconds.toFixed(2)}s</span></div>
+            </div>
+            <p className="text-xs text-muted-foreground">{seedSummary.message}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Error */}
-      {state.status === 'error' && (
+      {(state.status === 'error' || seedError) && (
         <Card className="border-red-500/50">
           <CardContent className="py-3 text-sm text-red-600 dark:text-red-400">
-            Error: {state.error}
+            Error: {seedError ?? state.error}
           </CardContent>
         </Card>
       )}

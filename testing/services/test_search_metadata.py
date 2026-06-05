@@ -99,3 +99,13 @@ def test_calibrate_clip_similarity_spreads_compressed_cosines():
     # Below-floor collapses to 0; above-ceil saturates at 1 (absolute meaning preserved).
     assert _calibrate_clip_similarity(0.10) == 0.0
     assert _calibrate_clip_similarity(0.50) == 1.0
+
+
+
+def test_calibrate_image_query_similarity_preserves_high_end_spread():
+    from semedia_shared.search_service import _calibrate_image_query_similarity
+
+    assert _calibrate_image_query_similarity(0.50) == 0.0
+    assert _calibrate_image_query_similarity(0.90) < 1.0
+    assert _calibrate_image_query_similarity(0.90) > _calibrate_image_query_similarity(0.80)
+    assert _calibrate_image_query_similarity(1.0) == 1.0

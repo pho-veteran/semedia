@@ -104,6 +104,27 @@ export interface RuntimeStatus {
   gpu_name: string
 }
 
+export interface SeedEvaluationMediaResult {
+  asset_id: string
+  filename: string
+  status: string
+  media_id: number | null
+  caption: string | null
+  skipped: boolean
+  detail: string | null
+}
+
+export interface SeedEvaluationMediaResponse {
+  message: string
+  total: number
+  uploaded: number
+  completed: number
+  failed: number
+  skipped: number
+  elapsed_seconds: number
+  results: SeedEvaluationMediaResult[]
+}
+
 export interface UploadQueueItem {
   id: string
   name: string

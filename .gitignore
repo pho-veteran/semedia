@@ -15,3 +15,5 @@ storage/
 /.kiro/
 /.vscode/
 /cache/
+# CocoIndex Code (ccc)
+/.cocoindex_code/

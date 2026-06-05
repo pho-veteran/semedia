@@ -14,8 +14,6 @@ from sqlalchemy.orm import selectinload
 
 from semedia_shared.config import get_settings
 from semedia_shared.database import build_engine, build_session_factory
-from semedia_shared.models import EvaluationRun, MediaItem
-from semedia_shared.storage import media_url
 from semedia_shared.evaluation import (
     compare_reports,
     compute_metrics,
@@ -25,12 +23,23 @@ from semedia_shared.evaluation import (
     summarize_group,
     summarize_negative_queries,
 )
+from semedia_shared.evaluation_seed import (
+    SeedEvaluationConcurrentError,
+    SeedEvaluationError,
+    SeedEvaluationMissingCorpusError,
+    SeedEvaluationTimeoutError,
+    SeedEvaluationLock,
+    seed_evaluation_media,
+)
+from semedia_shared.models import EvaluationRun, MediaItem
+from semedia_shared.storage import media_url
 
 router = APIRouter(prefix="/api/v1/evaluation", tags=["evaluation"])
 settings = get_settings("gateway-api")
 _SessionLocal = build_session_factory(build_engine(settings.database_url))
 
 EVAL_DIR = Path(os.environ.get("EVALUATION_DATA_DIR", "/app/evaluation"))
+_SEED_LOCK = SeedEvaluationLock()
 
 
 def _queries_file() -> Path:
@@ -298,3 +307,31 @@ def get_baseline(name: str):
     if not path.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Baseline '{name}' not found")
     return json.loads(path.read_text())
+
+
+@router.post("/seed-media")
+def seed_media():
+    if not _SEED_LOCK.acquire():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Evaluation media seeding is already running.",
+        )
+
+    session = _SessionLocal()
+    try:
+        return seed_evaluation_media(
+            evaluation_dir=EVAL_DIR,
+            base_url="http://127.0.0.1:8000",
+            session=session,
+        )
+    except SeedEvaluationConcurrentError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    except SeedEvaluationMissingCorpusError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except SeedEvaluationTimeoutError as exc:
+        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(exc)) from exc
+    except SeedEvaluationError as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+    finally:
+        session.close()
+        _SEED_LOCK.release()

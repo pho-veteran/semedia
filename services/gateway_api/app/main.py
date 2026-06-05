@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import importlib.util
+from pathlib import Path
 
 import requests
 from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Query, UploadFile, status
@@ -44,7 +46,17 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Semedia Gateway API", version="0.1.0", lifespan=lifespan)
 app.mount(settings.media_base_url, StaticFiles(directory=settings.media_root, check_dir=False), name="media")
 
-from app.evaluation import router as evaluation_router  # noqa: E402
+try:
+    import app.evaluation as evaluation_module  # noqa: E402
+except ModuleNotFoundError:  # pragma: no cover - test loader fallback
+    _evaluation_path = Path(__file__).with_name("evaluation.py")
+    _evaluation_spec = importlib.util.spec_from_file_location("gateway_service_evaluation", _evaluation_path)
+    if _evaluation_spec is None or _evaluation_spec.loader is None:
+        raise RuntimeError(f"Unable to load evaluation router from {_evaluation_path}")
+    evaluation_module = importlib.util.module_from_spec(_evaluation_spec)
+    _evaluation_spec.loader.exec_module(evaluation_module)
+
+evaluation_router = evaluation_module.router
 app.include_router(evaluation_router)
 
 if settings.allow_all_origins:
